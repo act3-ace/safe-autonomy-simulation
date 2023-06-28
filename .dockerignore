@@ -4,7 +4,7 @@
 # Allow these files and directories
 !/.scripts/**
 !/.devcontainer/**
-!/safe-autonomy-simulation/**
+!/safe_autonomy_simulation/**
 !/docs/**
 !/config/**
 !/scripts/**

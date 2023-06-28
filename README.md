@@ -22,7 +22,7 @@ The documentation for Safe Autonomy Simulation is organized as follows:
 
 ## ACE-Hub
 
-Lunch ACE-hub using this [URL](https://hub.lion.act3-ace.ai/environments/0?replicas=1&image=git.:latest&hubName='safe-autonomy-simulation'&proxyType=normal&resources[cpu]=1&resources[memory]=1Gi&shm=64Mi)
+Lunch ACE-hub using this [URL](https://hub.lion.act3-ace.ai/environments/0?replicas=1&image=:latest&hubName='safe-autonomy-simulation'&proxyType=normal&resources[cpu]=1&resources[memory]=1Gi&shm=64Mi)(or without VPN use [this](https://hub.ace.act3.ai/environments/0?replicas=1&image=:latest&hubName='safe-autonomy-simulation'&proxyType=normal&resources[cpu]=1&resources[memory]=1Gi&shm=64Mi).
 
 ## How to Contribute
 

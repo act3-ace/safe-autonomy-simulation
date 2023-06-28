@@ -1,23 +1,32 @@
 include:
   - project: devsecops/cicd/pipeline
-    ref: v8.2.12
+    ref: v8.2.19
     file: main.yml
 
 variables:
   PIP_INDEX_URL: https://devpi.lion.act3-ace.ai/root/pypi/+simple/
-  SRC_DIR: safe-autonomy-simulation
+  SRC_DIR: safe_autonomy_simulation
 
 build image: 
   variables:
       TARGET_IMAGE: cicd
 
-mkdocs:
-  script:
-    - if [[ -f "requirements.txt" && -f "setup.py" ]]; then
-        pip install --no-cache-dir -r requirements.txt . --extra-index-url "${EXTRA_INDEX_URL}";
-      elif [[ -f "pyproject.toml" && -f "poetry.lock" ]]; then
-        poetry config virtualenvs.create false && poetry install --no-interaction --no-ansi;
-      elif [[ -f "pyproject.toml" ]]; then
-        pip install --no-cache-dir . --extra-index-url "${EXTRA_INDEX_URL}";
-      fi;
-    - mkdocs build
+build tagged image:
+  variables: 
+      TARGET_STAGE: build
+      DESTINATION_PATH: /releases
+
+build development image:
+  extends: build tagged image
+  variables: 
+    TARGET_STAGE: develop
+    DESTINATION_PATH: /development/$TARGET_STAGE
+
+build package image:
+  extends: build tagged image
+  variables: 
+    TARGET_STAGE: package
+    DESTINATION_PATH: /releases/$TARGET_STAGE
+
+
+

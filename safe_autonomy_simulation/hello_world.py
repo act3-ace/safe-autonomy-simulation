@@ -3,7 +3,7 @@
 
 def hello_world():
     '''hello world function docstring'''
-    return 'Hello, world!'
+    return 'Hello, World!'
 
 
 if __name__ == '__main__':

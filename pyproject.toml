@@ -1,35 +1,70 @@
-[build-system]
-requires = ["setuptools", "setuptools-scm"]
-build-backend = "setuptools.build_meta"
-
-[project]
+[tool.poetry]
 name = "safe-autonomy-simulation"
 version = "0.1.0"
 description = "Standalone context-aware simulation environments for Safe Autonomy research."
 authors = [
-    {name = "james.cunningham", email = "james.cunningham@jacobs.com"},
+    "james.cunningham <james.cunningham@jacobs.com>",
 ]
-license = {file = "LICENSE"}
+license = "Distribution C"
 readme = "README.md"
-requires-python = ">=3.9"
-
+homepage = ""
+repository = ""
+documentation = '/docs'
 keywords = []
-
+include = ["docs/*"]
 classifiers = [
-    "Topic :: Software Development"
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
 ]
+packages = [
+        {include = "safe_autonomy_simulation"},
+    ]
 
-dependencies = [
-    "numpy==1.23.5",
-    "build==0.9.0",
-]
+[tool.poetry.dependencies]
+python = "^3.9"
+MarkupSafe = "^2.1.1"
+Werkzeug = "^2.2.2"
+Flask = "^2.2.2"
+itsdangerous = "^2.1.2"
+numpy = "^1.23.5"
+build = "^0.9.0"
 
-[project.optional-dependencies]
-test = [
-    "mypy==0.910",
-    "pytest==6.2.5",
-    "pytest-cov==3.0.0",
-]
+[tool.poetry.group.lint.dependencies]
+pylint = "2.15.4"
+flake8 = "3.9.2"
+yapf = "^0.32.0"
+mypy = "0.930"
+isort = "5.9.3"
+bashate = "^2.1.0"
+velin = "^0.0.11"
+blacken-docs = "^1.12.1"
+detect-secrets = "1.1.0"
 
-[tool.setuptools.packages.find]
-include = ["safe-autonomy-simulation"]
+[tool.poetry.group.test.dependencies]
+pytest = "^7.1.2"
+pytest-cov = "2.11.1"
+pyinstrument = "^4.3.0"
+
+[tool.poetry.group.docs.dependencies]
+mkdocs = "^1.3.1"
+mkdocs-git-revision-date-localized-plugin = "^1.1.0"
+mkdocs-macros-plugin = "^0.7.0"
+mkdocs-material = "^8.4.2"
+mkdocs-material-extensions = "^1.0.3"
+mkdocs-mermaid-plugin = "^0.1.1"
+mkdocs-pdf-export-plugin = "^0.5.10"
+mktheapidocs = {extras = ["plugin"], version = "^0.3.1"}
+mkdocstrings = "0.18.0"
+mkdocs-autorefs = "^0.4.1"
+mkdocs-coverage = "^0.2.5"
+mkdocs-gen-files = "^0.4.0"
+mkdocs-literate-nav = "^0.4.1"
+mkdocs-section-index = "^0.3.4"
+mkdocs-with-pdf = "^0.9.3"
+papermill = "^2.4.0"
+Pillow = "^9.2.0"
+pymdown-extensions = "^9.5"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

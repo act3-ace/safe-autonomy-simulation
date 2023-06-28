@@ -1,6 +1,6 @@
-FROM docker.io/python:3.10.5 as develop
-
 ARG PIP_INDEX_URL
+ARG OCI_REGISTRY=reg.git.act3-ace.com
+FROM ${OCI_REGISTRY}/act3-rl/python-poetry:v0.1.0 as develop
 
 #########################################################################################
 # develop stage contains base requirements. Used as base for all other stages.
@@ -11,14 +11,21 @@ ARG PIP_INDEX_URL
 #
 #########################################################################################
 
+# Re-declare ARGs
+ARG PIP_INDEX_URL
+
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        git \
+        git=1:2.30.2-1* \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
-WORKDIR /code
-COPY pyproject.toml ./
-RUN pip install --no-cache-dir .
+# Install Poetry in image, takes a long time
+# SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+# RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr/local/ POETRY_VERSION=1.2.0 python3 -
+
+WORKDIR /opt/project
+COPY . ./
+RUN poetry config virtualenvs.create false && poetry install --without docs,lint,test
 
 #########################################################################################
 # Build stage packages from the source code
@@ -27,8 +34,8 @@ FROM develop as build
 ENV ROOT=/opt/libsafe-autonomy-simulation
 ARG PIP_INDEX_URL
 WORKDIR /opt/project
-COPY . .
-RUN python3 -m build && mv dist/ ${ROOT}
+
+RUN poetry build && mv dist/ ${ROOT}
 
 #########################################################################################
 # the package stage contains everything required to install the project from another container build
@@ -43,3 +50,5 @@ COPY --from=build ${ROOT} ${ROOT}
 # python CI/CD jobs assume a python executable will be in the PATH to run all testing, documentation, etc.
 #########################################################################################
 FROM build as cicd
+
+RUN poetry install --only test,docs,lint

@@ -1,7 +1,7 @@
 '''Unit tests'''
 
 import numpy as np
-from safe-autonomy-simulation.numpy_example import array_add
+from safe_autonomy_simulation.numpy_example import array_add
 
 
 def test_answer():
