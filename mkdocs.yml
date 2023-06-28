@@ -1,0 +1,29 @@
+site_name: Safe-Autonomy-Simulation
+site_author: ACT3
+repo_url: 
+
+plugins:
+  - search
+  - macros
+  - inari:
+      module: safe_autonomy_simulation # required
+
+markdown_extensions:
+  - codehilite
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_div_format
+
+nav:
+  - "Getting Started": index.md
+  - "Safe_autonomy_simulation":
+    - safe_autonomy_simulation/hello_world.md
+    - safe_autonomy_simulation/numpy_example.md
+
+theme: readthedocs
+
+# Macros info: https://github.com/fralau/mkdocs_macros_plugin#how-to-use-the-macros-plugin
+extra:
+  foo: bar

@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "safe-autonomy-simulation"
+version = "0.1.0"
+description = "Standalone context-aware simulation environments for Safe Autonomy research."
+authors = [
+    {name = "james.cunningham", email = "james.cunningham@jacobs.com"},
+]
+license = {file = "LICENSE"}
+readme = "README.md"
+requires-python = ">=3.9"
+
+keywords = []
+
+classifiers = [
+    "Topic :: Software Development"
+]
+
+dependencies = [
+    "numpy==1.23.5",
+    "build==0.9.0",
+]
+
+[project.optional-dependencies]
+test = [
+    "mypy==0.910",
+    "pytest==6.2.5",
+    "pytest-cov==3.0.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["safe-autonomy-simulation"]
