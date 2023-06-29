@@ -21,13 +21,17 @@ packages = [
     ]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "~3.9"
 MarkupSafe = "^2.1.1"
 Werkzeug = "^2.2.2"
 Flask = "^2.2.2"
 itsdangerous = "^2.1.2"
 numpy = "^1.23.5"
 build = "^0.9.0"
+pydantic = "^1.10.9"
+pint = "^0.22"
+jax = "^0.4.13"
+scipy = "^1.11.1"
 
 [tool.poetry.group.lint.dependencies]
 pylint = "2.15.4"
