@@ -18,6 +18,8 @@ import warnings
 from types import ModuleType
 from typing import TYPE_CHECKING, Callable, Tuple, Union
 
+from queue import SimpleQueue
+
 import numpy as np
 import pint
 import scipy.integrate
@@ -97,6 +99,53 @@ class BaseUnits:
         self.angular_acceleration: pint.Unit = self.angle / (self.time**2)
 
 
+class BaseControlQueue:
+    """
+    A buffer of entity controls to be applied to a BaseEntity.
+    """
+
+    def __init__(self, control_map=None):
+        self.controls = SimpleQueue()
+        self.control_map = control_map
+
+    def empty(self):
+        """
+        Returns True if the control queue is empty and False otherwise.
+        """
+        return self.controls.empty()
+    
+    def next_control(self):
+        """Removes and returns the next control in the control queue."""
+
+        action = self.controls.get()
+
+        if isinstance(action, dict):
+                assert self.control_map is not None, "Cannot use dict-type action without a control_map "
+                control = self.control_default.copy()
+                for action_name, action_value in action.items():
+                    if action_name not in self.control_map:
+                        raise KeyError(
+                            f"action '{action_name}' not found in entity's control_map, "
+                            f"please use one of: {self.control_map.keys()}"
+                        )
+
+                    control[self.control_map[action_name]] = action_value
+        elif isinstance(action, list):
+            control = np.array(action, dtype=np.float32)
+        elif isinstance(action, np.ndarray):
+            control = action.copy()
+        elif jnp is not None and isinstance(action, jnp.ndarray):  # pylint: disable=used-before-assignment
+            control = action.copy()
+        else:
+            raise ValueError("action must be type dict, list, np.ndarray or jnp.ndarray")
+        
+        return control
+    
+    def add_control(self, control):
+        """Adds a control to the end of the control queue."""
+        self.controls.put(control)
+
+
 class BaseEntity(abc.ABC):
     """
     Base implementation of a dynamics controlled entity within the saferl sim.
@@ -113,7 +162,7 @@ class BaseEntity(abc.ABC):
         Optional maximum allowable control vector values. Control vectors that exceed this limit are clipped.
     control_map: dict
         Optional mapping for actuator names to their indices in the state vector.
-        Allows dictionary action inputs in step().
+        Allows dictionary action inputs in add_control().
     """
 
     base_units = BaseUnits('meters', 'seconds', 'radians')
@@ -126,10 +175,12 @@ class BaseEntity(abc.ABC):
         self.control_default = control_default
         self.control_min = control_min
         self.control_max = control_max
-        self.control_map = control_map
 
         self._state = self._build_state()
         self.state_dot = np.zeros_like(self._state)
+
+        self.control_queue = BaseControlQueue(control_map=control_map)
+        self.last_control = None
 
         self.ureg: pint.UnitRegistry = pint.get_application_registry()
 
@@ -148,18 +199,15 @@ class BaseEntity(abc.ABC):
         self._state = self._build_state()
         self.state_dot = np.zeros_like(self._state)
 
-    def step(self, step_size, action=None):
+    def step(self, step_size):
         """
         Executes a state transition simulation step for the entity.
 
         Parameters
         ----------
         step_size : float
-            Duration of simulation step in seconds
-        action : Union(dict, list, np.ndarray), optional
-            Control action taken by entity, by default None resulting in a control of control_default
-            When list or ndarray, directly used and control vector for dynamics model
-            When dict, unpacked into control vector. Requires control_map to be defined.
+            Duration of simulation step in seconds.
+
         Raises
         ------
         KeyError
@@ -168,29 +216,10 @@ class BaseEntity(abc.ABC):
             Raised when action is not one of the required types
         """
 
-        if action is None:
+        if self.control_queue.empty():
             control = self.control_default.copy()
         else:
-            if isinstance(action, dict):
-                assert self.control_map is not None, "Cannot use dict-type action without a control_map " \
-                                                     "(see BaseEntity __init__())"
-                control = self.control_default.copy()
-                for action_name, action_value in action.items():
-                    if action_name not in self.control_map:
-                        raise KeyError(
-                            f"action '{action_name}' not found in entity's control_map, "
-                            f"please use one of: {self.control_map.keys()}"
-                        )
-
-                    control[self.control_map[action_name]] = action_value
-            elif isinstance(action, list):
-                control = np.array(action, dtype=np.float32)
-            elif isinstance(action, np.ndarray):
-                control = action.copy()
-            elif jnp is not None and isinstance(action, jnp.ndarray):  # pylint: disable=used-before-assignment
-                control = action.copy()
-            else:
-                raise ValueError("action must be type dict, list, np.ndarray or jnp.ndarray")
+            control = self.control_queue.next_control()
 
         # enforce control bounds
         if (np.any(control < self.control_min) or np.any(control > self.control_max)):
@@ -199,6 +228,12 @@ class BaseEntity(abc.ABC):
 
         # compute new state if dynamics were applied
         self.state, self.state_dot = self.dynamics.step(step_size, self.state, control)
+        
+        self.last_control = control
+
+    def add_control(self, control):
+        """Add a control to the entity's control queue"""
+        self.control_queue.add_control(control=control)
 
     @property
     def state(self) -> np.ndarray:
