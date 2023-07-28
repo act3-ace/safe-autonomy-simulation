@@ -1,12 +1,16 @@
+"""An abstract simulator class for building new simulations."""
+
 from abc import ABC, abstractmethod
 from pydantic import BaseModel
 
 
 class SimulatorValidator(BaseModel):
+    """A configuration validator for the Simulator class"""
     frame_rate: float
 
 
 class Simulator(ABC):
+    """An abstract simulator class for building new simulations"""
     def __init__(self, **kwargs):
         self.config = self.get_sim_validator(**kwargs)
         self._sim_time = 0

@@ -113,23 +113,23 @@ class BaseControlQueue:
         Returns True if the control queue is empty and False otherwise.
         """
         return self.controls.empty()
-    
+
     def next_control(self):
         """Removes and returns the next control in the control queue."""
 
         action = self.controls.get()
 
         if isinstance(action, dict):
-                assert self.control_map is not None, "Cannot use dict-type action without a control_map "
-                control = self.control_default.copy()
-                for action_name, action_value in action.items():
-                    if action_name not in self.control_map:
-                        raise KeyError(
-                            f"action '{action_name}' not found in entity's control_map, "
-                            f"please use one of: {self.control_map.keys()}"
-                        )
+            assert self.control_map is not None, "Cannot use dict-type action without a control_map "
+            control = self.control_default.copy()
+            for action_name, action_value in action.items():
+                if action_name not in self.control_map:
+                    raise KeyError(
+                        f"action '{action_name}' not found in entity's control_map, "
+                        f"please use one of: {self.control_map.keys()}"
+                    )
 
-                    control[self.control_map[action_name]] = action_value
+                control[self.control_map[action_name]] = action_value
         elif isinstance(action, list):
             control = np.array(action, dtype=np.float32)
         elif isinstance(action, np.ndarray):
@@ -138,9 +138,9 @@ class BaseControlQueue:
             control = action.copy()
         else:
             raise ValueError("action must be type dict, list, np.ndarray or jnp.ndarray")
-        
+
         return control
-    
+
     def add_control(self, control):
         """Adds a control to the end of the control queue."""
         self.controls.put(control)
@@ -228,7 +228,7 @@ class BaseEntity(abc.ABC):
 
         # compute new state if dynamics were applied
         self.state, self.state_dot = self.dynamics.step(step_size, self.state, control)
-        
+
         self.last_control = control
 
     def add_control(self, control):
