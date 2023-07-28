@@ -26,10 +26,11 @@ from pydantic import BaseModel
 
 ########################################################## ILLUMINATION ##########################################################
 
+
 class IlluminationParams(BaseModel):
     """
     Required paramaters for calculating point illumination.
-    
+
     mean_motion: float
         A float representing the mean motion of the spacecraft in Low Earth Orbit (LEO) in [RADIANS/SECOND].
     avg_rad_Earth2Sun: float
@@ -83,7 +84,11 @@ def get_sun_position(current_time, angular_velocity, initial_theta, r_avg):
     """
     d_theta = angular_velocity
     current_theta = d_theta * current_time + initial_theta
-    sun_position = [r_avg * (math.cos(current_theta)), -r_avg * (math.sin(current_theta)), 0]
+    sun_position = [
+        r_avg * (math.cos(current_theta)),
+        -r_avg * (math.sin(current_theta)),
+        0,
+    ]
 
     return sun_position
 
@@ -119,7 +124,9 @@ def check_illum(point, sun_angle, r_avg, radius):
     sun_position = [r_avg * (math.cos(sun_angle)), -r_avg * (math.sin(sun_angle)), 0]
     intersection_to_light = normalize(sun_position - shifted_point)
 
-    intersect_var = sphere_intersect(center, radius, shifted_point, intersection_to_light)
+    intersect_var = sphere_intersect(
+        center, radius, shifted_point, intersection_to_light
+    )
 
     bool_val = False
     # No intersection means that the point in question is illuminated in some capacity
@@ -157,7 +164,7 @@ def save_data(points, current_time, position, sun_position, action, velocity, pa
 
     # Write to csv
     temp = [current_time, position, points_bool, sun_position, action, velocity]
-    with open(path, 'a') as f_object:
+    with open(path, "a") as f_object:
         writer_object = writer(f_object)
         writer_object.writerow(temp)
         f_object.close()
@@ -182,16 +189,18 @@ def evaluate_RGB(RGB):
     RGB_bool = True
 
     # Too dark
-    if RGB[0] < .12:
+    if RGB[0] < 0.12:
         RGB_bool = False
     # Too bright/white
-    if RGB[0] > .8 and RGB[1] > .8 and RGB[2] > .8:
+    if RGB[0] > 0.8 and RGB[1] > 0.8 and RGB[2] > 0.8:
         RGB_bool = False
 
     return RGB_bool
 
 
-def compute_illum_pt(point, sun_angle, deputy_position, r_avg, radius, chief_properties, light_properties):
+def compute_illum_pt(
+    point, sun_angle, deputy_position, r_avg, radius, chief_properties, light_properties
+):
     """
     Receive a candidate point as an input
     Receive sun position as an input
@@ -204,7 +213,9 @@ def compute_illum_pt(point, sun_angle, deputy_position, r_avg, radius, chief_pro
     shifted_point = point + 1e-5 * normal_to_surface
     sun_position = [r_avg * (math.cos(sun_angle)), -r_avg * (math.sin(sun_angle)), 0]
     intersection_to_light = normalize(sun_position - shifted_point)
-    intersect_var = sphere_intersect(center, radius, shifted_point, intersection_to_light)
+    intersect_var = sphere_intersect(
+        center, radius, shifted_point, intersection_to_light
+    )
 
     illumination = np.zeros((3))
     # No intersection means that the point in question is illuminated in some capacity
@@ -212,21 +223,35 @@ def compute_illum_pt(point, sun_angle, deputy_position, r_avg, radius, chief_pro
     if intersect_var is None:
         # Blinn-Phong Illumination Model
         # https://en.wikipedia.org/wiki/Blinn%E2%80%93Phong_reflection_model
-        illumination += np.array(chief_properties['ambient']) * np.array(light_properties['ambient'])
-        illumination += np.array(chief_properties['diffuse']) * np.array(light_properties['diffuse']) * \
-            np.dot(intersection_to_light, normal_to_surface)
+        illumination += np.array(chief_properties["ambient"]) * np.array(
+            light_properties["ambient"]
+        )
+        illumination += (
+            np.array(chief_properties["diffuse"])
+            * np.array(light_properties["diffuse"])
+            * np.dot(intersection_to_light, normal_to_surface)
+        )
         intersection_to_camera = normalize(deputy_position - point)
         H = normalize(intersection_to_light + intersection_to_camera)
-        illumination += np.array(chief_properties['specular']) * np.array(light_properties['specular']) * \
-            np.dot(normal_to_surface, H)**(chief_properties['shininess'] / 4)
+        illumination += (
+            np.array(chief_properties["specular"])
+            * np.array(light_properties["specular"])
+            * np.dot(normal_to_surface, H) ** (chief_properties["shininess"] / 4)
+        )
         illumination = np.clip(illumination, 0, 1)
     return illumination
 
 
-
-
-
-def compute_illum(deputy_position, sun_position, resolution, radius, focal_length, chief_properties, light_properties, pixel_pitch):
+def compute_illum(
+    deputy_position,
+    sun_position,
+    resolution,
+    radius,
+    focal_length,
+    chief_properties,
+    light_properties,
+    pixel_pitch,
+):
     # pylint: disable-msg=too-many-locals
     """
     Renders the full scene using backwards ray tracing and returns a full RGB image
@@ -239,7 +264,10 @@ def compute_illum(deputy_position, sun_position, resolution, radius, focal_lengt
     # There are an infinite number of vectors normal to sensor_dir -- choose one
     x = -1
     y = 1
-    z = -(image_plane_position[0] * x + image_plane_position[1] * y) / image_plane_position[2]
+    z = (
+        -(image_plane_position[0] * x + image_plane_position[1] * y)
+        / image_plane_position[2]
+    )
     norm1 = normalize([x, y, z])
 
     # np.cross bug work-around https://github.com/microsoft/pylance-release/issues/3277
@@ -260,29 +288,47 @@ def compute_illum(deputy_position, sun_position, resolution, radius, focal_lengt
             # Initialize pixel
             illumination = np.zeros((3))
             # Convert to CWH coordinates
-            pixel_location = image_plane_position + ((norm2_range / 2) -
-                                                     (i * step_norm2)) * (norm2) + (-(norm1_range / 2) + (j * step_norm1)) * (norm1)
+            pixel_location = (
+                image_plane_position
+                + ((norm2_range / 2) - (i * step_norm2)) * (norm2)
+                + (-(norm1_range / 2) + (j * step_norm1)) * (norm1)
+            )
             ray_direction = normalize(pixel_location - deputy_position)
-            dist_2_intersect = sphere_intersect(chief_position, radius, deputy_position, ray_direction)
+            dist_2_intersect = sphere_intersect(
+                chief_position, radius, deputy_position, ray_direction
+            )
             # Light ray hits sphere, so we continue - else get next pixel
             if dist_2_intersect is not None:
                 intersection_point = deputy_position + dist_2_intersect * ray_direction
                 normal_to_surface = normalize(intersection_point - chief_position)
                 shifted_point = intersection_point + 1e-5 * normal_to_surface
                 intersection_to_light = normalize(sun_position - shifted_point)
-                intersect_var = sphere_intersect(chief_position, radius, shifted_point, intersection_to_light)
+                intersect_var = sphere_intersect(
+                    chief_position, radius, shifted_point, intersection_to_light
+                )
                 # If the shifted point doesn't intersect with the chief on the way to the light, it is unobstructed
                 if intersect_var is None:
                     # Blinn-Phong Illumination Model
                     # https://en.wikipedia.org/wiki/Blinn%E2%80%93Phong_reflection_model
 
-                    illumination += np.array(chief_properties['ambient']) * np.array(light_properties['ambient'])
-                    illumination += np.array(chief_properties['diffuse']) * np.array(light_properties['diffuse']) * \
-                        np.dot(intersection_to_light, normal_to_surface)
-                    intersection_to_camera = normalize(deputy_position - intersection_point)
+                    illumination += np.array(chief_properties["ambient"]) * np.array(
+                        light_properties["ambient"]
+                    )
+                    illumination += (
+                        np.array(chief_properties["diffuse"])
+                        * np.array(light_properties["diffuse"])
+                        * np.dot(intersection_to_light, normal_to_surface)
+                    )
+                    intersection_to_camera = normalize(
+                        deputy_position - intersection_point
+                    )
                     H = normalize(intersection_to_light + intersection_to_camera)
-                    illumination += np.array(chief_properties['specular']) * np.array(light_properties['specular']) * \
-                        np.dot(normal_to_surface, H)**(chief_properties['shininess'] / 4)
+                    illumination += (
+                        np.array(chief_properties["specular"])
+                        * np.array(light_properties["specular"])
+                        * np.dot(normal_to_surface, H)
+                        ** (chief_properties["shininess"] / 4)
+                    )
                 # Shadowed
                 else:
                     continue
@@ -303,7 +349,7 @@ def sphere_intersect(center, radius, ray_origin, ray_direction):
     Returns None upon no intersection
     """
     b = 2 * np.dot(ray_direction, ray_origin - center)
-    c = np.linalg.norm(ray_origin - center)**2 - radius**2
+    c = np.linalg.norm(ray_origin - center) ** 2 - radius**2
     delta = b**2 - 4 * c
     if delta > 0:
         t1 = (-b + np.sqrt(delta)) / 2

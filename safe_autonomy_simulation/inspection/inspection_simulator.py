@@ -17,12 +17,18 @@ import typing
 
 import numpy as np
 
-from safe_autonomy_simulation.simulator import DiscreteSimulator, DiscreteSimulatorValidator
+from safe_autonomy_simulation.simulator import (
+    DiscreteSimulator,
+    DiscreteSimulatorValidator,
+)
 from safe_autonomy_simulation.spacecraft.sixdof_model import SixDOFSpacecraft
 from safe_autonomy_simulation.spacecraft.point_model import CWHSpacecraft
 from safe_autonomy_simulation.inspection.sun_model import SunEntity
 from safe_autonomy_simulation.inspection.illumination import IlluminationParams
-from safe_autonomy_simulation.inspection.inspection_points import InspectionPoints, InspectionPointsValidator
+from safe_autonomy_simulation.inspection.inspection_points import (
+    InspectionPoints,
+    InspectionPointsValidator,
+)
 
 
 class InspectionSimulatorValidator(DiscreteSimulatorValidator):
@@ -48,11 +54,12 @@ class InspectionSimulatorValidator(DiscreteSimulatorValidator):
     inspectors: typing.List[str]
     illumination_params: typing.Union[IlluminationParams, None] = None
     sensor_fov: float = np.pi
-    initial_sensor_unit_vec: list = [1., 0., 0.]
+    initial_sensor_unit_vec: list = [1.0, 0.0, 0.0]
     inspection_points_map: typing.Dict[str, InspectionPointsValidator]
 
     class Config:
         """Allow arbitrary types for Parameter"""
+
         arbitrary_types_allowed = True
 
 
@@ -68,16 +75,22 @@ class InspectionSimulator(DiscreteSimulator):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.inspection_points_map = {}
-        self.sun_angle = 0.
+        self.sun_angle = 0.0
         self.priority_vector = np.zeros(3)
-        self.inspectors = {inspector_name: self.entities[inspector_name] for inspector_name in self.config.inspectors}
+        self.inspectors = {
+            inspector_name: self.entities[inspector_name]
+            for inspector_name in self.config.inspectors
+        }
 
     def create_inspection_points_map(self):
         """
         create map of inspection points for each entity
         """
         points_map = {}
-        for entity_name, inspection_points_validator in self.config.inspection_points_map.items():
+        for (
+            entity_name,
+            inspection_points_validator,
+        ) in self.config.inspection_points_map.items():
             # TODO: there must be a better way to use validators
             parent_entity = self.entities[entity_name]
             points_map[entity_name] = InspectionPoints(
@@ -96,7 +109,7 @@ class InspectionSimulator(DiscreteSimulator):
     def reset(self, priority_vec_azimuth=0.0, priority_vec_elevation=0.0):
         super().reset()
         if self.config.illumination_params is not None:
-            self.sun_angle = self.entities['sun'].theta
+            self.sun_angle = self.entities["sun"].theta
 
         self._get_initial_priority_vector(priority_vec_azimuth, priority_vec_elevation)
 
@@ -113,10 +126,16 @@ class InspectionSimulator(DiscreteSimulator):
 
         self._update_inspection_points_statuses()
 
-    def _get_initial_priority_vector(self, priority_vec_azimuth, priority_vec_elevation):
+    def _get_initial_priority_vector(
+        self, priority_vec_azimuth, priority_vec_elevation
+    ):
         """Get the initial priority vector for weighting points"""
-        self.priority_vector[0] = np.cos(priority_vec_azimuth) * np.cos(priority_vec_elevation)
-        self.priority_vector[1] = np.sin(priority_vec_azimuth) * np.cos(priority_vec_elevation)
+        self.priority_vector[0] = np.cos(priority_vec_azimuth) * np.cos(
+            priority_vec_elevation
+        )
+        self.priority_vector[1] = np.sin(priority_vec_azimuth) * np.cos(
+            priority_vec_elevation
+        )
         self.priority_vector[2] = np.sin(priority_vec_elevation)
 
     def step(self):
@@ -128,7 +147,7 @@ class InspectionSimulator(DiscreteSimulator):
 
         # illuminate
         if self.config.illumination_params:
-            self.sun_angle = self.entities['sun'].theta
+            self.sun_angle = self.entities["sun"].theta
             # pass sun_angle to InspectionPoints objs
             for points in self.inspection_points_map.values():
                 points.set_sun_angle(self.sun_angle)
@@ -162,12 +181,11 @@ if __name__ == "__main__":
         },
     }
 
-
     sim = InspectionSimulator(
         entities=entities,
         frame_rate=1,
         inspection_points_map=inspection_points_map,
-        inspectors=["sc1"]
+        inspectors=["sc1"],
     )
     sim.reset()
 

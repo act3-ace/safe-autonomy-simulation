@@ -30,11 +30,12 @@ class InspectionPointsValidator(BaseModel):
     illumination_params: typing.Union[IlluminationValidator, None]
         The parameters defining lighting of the environment.
     """
+
     num_points: int
     radius: float
     points_algorithm: str = "cmu"
     sensor_fov: float = np.pi
-    initial_sensor_unit_vec: list = [1., 0., 0.]
+    initial_sensor_unit_vec: list = [1.0, 0.0, 0.0]
     illumination_params: typing.Union[illum.IlluminationParams, None] = None
 
     @validator("points_algorithm")
@@ -53,14 +54,20 @@ class InspectionPoints:
     A class maintaining the inspection status of an entity.
     """
 
-    def __init__(self, parent_entity: CWHSpacecraft, priority_vector: np.ndarray, **kwargs):
+    def __init__(
+        self, parent_entity: CWHSpacecraft, priority_vector: np.ndarray, **kwargs
+    ):
         self.config: InspectionPointsValidator = self.get_validator(**kwargs)
         self.sun_angle = 0.0
         self.clock = 0.0
         self.parent_entity = parent_entity
         self.priority_vector = priority_vector
-        (self._default_points_position_dict, self.points_position_dict, self.points_inspected_dict,
-         self.points_weights_dict) = self._add_points()
+        (
+            self._default_points_position_dict,
+            self.points_position_dict,
+            self.points_inspected_dict,
+            self.points_weights_dict,
+        ) = self._add_points()
         self.last_points_inspected = 0
         self.last_cluster = None
 
@@ -89,24 +96,37 @@ class InspectionPoints:
             points_alg = self.points_on_sphere_cmu
         else:
             points_alg = self.points_on_sphere_fibonacci
-        points = points_alg(self.config.num_points, self.config.radius)  # TODO: HANDLE POSITION UNITS*
+        points = points_alg(
+            self.config.num_points, self.config.radius
+        )  # TODO: HANDLE POSITION UNITS*
         points_position_dict = {}
         points_inspected_dict = {}
         points_weights_dict = {}
         for i, point in enumerate(points):
             points_position_dict[i] = point
             points_inspected_dict[i] = False
-            points_weights_dict[i] = np.arccos(
-                np.dot(-self.priority_vector, point) / (np.linalg.norm(-self.priority_vector) * np.linalg.norm(point))
-            ) / np.pi
+            points_weights_dict[i] = (
+                np.arccos(
+                    np.dot(-self.priority_vector, point)
+                    / (np.linalg.norm(-self.priority_vector) * np.linalg.norm(point))
+                )
+                / np.pi
+            )
 
         # Normalize weighting
         total_weight = sum(list(points_weights_dict.values()))
-        points_weights_dict = {k: w / total_weight for k, w in points_weights_dict.items()}
+        points_weights_dict = {
+            k: w / total_weight for k, w in points_weights_dict.items()
+        }
 
         default_points_position = copy.deepcopy(points_position_dict)
 
-        return default_points_position, points_position_dict, points_inspected_dict, points_weights_dict
+        return (
+            default_points_position,
+            points_position_dict,
+            points_inspected_dict,
+            points_weights_dict,
+        )
 
     # inspected or not
     def update_points_inspection_status(self, inspector_entity):
@@ -125,7 +145,9 @@ class InspectionPoints:
         # calculate h of the spherical cap (inspection zone)
         position = inspector_entity.position
         if isinstance(inspector_entity, SixDOFSpacecraft):
-            r_c = inspector_entity.orientation.apply(self.config.initial_sensor_unit_vec)
+            r_c = inspector_entity.orientation.apply(
+                self.config.initial_sensor_unit_vec
+            )
         else:
             r_c = -position
         r_c = r_c / np.linalg.norm(r_c)
@@ -134,9 +156,16 @@ class InspectionPoints:
         rt = np.linalg.norm(position)
         h = 2 * r * ((rt - r) / (2 * rt))
 
-        p_hat = position / np.linalg.norm(position)  # position unit vector (inspection zone cone axis)
+        p_hat = position / np.linalg.norm(
+            position
+        )  # position unit vector (inspection zone cone axis)
 
-        for point_id, point_position in self.points_position_dict.items():  # pylint: disable=too-many-nested-blocks
+        for (
+            point_id,
+            point_position,
+        ) in (
+            self.points_position_dict.items()
+        ):  # pylint: disable=too-many-nested-blocks
             # check that point hasn't already been inspected
             if not self.points_inspected_dict[point_id]:
                 p = point_position - position
@@ -153,18 +182,34 @@ class InspectionPoints:
                         mag = np.dot(point_position, p_hat)
                         if mag >= r - h:
                             r_avg = self.config.illumination_params.avg_rad_Earth2Sun
-                            chief_properties = self.config.illumination_params.chief_properties
-                            light_properties = self.config.illumination_params.light_properties
+                            chief_properties = (
+                                self.config.illumination_params.chief_properties
+                            )
+                            light_properties = (
+                                self.config.illumination_params.light_properties
+                            )
                             current_theta = self.sun_angle
                             if self.config.illumination_params.bin_ray_flag:
-                                if illum.check_illum(point_position, current_theta, r_avg, r):
-                                    self.points_inspected_dict[point_id] = inspector_entity.name
+                                if illum.check_illum(
+                                    point_position, current_theta, r_avg, r
+                                ):
+                                    self.points_inspected_dict[
+                                        point_id
+                                    ] = inspector_entity.name
                             else:
                                 RGB = illum.compute_illum_pt(
-                                    point_position, current_theta, position, r_avg, r, chief_properties, light_properties
+                                    point_position,
+                                    current_theta,
+                                    position,
+                                    r_avg,
+                                    r,
+                                    chief_properties,
+                                    light_properties,
                                 )
                                 if illum.evaluate_RGB(RGB):
-                                    self.points_inspected_dict[point_id] = inspector_entity.name
+                                    self.points_inspected_dict[
+                                        point_id
+                                    ] = inspector_entity.name
 
     def kmeans_find_nearest_cluster(self, position):
         """Finds nearest cluster of uninspected points using kmeans clustering"""
@@ -178,7 +223,7 @@ class InspectionPoints:
                 else:
                     uninspected.append(point_position)
         if len(uninspected) == 0:
-            out = np.array([0., 0., 0.])
+            out = np.array([0.0, 0.0, 0.0])
         else:
             n = math.ceil(len(uninspected) / 10)
             data = np.array(uninspected)
@@ -186,7 +231,9 @@ class InspectionPoints:
                 init = np.zeros((n, 3))
             else:
                 if n > self.last_cluster.shape[0]:
-                    idxs = np.random.choice(self.last_cluster.shape[0], size=n - self.last_cluster.shape[0])
+                    idxs = np.random.choice(
+                        self.last_cluster.shape[0], size=n - self.last_cluster.shape[0]
+                    )
                     new = np.array(uninspected)[idxs, :]
                     init = np.vstack((self.last_cluster, new))
                 else:
@@ -216,7 +263,15 @@ class InspectionPoints:
         if self.config.illumination_params.bin_ray_flag:
             illuminated = illum.check_illum(point, current_theta, r_avg, r)
         else:
-            RGB = illum.compute_illum_pt(point, current_theta, position, r_avg, r, chief_properties, light_properties)
+            RGB = illum.compute_illum_pt(
+                point,
+                current_theta,
+                position,
+                r_avg,
+                r,
+                chief_properties,
+                light_properties,
+            )
             illuminated = illum.evaluate_RGB(RGB)
         return illuminated
 
@@ -238,7 +293,7 @@ class InspectionPoints:
             Set of equidistant points on sphere in cartesian coordinates
         """
         points = []
-        phi = math.pi * (3. - math.sqrt(5.))  # golden angle in radians
+        phi = math.pi * (3.0 - math.sqrt(5.0))  # golden angle in radians
 
         for i in range(num_points):
             y = 1 - (i / float(num_points - 1)) * 2  # y goes from 1 to -1
@@ -331,7 +386,9 @@ class InspectionPoints:
         if inspector_entity:
             # count number of points inspected by the provided entity
             for _, point_inspector_entity in self.points_inspected_dict.items():
-                num_points += 1 if point_inspector_entity == inspector_entity.name else 0
+                num_points += (
+                    1 if point_inspector_entity == inspector_entity.name else 0
+                )
         else:
             # count the total number of points inspected
             for _, point_inspector_entity in self.points_inspected_dict.items():
@@ -344,7 +401,10 @@ class InspectionPoints:
         total_num_points = len(self.points_inspected_dict.keys())
 
         if inspector_entity:
-            percent = self.get_num_points_inspected(inspector_entity=inspector_entity) / total_num_points
+            percent = (
+                self.get_num_points_inspected(inspector_entity=inspector_entity)
+                / total_num_points
+            )
         else:
             percent = self.get_num_points_inspected() / total_num_points
         return percent
@@ -357,11 +417,17 @@ class InspectionPoints:
         """Get total weight of points inspected"""
         weights = 0
         if inspector_entity:
-            for point_inspector_entity, weight in zip(self.points_inspected_dict.values(), self.points_weights_dict.values()):
-                weights += weight if point_inspector_entity == inspector_entity.name else 0.
+            for point_inspector_entity, weight in zip(
+                self.points_inspected_dict.values(), self.points_weights_dict.values()
+            ):
+                weights += (
+                    weight if point_inspector_entity == inspector_entity.name else 0.0
+                )
         else:
-            for point_inspector_entity, weight in zip(self.points_inspected_dict.values(), self.points_weights_dict.values()):
-                weights += weight if point_inspector_entity else 0.
+            for point_inspector_entity, weight in zip(
+                self.points_inspected_dict.values(), self.points_weights_dict.values()
+            ):
+                weights += weight if point_inspector_entity else 0.0
         return weights
 
     def set_sun_angle(self, sun_angle: np.ndarray):

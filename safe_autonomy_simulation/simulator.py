@@ -18,13 +18,16 @@ from pydantic import BaseModel
 
 from safe_autonomy_simulation.base_models import BaseEntity
 
+
 class SimulatorValidator(BaseModel):
     """A configuration validator for the Simulator class"""
+
     frame_rate: float
 
 
 class Simulator(ABC):
     """An abstract simulator class for building new simulations"""
+
     def __init__(self, **kwargs):
         self.config = self.get_sim_validator(**kwargs)
         self._sim_time = 0
@@ -72,7 +75,6 @@ class Simulator(ABC):
         return self._sim_time
 
 
-
 class DiscreteSimulatorValidator(SimulatorValidator):
     entities: typing.Dict[str, BaseEntity]
 
@@ -97,7 +99,9 @@ class DiscreteSimulator(Simulator):
         super().step()
 
     def info(self):
-        entity_states = {entity.name: entity.state for _, entity in self.entities.items()}
+        entity_states = {
+            entity.name: entity.state for _, entity in self.entities.items()
+        }
         return entity_states
 
     @property

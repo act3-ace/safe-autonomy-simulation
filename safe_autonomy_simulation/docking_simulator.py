@@ -15,7 +15,10 @@ using a 3D CWH point mass spacecraft model.
 
 import typing
 
-from safe_autonomy_simulation.simulator import DiscreteSimulator, DiscreteSimulatorValidator
+from safe_autonomy_simulation.simulator import (
+    DiscreteSimulator,
+    DiscreteSimulatorValidator,
+)
 from safe_autonomy_simulation.spacecraft.point_model import CWHSpacecraft
 
 

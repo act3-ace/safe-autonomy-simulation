@@ -3,7 +3,10 @@
 import pytest
 import numpy as np
 from safe_autonomy_simulation.spacecraft.point_model import CWHSpacecraft
-from safe_autonomy_simulation.docking_simulator import DockingSimulator, DockingSimulatorValidator
+from safe_autonomy_simulation.docking_simulator import (
+    DockingSimulator,
+    DockingSimulatorValidator,
+)
 
 
 # TODO: add test for add_control and check entities in reset/step
@@ -20,7 +23,6 @@ def entities():
 
 @pytest.fixture
 def sim(entities):
-
     return DockingSimulator(frame_rate=1, entities=entities)
 
 

@@ -43,10 +43,13 @@ class SunEntityValidator(BaseEntityValidator):
     ValueError
         Improper list lengths for parameter 'theta'
     """
+
     theta: Union[float, pint.Quantity] = 0
 
     # validators
-    _unit_validator_theta = validator('theta', allow_reuse=True)(build_unit_conversion_validator_fn('radians'))
+    _unit_validator_theta = validator("theta", allow_reuse=True)(
+        build_unit_conversion_validator_fn("radians")
+    )
 
 
 class SunEntity(BaseEntity):
@@ -71,12 +74,16 @@ class SunEntity(BaseEntity):
 
     base_units = BaseUnits("meters", "seconds", "radians")
 
-    def __init__(self, n=N_DEFAULT, integration_method="RK45", use_jax: bool = False, **kwargs):
+    def __init__(
+        self, n=N_DEFAULT, integration_method="RK45", use_jax: bool = False, **kwargs
+    ):
         self._state = np.array([])
 
         self.n = n  # rads/s
         """ Create instance of dynamics class """
-        dynamics = SunDynamics(n=n, integration_method=integration_method, use_jax=use_jax)
+        dynamics = SunDynamics(
+            n=n, integration_method=integration_method, use_jax=use_jax
+        )
 
         super().__init__(dynamics, control_default=np.array([]), **kwargs)
 
@@ -141,5 +148,7 @@ class SunDynamics(BaseODESolverDynamics):
 
         super().__init__(**kwargs)
 
-    def _compute_state_dot(self, t: float, state: np.ndarray, control: np.ndarray) -> np.ndarray:
+    def _compute_state_dot(
+        self, t: float, state: np.ndarray, control: np.ndarray
+    ) -> np.ndarray:
         return np.array([self.n])

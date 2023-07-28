@@ -17,7 +17,9 @@ import numpy as np
 from typing import Tuple
 
 
-def generate_cwh_matrices(m: float, n: float, mode: str = '2d') -> Tuple[np.ndarray, np.ndarray]:
+def generate_cwh_matrices(
+    m: float, n: float, mode: str = "2d"
+) -> Tuple[np.ndarray, np.ndarray]:
     """Generates A and B Matrices from Clohessy-Wiltshire linearized dynamics of dx/dt = Ax + Bu
 
     Parameters
@@ -36,21 +38,27 @@ def generate_cwh_matrices(m: float, n: float, mode: str = '2d') -> Tuple[np.ndar
     np.ndarray
         B dynamics matrix
     """
-    assert mode in ['2d', '3d'], "mode must be on of ['2d', '3d']"
-    if mode == '2d':
-        A = np.array([
-            [0, 0, 1, 0],
-            [0, 0, 0, 1],
-            [3 * n**2, 0, 0, 2 * n],
-            [0, 0, -2 * n, 0],
-        ], dtype=np.float64)
+    assert mode in ["2d", "3d"], "mode must be on of ['2d', '3d']"
+    if mode == "2d":
+        A = np.array(
+            [
+                [0, 0, 1, 0],
+                [0, 0, 0, 1],
+                [3 * n**2, 0, 0, 2 * n],
+                [0, 0, -2 * n, 0],
+            ],
+            dtype=np.float64,
+        )
 
-        B = np.array([
-            [0, 0],
-            [0, 0],
-            [1 / m, 0],
-            [0, 1 / m],
-        ], dtype=np.float64)
+        B = np.array(
+            [
+                [0, 0],
+                [0, 0],
+                [1 / m, 0],
+                [0, 1 / m],
+            ],
+            dtype=np.float64,
+        )
     else:
         A = np.array(
             [
@@ -59,18 +67,21 @@ def generate_cwh_matrices(m: float, n: float, mode: str = '2d') -> Tuple[np.ndar
                 [0, 0, 0, 0, 0, 1],
                 [3 * n**2, 0, 0, 0, 2 * n, 0],
                 [0, 0, 0, -2 * n, 0, 0],
-                [0, 0, -n**2, 0, 0, 0],
+                [0, 0, -(n**2), 0, 0, 0],
             ],
-            dtype=np.float64
+            dtype=np.float64,
         )
 
-        B = np.array([
-            [0, 0, 0],
-            [0, 0, 0],
-            [0, 0, 0],
-            [1 / m, 0, 0],
-            [0, 1 / m, 0],
-            [0, 0, 1 / m],
-        ], dtype=np.float64)
+        B = np.array(
+            [
+                [0, 0, 0],
+                [0, 0, 0],
+                [0, 0, 0],
+                [1 / m, 0, 0],
+                [0, 1 / m, 0],
+                [0, 0, 1 / m],
+            ],
+            dtype=np.float64,
+        )
 
     return A, B

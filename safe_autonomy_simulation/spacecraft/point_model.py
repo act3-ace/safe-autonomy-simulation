@@ -57,6 +57,7 @@ class CWHSpacecraftValidator(BaseEntityValidator):
     ValueError
         Improper list lengths for parameters 'x', 'y', 'z', 'x_dot', 'y_dot', 'z_dot'
     """
+
     x: Union[float, pint.Quantity] = 0
     y: Union[float, pint.Quantity] = 0
     z: Union[float, pint.Quantity] = 0
@@ -65,8 +66,12 @@ class CWHSpacecraftValidator(BaseEntityValidator):
     z_dot: Union[float, pint.Quantity] = 0
 
     # validators
-    _unit_validator_position = validator('x', 'y', 'z', allow_reuse=True)(build_unit_conversion_validator_fn('meters'))
-    _unit_validator_velocity = validator('x_dot', 'y_dot', 'z_dot', allow_reuse=True)(build_unit_conversion_validator_fn('meters/second'))
+    _unit_validator_position = validator("x", "y", "z", allow_reuse=True)(
+        build_unit_conversion_validator_fn("meters")
+    )
+    _unit_validator_velocity = validator("x_dot", "y_dot", "z_dot", allow_reuse=True)(
+        build_unit_conversion_validator_fn("meters/second")
+    )
 
 
 class CWHSpacecraft(BaseEntity):
@@ -105,17 +110,36 @@ class CWHSpacecraft(BaseEntity):
 
     base_units = BaseUnits("meters", "seconds", "radians")
 
-    def __init__(self, m=M_DEFAULT, n=N_DEFAULT, trajectory_samples=0, integration_method="RK45", **kwargs):
-        dynamics = CWHDynamics(m=m, n=n, trajectory_samples=trajectory_samples, integration_method=integration_method)
+    def __init__(
+        self,
+        m=M_DEFAULT,
+        n=N_DEFAULT,
+        trajectory_samples=0,
+        integration_method="RK45",
+        **kwargs
+    ):
+        dynamics = CWHDynamics(
+            m=m,
+            n=n,
+            trajectory_samples=trajectory_samples,
+            integration_method=integration_method,
+        )
         self._state = np.array([])
 
         control_map = {
-            'thrust_x': 0,
-            'thrust_y': 1,
-            'thrust_z': 2,
+            "thrust_x": 0,
+            "thrust_y": 1,
+            "thrust_z": 2,
         }
 
-        super().__init__(dynamics, control_default=np.zeros((3, )), control_min=-1, control_max=1, control_map=control_map, **kwargs)
+        super().__init__(
+            dynamics,
+            control_default=np.zeros((3,)),
+            control_min=-1,
+            control_max=1,
+            control_map=control_map,
+            **kwargs
+        )
 
     @classmethod
     def _get_config_validator(cls):
@@ -125,13 +149,21 @@ class CWHSpacecraft(BaseEntity):
         if isinstance(other, CWHSpacecraft):
             eq = (self.velocity == other.velocity).all()
             eq = eq and (self.position == other.position).all()
-            eq = eq and (self.orientation.as_euler("ZYX") == other.orientation.as_euler("ZYX")).all()
+            eq = (
+                eq
+                and (
+                    self.orientation.as_euler("ZYX")
+                    == other.orientation.as_euler("ZYX")
+                ).all()
+            )
             return eq
         return False
 
     def _build_state(self):
         state = np.array(
-            [self.config.x, self.config.y, self.config.z] + [self.config.x_dot, self.config.y_dot, self.config.z_dot], dtype=np.float32
+            [self.config.x, self.config.y, self.config.z]
+            + [self.config.x_dot, self.config.y_dot, self.config.z_dot],
+            dtype=np.float32,
         )
 
         return state
@@ -224,6 +256,6 @@ class CWHDynamics(BaseLinearODESolverDynamics):
         self.m = m  # kg
         self.n = n  # rads/s
 
-        A, B = generate_cwh_matrices(self.m, self.n, '3d')
+        A, B = generate_cwh_matrices(self.m, self.n, "3d")
 
         super().__init__(A=A, B=B, **kwargs)

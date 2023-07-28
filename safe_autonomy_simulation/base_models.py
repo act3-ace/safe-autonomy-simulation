@@ -50,6 +50,7 @@ class BaseEntityValidator(BaseModel):
     name : str
         Name of entity
     """
+
     name: str
 
     class Config:  # pylint: disable=missing-class-docstring
@@ -57,7 +58,9 @@ class BaseEntityValidator(BaseModel):
         extra = Extra.forbid
 
 
-def build_unit_conversion_validator_fn(unit: Union[str, pint.Unit]) -> Callable[[Union[float, pint.Quantity]], float]:
+def build_unit_conversion_validator_fn(
+    unit: Union[str, pint.Unit]
+) -> Callable[[Union[float, pint.Quantity]], float]:
     """
     Builds a function for optionally converting an arbitrary unit
 
@@ -84,10 +87,14 @@ def build_unit_conversion_validator_fn(unit: Union[str, pint.Unit]) -> Callable[
 
 
 class BaseUnits:
-    """Provides unit system definitions for entities
-    """
+    """Provides unit system definitions for entities"""
 
-    def __init__(self, length: Union[str, pint.Unit], time: Union[str, pint.Unit], angle: Union[str, pint.Unit]):
+    def __init__(
+        self,
+        length: Union[str, pint.Unit],
+        time: Union[str, pint.Unit],
+        angle: Union[str, pint.Unit],
+    ):
         self.length: pint.Unit = pint.Unit(length)
         self.time: pint.Unit = pint.Unit(time)
         self.angle: pint.Unit = pint.Unit(angle)
@@ -120,7 +127,9 @@ class BaseControlQueue:
         action = self.controls.get()
 
         if isinstance(action, dict):
-            assert self.control_map is not None, "Cannot use dict-type action without a control_map "
+            assert (
+                self.control_map is not None
+            ), "Cannot use dict-type action without a control_map "
             control = self.control_default.copy()
             for action_name, action_value in action.items():
                 if action_name not in self.control_map:
@@ -134,10 +143,14 @@ class BaseControlQueue:
             control = np.array(action, dtype=np.float32)
         elif isinstance(action, np.ndarray):
             control = action.copy()
-        elif jnp is not None and isinstance(action, jnp.ndarray):  # pylint: disable=used-before-assignment
+        elif jnp is not None and isinstance(
+            action, jnp.ndarray
+        ):  # pylint: disable=used-before-assignment
             control = action.copy()
         else:
-            raise ValueError("action must be type dict, list, np.ndarray or jnp.ndarray")
+            raise ValueError(
+                "action must be type dict, list, np.ndarray or jnp.ndarray"
+            )
 
         return control
 
@@ -165,9 +178,17 @@ class BaseEntity(abc.ABC):
         Allows dictionary action inputs in add_control().
     """
 
-    base_units = BaseUnits('meters', 'seconds', 'radians')
+    base_units = BaseUnits("meters", "seconds", "radians")
 
-    def __init__(self, dynamics, control_default, control_min=-np.inf, control_max=np.inf, control_map=None, **kwargs):
+    def __init__(
+        self,
+        dynamics,
+        control_default,
+        control_min=-np.inf,
+        control_max=np.inf,
+        control_map=None,
+        **kwargs,
+    ):
         self.config = self._get_config_validator()(**kwargs)
         self.name = self.config.name
         self.dynamics = dynamics
@@ -222,8 +243,10 @@ class BaseEntity(abc.ABC):
             control = self.control_queue.next_control()
 
         # enforce control bounds
-        if (np.any(control < self.control_min) or np.any(control > self.control_max)):
-            warnings.warn(f"Control input exceeded limits. Clipping to range ({self.control_min}, {self.control_max})")
+        if np.any(control < self.control_min) or np.any(control > self.control_max):
+            warnings.warn(
+                f"Control input exceeded limits. Clipping to range ({self.control_min}, {self.control_max})"
+            )
         control = np.clip(control, self.control_min, self.control_max)
 
         # compute new state if dynamics were applied
@@ -340,14 +363,22 @@ class BaseRotationEntity(BaseEntity):
         Allows dictionary action inputs in step().
     """
 
-    def __init__(self, dynamics, control_default, control_min=-np.inf, control_max=np.inf, control_map=None, **kwargs):
+    def __init__(
+        self,
+        dynamics,
+        control_default,
+        control_min=-np.inf,
+        control_max=np.inf,
+        control_map=None,
+        **kwargs,
+    ):
         super().__init__(
             dynamics=dynamics,
             control_default=control_default,
             control_min=control_min,
             control_max=control_max,
             control_map=control_map,
-            **kwargs
+            **kwargs,
         )
 
     @property
@@ -422,7 +453,9 @@ class BaseRotationEntity(BaseEntity):
     @property
     def angular_velocity_with_units(self) -> pint.Quantity[np.ndarray]:
         """get 3d angular velocity vector as pint.Quantity with units"""
-        return self.ureg.Quantity(self.angular_velocity, self.base_units.angular_velocity)
+        return self.ureg.Quantity(
+            self.angular_velocity, self.base_units.angular_velocity
+        )
 
 
 class BaseDynamics(abc.ABC):
@@ -465,12 +498,16 @@ class BaseDynamics(abc.ABC):
         self.np: ModuleType
         if use_jax:
             if jax is None:  # pylint: disable=used-before-assignment
-                raise ImportError("Failed to import jax. Make sure to install jax if using the `use_jax` option")
+                raise ImportError(
+                    "Failed to import jax. Make sure to install jax if using the `use_jax` option"
+                )
             self.np = jnp
         else:
             self.np = np
 
-    def step(self, step_size: float, state: np.ndarray, control: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    def step(
+        self, step_size: float, state: np.ndarray, control: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Computes the dynamics state transition from the current state and control input.
 
@@ -497,7 +534,9 @@ class BaseDynamics(abc.ABC):
         if self.angle_wrap_centers is not None:
             needs_wrap = self.np.logical_not(self.np.isnan(self.angle_wrap_centers))
 
-            wrapped_state = ((state + np.pi) % (2 * np.pi)) - np.pi + self.angle_wrap_centers
+            wrapped_state = (
+                ((state + np.pi) % (2 * np.pi)) - np.pi + self.angle_wrap_centers
+            )
 
             output_state = self.np.where(needs_wrap, wrapped_state, state)
         else:
@@ -506,7 +545,9 @@ class BaseDynamics(abc.ABC):
         return output_state
 
     @abc.abstractmethod
-    def _step(self, step_size: float, state: np.ndarray, control: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    def _step(
+        self, step_size: float, state: np.ndarray, control: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray]:
         raise NotImplementedError
 
 
@@ -544,13 +585,15 @@ class BaseODESolverDynamics(BaseDynamics):
         state_dot_min: Union[float, np.ndarray] = -np.inf,
         state_dot_max: Union[float, np.ndarray] = np.inf,
         integration_method="RK45",
-        **kwargs
+        **kwargs,
     ):
         self.integration_method = integration_method
         self.state_dot_min = state_dot_min
         self.state_dot_max = state_dot_max
 
-        assert isinstance(trajectory_samples, int), "trajectory_samples must be an integer"
+        assert isinstance(
+            trajectory_samples, int
+        ), "trajectory_samples must be an integer"
         self.trajectory_samples = trajectory_samples
 
         self.trajectory = None
@@ -558,7 +601,9 @@ class BaseODESolverDynamics(BaseDynamics):
 
         super().__init__(**kwargs)
 
-    def compute_state_dot(self, t: float, state: np.ndarray, control: np.ndarray) -> np.ndarray:
+    def compute_state_dot(
+        self, t: float, state: np.ndarray, control: np.ndarray
+    ) -> np.ndarray:
         """
         Computes the instantaneous time derivative of the state vector
 
@@ -583,7 +628,9 @@ class BaseODESolverDynamics(BaseDynamics):
         return state_dot
 
     @abc.abstractmethod
-    def _compute_state_dot(self, t: float, state: np.ndarray, control: np.ndarray) -> np.ndarray:
+    def _compute_state_dot(
+        self, t: float, state: np.ndarray, control: np.ndarray
+    ) -> np.ndarray:
         raise NotImplementedError
 
     def _clip_state_dot_direct(self, state_dot):
@@ -596,20 +643,28 @@ class BaseODESolverDynamics(BaseDynamics):
         lower_bounded_clipped = self.np.clip(state_dot, 0, np.inf)
         upper_bounded_clipped = self.np.clip(state_dot, -np.inf, 0)
 
-        state_dot = self.np.where(lower_bounded_states, lower_bounded_clipped, state_dot)
-        state_dot = self.np.where(upper_bounded_states, upper_bounded_clipped, state_dot)
+        state_dot = self.np.where(
+            lower_bounded_states, lower_bounded_clipped, state_dot
+        )
+        state_dot = self.np.where(
+            upper_bounded_states, upper_bounded_clipped, state_dot
+        )
 
         return state_dot
 
     def _step(self, step_size, state, control):
-
         if self.integration_method == "RK45":
-
             t_eval = None
             if self.trajectory_samples > 0:
                 t_eval = np.linspace(0, step_size, self.trajectory_samples + 1)[1:]
 
-            sol = scipy.integrate.solve_ivp(self.compute_state_dot, (0, step_size), state, args=(control, ), t_eval=t_eval)
+            sol = scipy.integrate.solve_ivp(
+                self.compute_state_dot,
+                (0, step_size),
+                state,
+                args=(control,),
+                t_eval=t_eval,
+            )
 
             self.trajectory = sol.y.T
             self.trajectory_t = sol.t
@@ -620,15 +675,22 @@ class BaseODESolverDynamics(BaseDynamics):
             if not self.use_jax:
                 raise ValueError("use_jax must be set to True if using RK45_JAX")
 
-            assert self.trajectory_samples <= 0, "trajectory sampling not currently supported with rk45 jax integration"
+            assert (
+                self.trajectory_samples <= 0
+            ), "trajectory sampling not currently supported with rk45 jax integration"
 
             sol = odeint(  # pylint: disable=used-before-assignment
-                self.compute_state_dot_jax, state, jnp.linspace(0., step_size, 11), control
+                self.compute_state_dot_jax,
+                state,
+                jnp.linspace(0.0, step_size, 11),
+                control,
             )
             next_state = sol[-1, :]  # save last timestep of integration solution
             state_dot = self.compute_state_dot(step_size, next_state, control)
         elif self.integration_method == "Euler":
-            assert self.trajectory_samples <= 0, "trajectory sampling not currently supported with euler integration"
+            assert (
+                self.trajectory_samples <= 0
+            ), "trajectory sampling not currently supported with euler integration"
             state_dot = self.compute_state_dot(0, state, control)
             next_state = state + step_size * state_dot
         else:
@@ -637,8 +699,7 @@ class BaseODESolverDynamics(BaseDynamics):
         return next_state, state_dot
 
     def compute_state_dot_jax(self, state, t, control):
-        """Compute state dot for jax odeint
-        """
+        """Compute state dot for jax odeint"""
         return self._compute_state_dot(t, state, control)
 
 
@@ -661,7 +722,10 @@ class BaseControlAffineODESolverDynamics(BaseODESolverDynamics):
         super().__init__(**kwargs)
 
     def _compute_state_dot(self, t: float, state: np.ndarray, control: np.ndarray):
-        state_dot = self.state_transition_system(state) + self.state_transition_input(state) @ control
+        state_dot = (
+            self.state_transition_system(state)
+            + self.state_transition_input(state) @ control
+        )
         return state_dot
 
     @abc.abstractmethod
@@ -720,11 +784,18 @@ class BaseLinearODESolverDynamics(BaseControlAffineODESolverDynamics):
     def __init__(self, A: np.ndarray, B: np.ndarray, **kwargs):
         super().__init__(**kwargs)
 
-        assert len(A.shape) == 2, f"A must be square matrix. Instead got shape {A.shape}"
-        assert len(B.shape) == 2, f"A must be square matrix. Instead got shape {B.shape}"
-        assert A.shape[0] == A.shape[1], f"A must be a square matrix, not dimension {A.shape}"
+        assert (
+            len(A.shape) == 2
+        ), f"A must be square matrix. Instead got shape {A.shape}"
+        assert (
+            len(B.shape) == 2
+        ), f"A must be square matrix. Instead got shape {B.shape}"
+        assert (
+            A.shape[0] == A.shape[1]
+        ), f"A must be a square matrix, not dimension {A.shape}"
         assert A.shape[1] == B.shape[0], (
-            "number of columns in A must match the number of rows in B." + f" However, got shapes {A.shape} for A and {B.shape} for B"
+            "number of columns in A must match the number of rows in B."
+            + f" However, got shapes {A.shape} for A and {B.shape} for B"
         )
 
         self.A = self.np.copy(A)
