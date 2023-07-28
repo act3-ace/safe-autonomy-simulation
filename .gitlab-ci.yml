@@ -7,6 +7,9 @@ variables:
   PIP_INDEX_URL: https://devpi.lion.act3-ace.ai/root/pypi/+simple/
   SRC_DIR: safe_autonomy_simulation
 
+mkdocs:
+  allow_failure: true
+
 build image: 
   variables:
       TARGET_IMAGE: cicd
