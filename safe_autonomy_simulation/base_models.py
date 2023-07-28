@@ -1,7 +1,7 @@
 """
 --------------------------------------------------------------------------
 Air Force Research Laboratory (AFRL) Autonomous Capabilities Team (ACT3)
-Safe Autonomy Dynamics.
+Safe Autonomy Simulation.
 
 This is a US Government Work not subject to copyright protection in the US.
 
