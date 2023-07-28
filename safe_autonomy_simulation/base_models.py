@@ -143,7 +143,7 @@ class BaseControlQueue:
             control = np.array(action, dtype=np.float32)
         elif isinstance(action, np.ndarray):
             control = action.copy()
-        elif jnp is not None and isinstance(
+        elif jnp is not None and isinstance(  # pylint: disable=used-before-assignment
             action, jnp.ndarray
         ):  # pylint: disable=used-before-assignment
             control = action.copy()

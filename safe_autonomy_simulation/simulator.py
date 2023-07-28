@@ -76,13 +76,19 @@ class Simulator(ABC):
 
 
 class DiscreteSimulatorValidator(SimulatorValidator):
+    """A configuration validator for DiscreteSimulator"""
+
     entities: typing.Dict[str, BaseEntity]
 
     class Config:
+        """Allows arbitrary parameter types"""
+
         arbitrary_types_allowed = True
 
 
 class DiscreteSimulator(Simulator):
+    """A class for building discrete simulations."""
+
     @property
     def get_sim_validator(self):
         return DiscreteSimulatorValidator
@@ -113,6 +119,11 @@ class DiscreteSimulator(Simulator):
 
 
 class ControlledDiscreteSimulator(DiscreteSimulator):
+    """
+    A class for building discrete simulations where
+    user controls can be applied at any time step.
+    """
+
     def add_controls(self, control_dict: dict):
         """
         Add controls to the sim entities control queues.

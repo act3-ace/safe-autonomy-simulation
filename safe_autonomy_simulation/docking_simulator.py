@@ -23,13 +23,22 @@ from safe_autonomy_simulation.spacecraft.point_model import CWHSpacecraft
 
 
 class DockingSimulatorValidator(DiscreteSimulatorValidator):
+    """A configuration validator for DockingSimulator"""
+
     entities: typing.Dict[str, CWHSpacecraft]
 
     class Config:
+        """Allows arbitrary parameter types"""
+
         arbitrary_types_allowed = True
 
 
 class DockingSimulator(DiscreteSimulator):
+    """
+    A discrete simulation of spacecraft docking using
+    3D CWH point mass spacecraft models.
+    """
+
     @property
     def get_sim_validator(self):
         return DockingSimulatorValidator

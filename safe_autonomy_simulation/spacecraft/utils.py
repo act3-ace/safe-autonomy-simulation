@@ -12,9 +12,9 @@ limitation or restriction. See accompanying README and LICENSE for details.
 This module contains utility functions for spacecraft models.
 """
 
-import numpy as np
-
 from typing import Tuple
+
+import numpy as np
 
 
 def generate_cwh_matrices(
