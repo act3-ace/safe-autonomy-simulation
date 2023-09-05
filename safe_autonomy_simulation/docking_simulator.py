@@ -16,7 +16,7 @@ using a 3D CWH point mass spacecraft model.
 import typing
 
 from safe_autonomy_simulation.simulator import (
-    DiscreteSimulator,
+    ControlledDiscreteSimulator,
     DiscreteSimulatorValidator,
 )
 from safe_autonomy_simulation.spacecraft.point_model import CWHSpacecraft
@@ -33,7 +33,7 @@ class DockingSimulatorValidator(DiscreteSimulatorValidator):
         arbitrary_types_allowed = True
 
 
-class DockingSimulator(DiscreteSimulator):
+class DockingSimulator(ControlledDiscreteSimulator):
     """
     A discrete simulation of spacecraft docking using
     3D CWH point mass spacecraft models.

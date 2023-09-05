@@ -18,7 +18,7 @@ import typing
 import numpy as np
 
 from safe_autonomy_simulation.simulator import (
-    DiscreteSimulator,
+    ControlledDiscreteSimulator,
     DiscreteSimulatorValidator,
 )
 from safe_autonomy_simulation.spacecraft.sixdof_model import SixDOFSpacecraft
@@ -63,7 +63,7 @@ class InspectionSimulatorValidator(DiscreteSimulatorValidator):
         arbitrary_types_allowed = True
 
 
-class InspectionSimulator(DiscreteSimulator):
+class InspectionSimulator(ControlledDiscreteSimulator):
     """
     Simulator for CWH Inspection Task. Interfaces CWH platforms with underlying CWH entities in inspection simulation.
     """
