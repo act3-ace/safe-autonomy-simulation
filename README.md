@@ -30,7 +30,6 @@ Launch ACE Hub using [this URL](https://hub.ace.act3.ai/environments/0?replicas=
 
 - **[Developer Guide](docs/developer-guide.md)**: detailed guide for contributing to the Safe Autonomy Simulation repository.
 
-
 ## Support
 
 - **[Troubleshooting FAQ](docs/troubleshooting-faq.md)**: consult list of frequently asked questions and their answers.
