@@ -76,6 +76,7 @@ COPY --from=build ${ROOT} ${ROOT}
 # python CI/CD jobs assume a python executable will be in the PATH to run all testing, documentation, etc.
 #########################################################################################
 FROM build as cicd
+WORKDIR /opt/project
 
 RUN chmod +x release.sh
 RUN poetry install --only test,docs,lint
