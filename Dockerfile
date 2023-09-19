@@ -77,4 +77,5 @@ COPY --from=build ${ROOT} ${ROOT}
 #########################################################################################
 FROM build as cicd
 
+chmod +x release.sh
 RUN poetry install --only test,docs,lint
