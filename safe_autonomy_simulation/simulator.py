@@ -14,6 +14,7 @@ This module contains base simulator classes for building new simulations.
 
 import typing
 from abc import ABC, abstractmethod
+
 from pydantic import BaseModel
 
 from safe_autonomy_simulation.base_models import BaseEntity
@@ -105,9 +106,7 @@ class DiscreteSimulator(Simulator):
         super().step()
 
     def info(self):
-        entity_states = {
-            entity.name: entity.state for _, entity in self.entities.items()
-        }
+        entity_states = {entity.name: entity.state for _, entity in self.entities.items()}
         return entity_states
 
     @property

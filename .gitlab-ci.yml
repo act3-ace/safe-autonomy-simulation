@@ -1,35 +1,29 @@
 include:
   - project: devsecops/cicd/pipeline
-    ref: v8.2.19
+    ref: v14.0.11
     file: main.yml
 
 variables:
   PIP_INDEX_URL: https://devpi.lion.act3-ace.ai/root/pypi/+simple/
-  SRC_DIR: safe_autonomy_simulation
+  SRC_DIR: "safe_autonomy_simulation"
 
-mkdocs:
-  allow_failure: true
-
-build image: 
+build image:
   variables:
-      TARGET_IMAGE: cicd
+    TARGET_STAGE: cicd
 
 build tagged image:
-  variables: 
-      TARGET_STAGE: build
-      DESTINATION_PATH: /releases
+  variables:
+    TARGET_STAGE: build
+    DESTINATION_PATH: /releases
 
 build development image:
   extends: build tagged image
-  variables: 
+  variables:
     TARGET_STAGE: develop
     DESTINATION_PATH: /development/$TARGET_STAGE
 
 build package image:
   extends: build tagged image
-  variables: 
+  variables:
     TARGET_STAGE: package
     DESTINATION_PATH: /releases/$TARGET_STAGE
-
-
-

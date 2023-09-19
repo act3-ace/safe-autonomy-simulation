@@ -15,10 +15,9 @@ from __future__ import annotations
 
 import abc
 import warnings
+from queue import SimpleQueue
 from types import ModuleType
 from typing import TYPE_CHECKING, Callable, Tuple, Union
-
-from queue import SimpleQueue
 
 import numpy as np
 import pint
@@ -58,9 +57,7 @@ class BaseEntityValidator(BaseModel):
         extra = Extra.forbid
 
 
-def build_unit_conversion_validator_fn(
-    unit: Union[str, pint.Unit]
-) -> Callable[[Union[float, pint.Quantity]], float]:
+def build_unit_conversion_validator_fn(unit: Union[str, pint.Unit]) -> Callable[[Union[float, pint.Quantity]], float]:
     """
     Builds a function for optionally converting an arbitrary unit
 
@@ -127,9 +124,7 @@ class BaseControlQueue:
         action = self.controls.get()
 
         if isinstance(action, dict):
-            assert (
-                self.control_map is not None
-            ), "Cannot use dict-type action without a control_map "
+            assert (self.control_map is not None), "Cannot use dict-type action without a control_map "
             control = self.control_default.copy()
             for action_name, action_value in action.items():
                 if action_name not in self.control_map:
@@ -148,9 +143,7 @@ class BaseControlQueue:
         ):  # pylint: disable=used-before-assignment
             control = action.copy()
         else:
-            raise ValueError(
-                "action must be type dict, list, np.ndarray or jnp.ndarray"
-            )
+            raise ValueError("action must be type dict, list, np.ndarray or jnp.ndarray")
 
         return control
 
@@ -244,9 +237,7 @@ class BaseEntity(abc.ABC):
 
         # enforce control bounds
         if np.any(control < self.control_min) or np.any(control > self.control_max):
-            warnings.warn(
-                f"Control input exceeded limits. Clipping to range ({self.control_min}, {self.control_max})"
-            )
+            warnings.warn(f"Control input exceeded limits. Clipping to range ({self.control_min}, {self.control_max})")
         control = np.clip(control, self.control_min, self.control_max)
 
         # compute new state if dynamics were applied
@@ -453,9 +444,7 @@ class BaseRotationEntity(BaseEntity):
     @property
     def angular_velocity_with_units(self) -> pint.Quantity[np.ndarray]:
         """get 3d angular velocity vector as pint.Quantity with units"""
-        return self.ureg.Quantity(
-            self.angular_velocity, self.base_units.angular_velocity
-        )
+        return self.ureg.Quantity(self.angular_velocity, self.base_units.angular_velocity)
 
 
 class BaseDynamics(abc.ABC):
@@ -498,16 +487,12 @@ class BaseDynamics(abc.ABC):
         self.np: ModuleType
         if use_jax:
             if jax is None:  # pylint: disable=used-before-assignment
-                raise ImportError(
-                    "Failed to import jax. Make sure to install jax if using the `use_jax` option"
-                )
+                raise ImportError("Failed to import jax. Make sure to install jax if using the `use_jax` option")
             self.np = jnp
         else:
             self.np = np
 
-    def step(
-        self, step_size: float, state: np.ndarray, control: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    def step(self, step_size: float, state: np.ndarray, control: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         """
         Computes the dynamics state transition from the current state and control input.
 
@@ -534,9 +519,7 @@ class BaseDynamics(abc.ABC):
         if self.angle_wrap_centers is not None:
             needs_wrap = self.np.logical_not(self.np.isnan(self.angle_wrap_centers))
 
-            wrapped_state = (
-                ((state + np.pi) % (2 * np.pi)) - np.pi + self.angle_wrap_centers
-            )
+            wrapped_state = (((state + np.pi) % (2 * np.pi)) - np.pi + self.angle_wrap_centers)
 
             output_state = self.np.where(needs_wrap, wrapped_state, state)
         else:
@@ -545,9 +528,7 @@ class BaseDynamics(abc.ABC):
         return output_state
 
     @abc.abstractmethod
-    def _step(
-        self, step_size: float, state: np.ndarray, control: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    def _step(self, step_size: float, state: np.ndarray, control: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         raise NotImplementedError
 
 
@@ -591,9 +572,7 @@ class BaseODESolverDynamics(BaseDynamics):
         self.state_dot_min = state_dot_min
         self.state_dot_max = state_dot_max
 
-        assert isinstance(
-            trajectory_samples, int
-        ), "trajectory_samples must be an integer"
+        assert isinstance(trajectory_samples, int), "trajectory_samples must be an integer"
         self.trajectory_samples = trajectory_samples
 
         self.trajectory = None
@@ -601,9 +580,7 @@ class BaseODESolverDynamics(BaseDynamics):
 
         super().__init__(**kwargs)
 
-    def compute_state_dot(
-        self, t: float, state: np.ndarray, control: np.ndarray
-    ) -> np.ndarray:
+    def compute_state_dot(self, t: float, state: np.ndarray, control: np.ndarray) -> np.ndarray:
         """
         Computes the instantaneous time derivative of the state vector
 
@@ -628,9 +605,7 @@ class BaseODESolverDynamics(BaseDynamics):
         return state_dot
 
     @abc.abstractmethod
-    def _compute_state_dot(
-        self, t: float, state: np.ndarray, control: np.ndarray
-    ) -> np.ndarray:
+    def _compute_state_dot(self, t: float, state: np.ndarray, control: np.ndarray) -> np.ndarray:
         raise NotImplementedError
 
     def _clip_state_dot_direct(self, state_dot):
@@ -643,12 +618,8 @@ class BaseODESolverDynamics(BaseDynamics):
         lower_bounded_clipped = self.np.clip(state_dot, 0, np.inf)
         upper_bounded_clipped = self.np.clip(state_dot, -np.inf, 0)
 
-        state_dot = self.np.where(
-            lower_bounded_states, lower_bounded_clipped, state_dot
-        )
-        state_dot = self.np.where(
-            upper_bounded_states, upper_bounded_clipped, state_dot
-        )
+        state_dot = self.np.where(lower_bounded_states, lower_bounded_clipped, state_dot)
+        state_dot = self.np.where(upper_bounded_states, upper_bounded_clipped, state_dot)
 
         return state_dot
 
@@ -662,7 +633,7 @@ class BaseODESolverDynamics(BaseDynamics):
                 self.compute_state_dot,
                 (0, step_size),
                 state,
-                args=(control,),
+                args=(control, ),
                 t_eval=t_eval,
             )
 
@@ -675,9 +646,7 @@ class BaseODESolverDynamics(BaseDynamics):
             if not self.use_jax:
                 raise ValueError("use_jax must be set to True if using RK45_JAX")
 
-            assert (
-                self.trajectory_samples <= 0
-            ), "trajectory sampling not currently supported with rk45 jax integration"
+            assert (self.trajectory_samples <= 0), "trajectory sampling not currently supported with rk45 jax integration"
 
             sol = odeint(  # pylint: disable=used-before-assignment
                 self.compute_state_dot_jax,
@@ -688,9 +657,7 @@ class BaseODESolverDynamics(BaseDynamics):
             next_state = sol[-1, :]  # save last timestep of integration solution
             state_dot = self.compute_state_dot(step_size, next_state, control)
         elif self.integration_method == "Euler":
-            assert (
-                self.trajectory_samples <= 0
-            ), "trajectory sampling not currently supported with euler integration"
+            assert (self.trajectory_samples <= 0), "trajectory sampling not currently supported with euler integration"
             state_dot = self.compute_state_dot(0, state, control)
             next_state = state + step_size * state_dot
         else:
@@ -722,10 +689,7 @@ class BaseControlAffineODESolverDynamics(BaseODESolverDynamics):
         super().__init__(**kwargs)
 
     def _compute_state_dot(self, t: float, state: np.ndarray, control: np.ndarray):
-        state_dot = (
-            self.state_transition_system(state)
-            + self.state_transition_input(state) @ control
-        )
+        state_dot = (self.state_transition_system(state) + self.state_transition_input(state) @ control)
         return state_dot
 
     @abc.abstractmethod
@@ -784,18 +748,11 @@ class BaseLinearODESolverDynamics(BaseControlAffineODESolverDynamics):
     def __init__(self, A: np.ndarray, B: np.ndarray, **kwargs):
         super().__init__(**kwargs)
 
-        assert (
-            len(A.shape) == 2
-        ), f"A must be square matrix. Instead got shape {A.shape}"
-        assert (
-            len(B.shape) == 2
-        ), f"A must be square matrix. Instead got shape {B.shape}"
-        assert (
-            A.shape[0] == A.shape[1]
-        ), f"A must be a square matrix, not dimension {A.shape}"
+        assert (len(A.shape) == 2), f"A must be square matrix. Instead got shape {A.shape}"
+        assert (len(B.shape) == 2), f"A must be square matrix. Instead got shape {B.shape}"
+        assert (A.shape[0] == A.shape[1]), f"A must be a square matrix, not dimension {A.shape}"
         assert A.shape[1] == B.shape[0], (
-            "number of columns in A must match the number of rows in B."
-            + f" However, got shapes {A.shape} for A and {B.shape} for B"
+            "number of columns in A must match the number of rows in B." + f" However, got shapes {A.shape} for A and {B.shape} for B"
         )
 
         self.A = self.np.copy(A)

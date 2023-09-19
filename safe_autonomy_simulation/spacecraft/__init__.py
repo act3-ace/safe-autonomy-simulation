@@ -13,11 +13,5 @@ This package implements spacecraft models for use in discrete space
 simulations.
 """
 
-from safe_autonomy_simulation.spacecraft.point_model import (
-    CWHSpacecraft,
-    CWHSpacecraftValidator,
-)
-from safe_autonomy_simulation.spacecraft.sixdof_model import (
-    SixDOFSpacecraft,
-    SixDOFSpacecraftValidator,
-)
+from safe_autonomy_simulation.spacecraft.point_model import CWHSpacecraft, CWHSpacecraftValidator
+from safe_autonomy_simulation.spacecraft.sixdof_model import SixDOFSpacecraft, SixDOFSpacecraftValidator

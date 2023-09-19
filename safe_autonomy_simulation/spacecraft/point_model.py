@@ -20,7 +20,6 @@ import pint
 from pydantic import validator
 from scipy.spatial.transform import Rotation
 
-from safe_autonomy_simulation.spacecraft.utils import generate_cwh_matrices
 from safe_autonomy_simulation.base_models import (
     BaseEntity,
     BaseEntityValidator,
@@ -28,6 +27,7 @@ from safe_autonomy_simulation.base_models import (
     BaseUnits,
     build_unit_conversion_validator_fn,
 )
+from safe_autonomy_simulation.spacecraft.utils import generate_cwh_matrices
 
 M_DEFAULT = 12
 N_DEFAULT = 0.001027
@@ -66,12 +66,8 @@ class CWHSpacecraftValidator(BaseEntityValidator):
     z_dot: Union[float, pint.Quantity] = 0
 
     # validators
-    _unit_validator_position = validator("x", "y", "z", allow_reuse=True)(
-        build_unit_conversion_validator_fn("meters")
-    )
-    _unit_validator_velocity = validator("x_dot", "y_dot", "z_dot", allow_reuse=True)(
-        build_unit_conversion_validator_fn("meters/second")
-    )
+    _unit_validator_position = validator("x", "y", "z", allow_reuse=True)(build_unit_conversion_validator_fn("meters"))
+    _unit_validator_velocity = validator("x_dot", "y_dot", "z_dot", allow_reuse=True)(build_unit_conversion_validator_fn("meters/second"))
 
 
 class CWHSpacecraft(BaseEntity):
@@ -110,14 +106,7 @@ class CWHSpacecraft(BaseEntity):
 
     base_units = BaseUnits("meters", "seconds", "radians")
 
-    def __init__(
-        self,
-        m=M_DEFAULT,
-        n=N_DEFAULT,
-        trajectory_samples=0,
-        integration_method="RK45",
-        **kwargs
-    ):
+    def __init__(self, m=M_DEFAULT, n=N_DEFAULT, trajectory_samples=0, integration_method="RK45", **kwargs):
         dynamics = CWHDynamics(
             m=m,
             n=n,
@@ -132,14 +121,7 @@ class CWHSpacecraft(BaseEntity):
             "thrust_z": 2,
         }
 
-        super().__init__(
-            dynamics,
-            control_default=np.zeros((3,)),
-            control_min=-1,
-            control_max=1,
-            control_map=control_map,
-            **kwargs
-        )
+        super().__init__(dynamics, control_default=np.zeros((3, )), control_min=-1, control_max=1, control_map=control_map, **kwargs)
 
     @classmethod
     def _get_config_validator(cls):
@@ -149,20 +131,13 @@ class CWHSpacecraft(BaseEntity):
         if isinstance(other, CWHSpacecraft):
             eq = (self.velocity == other.velocity).all()
             eq = eq and (self.position == other.position).all()
-            eq = (
-                eq
-                and (
-                    self.orientation.as_euler("ZYX")
-                    == other.orientation.as_euler("ZYX")
-                ).all()
-            )
+            eq = (eq and (self.orientation.as_euler("ZYX") == other.orientation.as_euler("ZYX")).all())
             return eq
         return False
 
     def _build_state(self):
         state = np.array(
-            [self.config.x, self.config.y, self.config.z]
-            + [self.config.x_dot, self.config.y_dot, self.config.z_dot],
+            [self.config.x, self.config.y, self.config.z] + [self.config.x_dot, self.config.y_dot, self.config.z_dot],
             dtype=np.float32,
         )
 

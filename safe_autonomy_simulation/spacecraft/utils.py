@@ -17,9 +17,7 @@ from typing import Tuple
 import numpy as np
 
 
-def generate_cwh_matrices(
-    m: float, n: float, mode: str = "2d"
-) -> Tuple[np.ndarray, np.ndarray]:
+def generate_cwh_matrices(m: float, n: float, mode: str = "2d") -> Tuple[np.ndarray, np.ndarray]:
     """Generates A and B Matrices from Clohessy-Wiltshire linearized dynamics of dx/dt = Ax + Bu
 
     Parameters

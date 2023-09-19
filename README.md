@@ -20,9 +20,11 @@ The documentation for Safe Autonomy Simulation is organized as follows:
 <!--Modify the description above, as needed, based on the product and what sections are actually in the doc -->
 - **[User Guide](docs/user-guide.md)**: provides a conceptual overview of Safe Autonomy Simulation by explaining key concepts. This doc also helps users understand the benefits, usage, and best practices for working with Safe Autonomy Simulation.
 
-## ACE-Hub
+## ACE Hub
 
-Lunch ACE-hub using this [URL](https://hub.lion.act3-ace.ai/environments/0?replicas=1&image=:latest&hubName='safe-autonomy-simulation'&proxyType=normal&resources[cpu]=1&resources[memory]=1Gi&shm=64Mi)(or without VPN use [this](https://hub.ace.act3.ai/environments/0?replicas=1&image=:latest&hubName='safe-autonomy-simulation'&proxyType=normal&resources[cpu]=1&resources[memory]=1Gi&shm=64Mi).
+Launch ACE Hub using [this URL](https://hub.ace.act3.ai/environments/0?replicas=1&image=:latest&hubName='safe-autonomy-simulation'&proxyType=normal&resources\[cpu\]=1&resources\[memory\]=1Gi&shm=64Mi) (no VPN)
+
+> [VPN URL](https://hub.lion.act3-ace.ai/environments/0?replicas=1&image=:latest&hubName='safe-autonomy-simulation'&proxyType=normal&resources\[cpu\]=1&resources\[memory\]=1Gi&shm=64Mi)
 
 ## How to Contribute
 

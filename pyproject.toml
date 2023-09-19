@@ -21,13 +21,13 @@ packages = [
     ]
 
 [tool.poetry.dependencies]
-python = "~3.10"
+python = ">=3.9,<3.13"
 MarkupSafe = "^2.1.1"
 Werkzeug = "^2.2.2"
 Flask = "^2.2.2"
 itsdangerous = "^2.1.2"
 numpy = "^1.23.5"
-build = "^0.9.0"
+build = "^0.10.0"
 pydantic = "^1.10.9"
 pint = "^0.22"
 jax = "^0.4.13"
@@ -37,7 +37,7 @@ scikit-learn = "^1.3.0"
 [tool.poetry.group.lint.dependencies]
 pylint = "2.15.4"
 flake8 = "3.9.2"
-yapf = "^0.32.0"
+yapf = "^0.40.0"
 mypy = "0.930"
 isort = "5.9.3"
 bashate = "^2.1.0"
@@ -49,26 +49,29 @@ detect-secrets = "1.1.0"
 pytest = "^7.1.2"
 pytest-cov = "2.11.1"
 pyinstrument = "^4.3.0"
+twine = "^4.0.2"
+coverage-badge = "^1.1.0"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.3.1"
 mkdocs-git-revision-date-localized-plugin = "^1.1.0"
-mkdocs-macros-plugin = "^0.7.0"
+mkdocs-macros-plugin = "^1.0.0"
 mkdocs-material = "^8.4.2"
 mkdocs-material-extensions = "^1.0.3"
 mkdocs-mermaid-plugin = "^0.1.1"
 mkdocs-pdf-export-plugin = "^0.5.10"
 mktheapidocs = {extras = ["plugin"], version = "^0.3.1"}
 mkdocstrings = "0.18.0"
-mkdocs-autorefs = "^0.4.1"
+mkdocs-autorefs = "^0.5.0"
 mkdocs-coverage = "^0.2.5"
-mkdocs-gen-files = "^0.4.0"
+mkdocs-gen-files = "^0.5.0"
 mkdocs-literate-nav = "^0.4.1"
 mkdocs-section-index = "^0.3.4"
 mkdocs-with-pdf = "^0.9.3"
 papermill = "^2.4.0"
 Pillow = "^9.2.0"
 pymdown-extensions = "^9.5"
+inari = {extras = ["mkdocs"], version = "^0.2.1"}
 
 [build-system]
 requires = ["poetry-core"]

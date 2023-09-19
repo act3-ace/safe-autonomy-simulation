@@ -17,9 +17,7 @@ from typing import Tuple, Union
 import numpy as np
 
 
-def number_list_to_np(
-    input_val: Union[float, int, list, np.ndarray], shape: Tuple[int], dtype=np.float64
-):
+def number_list_to_np(input_val: Union[float, int, list, np.ndarray], shape: Tuple[int], dtype=np.float64):
     """
     Converts dynamic number, list or np.ndarray to a np.ndarray of a particular shape a dtype
     If np.ndarray is passed, performs shape and dtype checking
@@ -45,15 +43,9 @@ def number_list_to_np(
     elif isinstance(input_val, (float, int)):
         output = float(input_val) * np.ones(shape, dtype=dtype)
     else:
-        raise TypeError(
-            f"input_val is type {type(input_val)}, must be Number, list, or np.ndarray"
-        )
+        raise TypeError(f"input_val is type {type(input_val)}, must be Number, list, or np.ndarray")
 
-    assert (
-        output.shape == shape
-    ), f"input_val is of shape {output.shape} instead of {shape}"
-    assert (
-        output.dtype == dtype
-    ), f"input_val dtype of type {output.dtype} instead of {dtype}"
+    assert (output.shape == shape), f"input_val is of shape {output.shape} instead of {shape}"
+    assert (output.dtype == dtype), f"input_val dtype of type {output.dtype} instead of {dtype}"
 
     return output
