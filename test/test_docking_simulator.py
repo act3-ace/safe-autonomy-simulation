@@ -1,13 +1,10 @@
 """Unit tests for simulator.py"""
 
-import pytest
 import numpy as np
-from safe_autonomy_simulation.spacecraft.point_model import CWHSpacecraft
-from safe_autonomy_simulation.docking_simulator import (
-    DockingSimulator,
-    DockingSimulatorValidator,
-)
+import pytest
 
+from safe_autonomy_simulation.docking_simulator import DockingSimulator, DockingSimulatorValidator
+from safe_autonomy_simulation.spacecraft.point_model import CWHSpacecraft
 
 # TODO: add test for add_control and check entities in reset/step
 

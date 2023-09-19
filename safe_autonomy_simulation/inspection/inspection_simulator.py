@@ -17,18 +17,12 @@ import typing
 
 import numpy as np
 
-from safe_autonomy_simulation.simulator import (
-    ControlledDiscreteSimulator,
-    DiscreteSimulatorValidator,
-)
-from safe_autonomy_simulation.spacecraft.sixdof_model import SixDOFSpacecraft
-from safe_autonomy_simulation.spacecraft.point_model import CWHSpacecraft
-from safe_autonomy_simulation.inspection.sun_model import SunEntity
 from safe_autonomy_simulation.inspection.illumination import IlluminationParams
-from safe_autonomy_simulation.inspection.inspection_points import (
-    InspectionPoints,
-    InspectionPointsValidator,
-)
+from safe_autonomy_simulation.inspection.inspection_points import InspectionPoints, InspectionPointsValidator
+from safe_autonomy_simulation.inspection.sun_model import SunEntity
+from safe_autonomy_simulation.simulator import ControlledDiscreteSimulator, DiscreteSimulatorValidator
+from safe_autonomy_simulation.spacecraft.point_model import CWHSpacecraft
+from safe_autonomy_simulation.spacecraft.sixdof_model import SixDOFSpacecraft
 
 
 class InspectionSimulatorValidator(DiscreteSimulatorValidator):
@@ -77,10 +71,7 @@ class InspectionSimulator(ControlledDiscreteSimulator):
         self.inspection_points_map = {}
         self.sun_angle = 0.0
         self.priority_vector = np.zeros(3)
-        self.inspectors = {
-            inspector_name: self.entities[inspector_name]
-            for inspector_name in self.config.inspectors
-        }
+        self.inspectors = {inspector_name: self.entities[inspector_name] for inspector_name in self.config.inspectors}
 
     def create_inspection_points_map(self):
         """
@@ -126,16 +117,10 @@ class InspectionSimulator(ControlledDiscreteSimulator):
 
         self._update_inspection_points_statuses()
 
-    def _get_initial_priority_vector(
-        self, priority_vec_azimuth, priority_vec_elevation
-    ):
+    def _get_initial_priority_vector(self, priority_vec_azimuth, priority_vec_elevation):
         """Get the initial priority vector for weighting points"""
-        self.priority_vector[0] = np.cos(priority_vec_azimuth) * np.cos(
-            priority_vec_elevation
-        )
-        self.priority_vector[1] = np.sin(priority_vec_azimuth) * np.cos(
-            priority_vec_elevation
-        )
+        self.priority_vector[0] = np.cos(priority_vec_azimuth) * np.cos(priority_vec_elevation)
+        self.priority_vector[1] = np.sin(priority_vec_azimuth) * np.cos(priority_vec_elevation)
         self.priority_vector[2] = np.sin(priority_vec_elevation)
 
     def step(self):

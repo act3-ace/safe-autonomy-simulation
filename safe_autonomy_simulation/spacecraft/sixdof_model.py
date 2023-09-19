@@ -31,9 +31,7 @@ from safe_autonomy_simulation.spacecraft.utils import generate_cwh_matrices
 from safe_autonomy_simulation.utils import number_list_to_np
 
 M_DEFAULT = 12
-INERTIA_MATRIX_DEFAULT = np.matrix(
-    [[0.0573, 0.0, 0.0], [0.0, 0.0573, 0.0], [0.0, 0.0, 0.0573]]
-)
+INERTIA_MATRIX_DEFAULT = np.matrix([[0.0573, 0.0, 0.0], [0.0, 0.0573, 0.0], [0.0, 0.0, 0.0573]])
 INERTIA_WHEEL_DEFAULT = 4.1e-5
 ANG_ACC_LIMIT_DEFAULT = 0.017453
 ANG_VEL_LIMIT_DEFAULT = 0.034907
@@ -98,15 +96,9 @@ class SixDOFSpacecraftValidator(BaseEntityValidator):
     wz: Union[float, pint.Quantity] = 0
 
     # validators
-    _unit_validator_position = validator("x", "y", "z", allow_reuse=True)(
-        build_unit_conversion_validator_fn("meters")
-    )
-    _unit_validator_velocity = validator("x_dot", "y_dot", "z_dot", allow_reuse=True)(
-        build_unit_conversion_validator_fn("meters/second")
-    )
-    _unit_validator_wz = validator("wx", "wy", "wz", allow_reuse=True)(
-        build_unit_conversion_validator_fn("radians/second")
-    )
+    _unit_validator_position = validator("x", "y", "z", allow_reuse=True)(build_unit_conversion_validator_fn("meters"))
+    _unit_validator_velocity = validator("x_dot", "y_dot", "z_dot", allow_reuse=True)(build_unit_conversion_validator_fn("meters/second"))
+    _unit_validator_wz = validator("wx", "wy", "wz", allow_reuse=True)(build_unit_conversion_validator_fn("radians/second"))
 
 
 class SixDOFSpacecraft(BaseRotationEntity):  # pylint: disable=too-many-public-methods
@@ -187,23 +179,19 @@ class SixDOFSpacecraft(BaseRotationEntity):  # pylint: disable=too-many-public-m
         self._state = np.array([])
 
         # Define limits for angular acceleration, angular velocity, and control inputs
-        ang_acc_limit = number_list_to_np(ang_acc_limit, shape=(3,))  # rad/s^2
-        ang_vel_limit = number_list_to_np(ang_vel_limit, shape=(3,))  # rad/s
+        ang_acc_limit = number_list_to_np(ang_acc_limit, shape=(3, ))  # rad/s^2
+        ang_vel_limit = number_list_to_np(ang_vel_limit, shape=(3, ))  # rad/s
 
-        acc_limit_combined = np.zeros((3,))
-        vel_limit_combined = np.zeros((3,))
-        control_limit = np.zeros((6,))
+        acc_limit_combined = np.zeros((3, ))
+        vel_limit_combined = np.zeros((3, ))
+        control_limit = np.zeros((6, ))
         for i in range(3):
-            acc_limit_combined[i] = min(
-                ang_acc_limit[i], inertia_wheel * acc_limit_wheel / inertia_matrix[i, i]
-            )
-            vel_limit_combined[i] = min(
-                ang_vel_limit[i], inertia_wheel * vel_limit_wheel / inertia_matrix[i, i]
-            )
+            acc_limit_combined[i] = min(ang_acc_limit[i], inertia_wheel * acc_limit_wheel / inertia_matrix[i, i])
+            vel_limit_combined[i] = min(ang_vel_limit[i], inertia_wheel * vel_limit_wheel / inertia_matrix[i, i])
             control_limit[i] = thrust_control_limit
             control_limit[i + 3] = acc_limit_combined[i] * inertia_matrix[i, i]
 
-        control_default = np.zeros((6,))
+        control_default = np.zeros((6, ))
         control_min = -1 * control_limit
         control_max = control_limit
         control_map = {
@@ -267,10 +255,8 @@ class SixDOFSpacecraft(BaseRotationEntity):  # pylint: disable=too-many-public-m
     def _build_state(self):
         """form state vector"""
         state = np.array(
-            [self.config.x, self.config.y, self.config.z]
-            + [self.config.q1, self.config.q2, self.config.q3, self.config.q4]
-            + [self.config.x_dot, self.config.y_dot, self.config.z_dot]
-            + [self.config.wx, self.config.wy, self.config.wz],
+            [self.config.x, self.config.y, self.config.z] + [self.config.q1, self.config.q2, self.config.q3, self.config.q4] +
+            [self.config.x_dot, self.config.y_dot, self.config.z_dot] + [self.config.wx, self.config.wy, self.config.wz],
             dtype=np.float32,
         )
 
@@ -430,27 +416,18 @@ class SixDOFDynamics(BaseControlAffineODESolverDynamics):
         self.inertia_matrix = inertia_matrix  # kg*m^2
         self.n = n  # rads/s
         self.body_frame_thrust = body_frame_thrust
-        self.control_thrust_Hill = np.zeros(
-            3,
-        )
+        self.control_thrust_Hill = np.zeros(3, )
 
-        ang_acc_limit = number_list_to_np(ang_acc_limit, shape=(3,))  # rad/s^2
-        ang_vel_limit = number_list_to_np(ang_vel_limit, shape=(3,))  # rad/s
+        ang_acc_limit = number_list_to_np(ang_acc_limit, shape=(3, ))  # rad/s^2
+        ang_vel_limit = number_list_to_np(ang_vel_limit, shape=(3, ))  # rad/s
 
         A, B = generate_cwh_matrices(self.m, self.n, "3d")
 
-        assert (
-            len(A.shape) == 2
-        ), f"A must be square matrix. Instead got shape {A.shape}"
-        assert (
-            len(B.shape) == 2
-        ), f"A must be square matrix. Instead got shape {B.shape}"
-        assert (
-            A.shape[0] == A.shape[1]
-        ), f"A must be a square matrix, not dimension {A.shape}"
+        assert (len(A.shape) == 2), f"A must be square matrix. Instead got shape {A.shape}"
+        assert (len(B.shape) == 2), f"A must be square matrix. Instead got shape {B.shape}"
+        assert (A.shape[0] == A.shape[1]), f"A must be a square matrix, not dimension {A.shape}"
         assert A.shape[1] == B.shape[0], (
-            "number of columns in A must match the number of rows in B."
-            + f" However, got shapes {A.shape} for A and {B.shape} for B"
+            "number of columns in A must match the number of rows in B." + f" However, got shapes {A.shape} for A and {B.shape} for B"
         )
 
         self.A = np.copy(A)
@@ -509,27 +486,15 @@ class SixDOFDynamics(BaseControlAffineODESolverDynamics):
         pos_vel_derivative = self.A @ pos_vel_state_vec
 
         # Compute rotational derivatives
-        q_derivative = np.zeros((4,))
-        w_derivative = np.zeros((3,))
+        q_derivative = np.zeros((4, ))
+        w_derivative = np.zeros((3, ))
         q_derivative[0] = 0.5 * (q4 * wx - q3 * wy + q2 * wz)
         q_derivative[1] = 0.5 * (q3 * wx + q4 * wy - q1 * wz)
         q_derivative[2] = 0.5 * (-q2 * wx + q1 * wy + q4 * wz)
         q_derivative[3] = 0.5 * (-q1 * wx - q2 * wy - q3 * wz)
-        w_derivative[0] = (
-            1
-            / self.inertia_matrix[0, 0]
-            * ((self.inertia_matrix[1, 1] - self.inertia_matrix[2, 2]) * wy * wz)
-        )
-        w_derivative[1] = (
-            1
-            / self.inertia_matrix[1, 1]
-            * ((self.inertia_matrix[2, 2] - self.inertia_matrix[0, 0]) * wx * wz)
-        )
-        w_derivative[2] = (
-            1
-            / self.inertia_matrix[2, 2]
-            * ((self.inertia_matrix[0, 0] - self.inertia_matrix[1, 1]) * wx * wy)
-        )
+        w_derivative[0] = (1 / self.inertia_matrix[0, 0] * ((self.inertia_matrix[1, 1] - self.inertia_matrix[2, 2]) * wy * wz))
+        w_derivative[1] = (1 / self.inertia_matrix[1, 1] * ((self.inertia_matrix[2, 2] - self.inertia_matrix[0, 0]) * wx * wz))
+        w_derivative[2] = (1 / self.inertia_matrix[2, 2] * ((self.inertia_matrix[0, 0] - self.inertia_matrix[1, 1]) * wx * wy))
 
         # Form derivative array
         state_derivative = np.array(
@@ -568,9 +533,7 @@ class SixDOFDynamics(BaseControlAffineODESolverDynamics):
             r1 = 1 / self.m * self.apply_quat(np.array([1, 0, 0]), quat)
             r2 = 1 / self.m * self.apply_quat(np.array([0, 1, 0]), quat)
             r3 = 1 / self.m * self.apply_quat(np.array([0, 0, 1]), quat)
-            vel_derivative = np.array(
-                [[r1[0], r2[0], r3[0]], [r1[1], r2[1], r3[1]], [r1[2], r2[2], r3[2]]]
-            )
+            vel_derivative = np.array([[r1[0], r2[0], r3[0]], [r1[1], r2[1], r3[1]], [r1[2], r2[2], r3[2]]])
         else:
             vel_derivative = self.B[3:6, :]
 

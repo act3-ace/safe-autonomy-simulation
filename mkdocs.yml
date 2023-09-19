@@ -1,6 +1,6 @@
-site_name: Safe-Autonomy-Simulation
+site_name: Safe Autonomy Simulation
 site_author: ACT3
-repo_url: 
+repo_url: https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation
 
 plugins:
   - search
@@ -18,9 +18,11 @@ markdown_extensions:
 
 nav:
   - "Getting Started": index.md
-  - "Safe_autonomy_simulation":
-    - safe_autonomy_simulation/hello_world.md
-    - safe_autonomy_simulation/numpy_example.md
+  - "Safe Autonomy Simulation":
+    - safe_autonomy_simulation/base_models-py.md
+    - safe_autonomy_simulation/simulator-py.md
+    - safe_autonomy_simulation/docking/simulator-py.md
+    - safe_autonomy_simulation/docking/point_model-py.md
 
 theme: readthedocs
 

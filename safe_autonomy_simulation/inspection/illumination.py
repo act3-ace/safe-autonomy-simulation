@@ -16,13 +16,11 @@ import math
 from csv import writer
 
 import numpy as np
-
 from pydantic import BaseModel
 
 ### For future rendering feature ###
 # import matplotlib.pyplot as plt
 # from matplotlib.patches import Circle
-
 
 ########################################################## ILLUMINATION ##########################################################
 
@@ -124,9 +122,7 @@ def check_illum(point, sun_angle, r_avg, radius):
     sun_position = [r_avg * (math.cos(sun_angle)), -r_avg * (math.sin(sun_angle)), 0]
     intersection_to_light = normalize(sun_position - shifted_point)
 
-    intersect_var = sphere_intersect(
-        center, radius, shifted_point, intersection_to_light
-    )
+    intersect_var = sphere_intersect(center, radius, shifted_point, intersection_to_light)
 
     bool_val = False
     # No intersection means that the point in question is illuminated in some capacity
@@ -198,9 +194,7 @@ def evaluate_RGB(RGB):
     return RGB_bool
 
 
-def compute_illum_pt(
-    point, sun_angle, deputy_position, r_avg, radius, chief_properties, light_properties
-):
+def compute_illum_pt(point, sun_angle, deputy_position, r_avg, radius, chief_properties, light_properties):
     """
     Receive a candidate point as an input
     Receive sun position as an input
@@ -213,9 +207,7 @@ def compute_illum_pt(
     shifted_point = point + 1e-5 * normal_to_surface
     sun_position = [r_avg * (math.cos(sun_angle)), -r_avg * (math.sin(sun_angle)), 0]
     intersection_to_light = normalize(sun_position - shifted_point)
-    intersect_var = sphere_intersect(
-        center, radius, shifted_point, intersection_to_light
-    )
+    intersect_var = sphere_intersect(center, radius, shifted_point, intersection_to_light)
 
     illumination = np.zeros((3))
     # No intersection means that the point in question is illuminated in some capacity
@@ -223,20 +215,16 @@ def compute_illum_pt(
     if intersect_var is None:
         # Blinn-Phong Illumination Model
         # https://en.wikipedia.org/wiki/Blinn%E2%80%93Phong_reflection_model
-        illumination += np.array(chief_properties["ambient"]) * np.array(
-            light_properties["ambient"]
-        )
+        illumination += np.array(chief_properties["ambient"]) * np.array(light_properties["ambient"])
         illumination += (
-            np.array(chief_properties["diffuse"])
-            * np.array(light_properties["diffuse"])
-            * np.dot(intersection_to_light, normal_to_surface)
+            np.array(chief_properties["diffuse"]) * np.array(light_properties["diffuse"]) *
+            np.dot(intersection_to_light, normal_to_surface)
         )
         intersection_to_camera = normalize(deputy_position - point)
         H = normalize(intersection_to_light + intersection_to_camera)
         illumination += (
-            np.array(chief_properties["specular"])
-            * np.array(light_properties["specular"])
-            * np.dot(normal_to_surface, H) ** (chief_properties["shininess"] / 4)
+            np.array(chief_properties["specular"]) * np.array(light_properties["specular"]) *
+            np.dot(normal_to_surface, H)**(chief_properties["shininess"] / 4)
         )
         illumination = np.clip(illumination, 0, 1)
     return illumination
@@ -264,10 +252,7 @@ def compute_illum(
     # There are an infinite number of vectors normal to sensor_dir -- choose one
     x = -1
     y = 1
-    z = (
-        -(image_plane_position[0] * x + image_plane_position[1] * y)
-        / image_plane_position[2]
-    )
+    z = (-(image_plane_position[0] * x + image_plane_position[1] * y) / image_plane_position[2])
     norm1 = normalize([x, y, z])
 
     # np.cross bug work-around https://github.com/microsoft/pylance-release/issues/3277
@@ -289,45 +274,32 @@ def compute_illum(
             illumination = np.zeros((3))
             # Convert to CWH coordinates
             pixel_location = (
-                image_plane_position
-                + ((norm2_range / 2) - (i * step_norm2)) * (norm2)
-                + (-(norm1_range / 2) + (j * step_norm1)) * (norm1)
+                image_plane_position + ((norm2_range / 2) - (i * step_norm2)) * (norm2) + (-(norm1_range / 2) + (j * step_norm1)) * (norm1)
             )
             ray_direction = normalize(pixel_location - deputy_position)
-            dist_2_intersect = sphere_intersect(
-                chief_position, radius, deputy_position, ray_direction
-            )
+            dist_2_intersect = sphere_intersect(chief_position, radius, deputy_position, ray_direction)
             # Light ray hits sphere, so we continue - else get next pixel
             if dist_2_intersect is not None:
                 intersection_point = deputy_position + dist_2_intersect * ray_direction
                 normal_to_surface = normalize(intersection_point - chief_position)
                 shifted_point = intersection_point + 1e-5 * normal_to_surface
                 intersection_to_light = normalize(sun_position - shifted_point)
-                intersect_var = sphere_intersect(
-                    chief_position, radius, shifted_point, intersection_to_light
-                )
+                intersect_var = sphere_intersect(chief_position, radius, shifted_point, intersection_to_light)
                 # If the shifted point doesn't intersect with the chief on the way to the light, it is unobstructed
                 if intersect_var is None:
                     # Blinn-Phong Illumination Model
                     # https://en.wikipedia.org/wiki/Blinn%E2%80%93Phong_reflection_model
 
-                    illumination += np.array(chief_properties["ambient"]) * np.array(
-                        light_properties["ambient"]
-                    )
+                    illumination += np.array(chief_properties["ambient"]) * np.array(light_properties["ambient"])
                     illumination += (
-                        np.array(chief_properties["diffuse"])
-                        * np.array(light_properties["diffuse"])
-                        * np.dot(intersection_to_light, normal_to_surface)
+                        np.array(chief_properties["diffuse"]) * np.array(light_properties["diffuse"]) *
+                        np.dot(intersection_to_light, normal_to_surface)
                     )
-                    intersection_to_camera = normalize(
-                        deputy_position - intersection_point
-                    )
+                    intersection_to_camera = normalize(deputy_position - intersection_point)
                     H = normalize(intersection_to_light + intersection_to_camera)
                     illumination += (
-                        np.array(chief_properties["specular"])
-                        * np.array(light_properties["specular"])
-                        * np.dot(normal_to_surface, H)
-                        ** (chief_properties["shininess"] / 4)
+                        np.array(chief_properties["specular"]) * np.array(light_properties["specular"]) *
+                        np.dot(normal_to_surface, H)**(chief_properties["shininess"] / 4)
                     )
                 # Shadowed
                 else:
@@ -349,7 +321,7 @@ def sphere_intersect(center, radius, ray_origin, ray_direction):
     Returns None upon no intersection
     """
     b = 2 * np.dot(ray_direction, ray_origin - center)
-    c = np.linalg.norm(ray_origin - center) ** 2 - radius**2
+    c = np.linalg.norm(ray_origin - center)**2 - radius**2
     delta = b**2 - 4 * c
     if delta > 0:
         t1 = (-b + np.sqrt(delta)) / 2
@@ -426,7 +398,6 @@ def sphere_intersect(center, radius, ray_origin, ray_direction):
 #     plt.savefig('figs_results/' + 'timestep_' + str(current_time) + 'sec_PointPlot.png', dpi=100)
 #     plt.close(fig)
 
-
 # def visualize3D(deputy_position, current_time, sun_position, radius):
 #     """
 #     Plot deputy, chief and sun direction vector
@@ -463,7 +434,6 @@ def sphere_intersect(center, radius, ray_origin, ray_direction):
 #     plt.savefig('figs_results/' + 'timestep_' + str(current_time) + 'sec_3DPlot.png', dpi=100)
 #     plt.close(fig)
 
-
 # def save_image(RGB, current_time):
 #     """
 #     Recieves RGB array and saves an image
@@ -471,7 +441,6 @@ def sphere_intersect(center, radius, ray_origin, ray_direction):
 
 #     string = 'timestep_' + str(current_time) + 'sec_camera.png'
 #     plt.imsave('figs_results/' + string, RGB)
-
 
 # def concat_images(imga, imgb):
 #     """
@@ -493,7 +462,6 @@ def sphere_intersect(center, radius, ray_origin, ray_direction):
 #         new_img[delta:delta + hb, wa:wa + wb] = imgb
 #     return new_img
 
-
 # def concat_n_images(image_path_list):
 #     """
 #     Combines N color images from a list of image paths.
@@ -507,7 +475,6 @@ def sphere_intersect(center, radius, ray_origin, ray_direction):
 #             output = concat_images(output, img)
 #     return output
 
-
 # def combine_images(image1, image2, current_time):
 #     """
 #     Combines images into one image and saves result locally
@@ -516,7 +483,6 @@ def sphere_intersect(center, radius, ray_origin, ray_direction):
 #     final_image = concat_n_images(im_array)
 #     string = 'timestep_' + str(current_time) + 'sec_COMBINED.png'
 #     plt.imsave('figs_results/' + string, final_image)
-
 
 # def render_subplots(fig, axes, deputy_position, sun_position, radius, current_time, step_rate):
 #     # pylint: disable-msg=too-many-statements
@@ -590,7 +556,6 @@ def sphere_intersect(center, radius, ray_origin, ray_direction):
 #     plt.draw()
 #     plt.pause(.0001)
 
-
 # def render_3d(fig, deputy_position, sun_position, radius, current_time, step_rate):
 #     """
 #     Real-time rendering of scene
@@ -644,7 +609,6 @@ def sphere_intersect(center, radius, ray_origin, ray_direction):
 #     plt.draw()
 #     plt.pause(.0001)
 
-
 # def set_axes_equal(ax: plt.Axes):
 #     """Set 3D plot axes to equal scale.
 
@@ -662,12 +626,10 @@ def sphere_intersect(center, radius, ray_origin, ray_direction):
 #     radius = 0.5 * np.max(np.abs(limits[:, 1] - limits[:, 0]))
 #     _set_axes_radius(ax, origin, radius)
 
-
 # def _set_axes_radius(ax, origin, radius):
 #     x, y, z = origin
 #     ax.set_xlim3d([x - radius, x + radius])
 #     ax.set_ylim3d([y - radius, y + radius])
 #     ax.set_zlim3d([z - radius, z + radius])
-
 
 ################################################# VISUALIZATION AND VERIFICATION #################################################
