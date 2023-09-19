@@ -1,3 +1,10 @@
+## [1.0.1](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v1.0.0...v1.0.1) (2023-09-19)
+
+
+### Bug Fixes
+
+* **deps:** update dependency devsecops/cicd/pipeline to v14.0.16 ([4e17f49](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/commit/4e17f49dad0d507e3abcdf3c4cff659c038f9a87))
+
 # 1.0.0 (2023-09-19)
 
 
