@@ -1,10 +1,10 @@
-# Safe Autonomy Simulation User Guide
+# safe-autonomy-simulation User Guide
 
 ## Purpose
 
 <!--This section should begin with a purpose statement that clearly defines the intended user and their purpose for using the ACT3 project or product. The purpose statement should be as clear and succinct as possible.-->
 
-Safe Autonomy Simulation is the primary way for \<person or process> to \<complete action>.
+safe-autonomy-simulation is the primary way for \<person or process> to \<complete action>.
 
 <!--Example of a well written Purpose statement:
 Project Tool is the primary way for ACT3 developers to generate new projects and update existing projects by adopting ACT3's best practices. Project Tool is also the primary way for ACT3 developers to begin using the ACT3 pipeline.-->

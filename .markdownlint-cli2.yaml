@@ -1,0 +1,13 @@
+config:
+  default: true
+  line-length: false
+  ul-indent:
+    # for compatibility with mkdocs strict adherance to the original markdown spec of 4 spaces (not 2)
+    indent: 4
+
+globs:
+  - "**/*.{md,markdown}"
+
+ignores:
+  - "CHANGELOG.md"
+  - ".gitlab/issue_templates/**"

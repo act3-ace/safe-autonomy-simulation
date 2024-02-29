@@ -1,29 +1,36 @@
 include:
   - project: devsecops/cicd/pipeline
-    ref: v14.0.16
+    ref: v18.0.9
     file: main.yml
 
 variables:
-  PIP_INDEX_URL: https://devpi.lion.act3-ace.ai/root/pypi/+simple/
   SRC_DIR: "safe_autonomy_simulation"
+  ACT3_SECRETS_POETRY: |
+    [http-basic.act3-rl]
+    username = "gitlab-ci-token"
+    password = "$CI_JOB_TOKEN"
+  ACT3_SECRETS_GITLAB: "gitlab-ci-token:$CI_JOB_TOKEN"
 
-build image:
-  variables:
-    TARGET_STAGE: cicd
+mkdocs:
+  image:
+    name: $CI_REGISTRY_IMAGE/cicd:ci-$CI_PIPELINE_ID
+  needs:
+    - build image
+  before_script:
+    - "poetry install --only docs"
 
 build tagged image:
-  variables:
-    TARGET_STAGE: build
-    DESTINATION_PATH: /releases
+  parallel:
+    matrix:
+      - TARGET_STAGE: build
+        DESTINATION_PATH: /releases
+      - TARGET_STAGE: develop
+        DESTINATION_PATH: /development/$TARGET_STAGE
+      - TARGET_STAGE: package
+        DESTINATION_PATH: /releases/$TARGET_STAGE
+      - TARGET_STAGE: hub-coder-user
+        DESTINATION_PATH: /development/$TARGET_STAGE
 
-build development image:
-  extends: build tagged image
+renovate:
   variables:
-    TARGET_STAGE: develop
-    DESTINATION_PATH: /development/$TARGET_STAGE
-
-build package image:
-  extends: build tagged image
-  variables:
-    TARGET_STAGE: package
-    DESTINATION_PATH: /releases/$TARGET_STAGE
+    RENOVATE_ASSIGNEES: ""

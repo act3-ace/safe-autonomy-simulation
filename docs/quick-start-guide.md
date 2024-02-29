@@ -1,4 +1,4 @@
-# Safe Autonomy Simulation Quick Start Guide
+# safe-autonomy-simulation Quick Start Guide
 
 ## Purpose
 
@@ -6,9 +6,9 @@
 
 This should be a 1-2 sentence summary of the documentation. The first sentence is provided below. Add additional content if needed. -->
 
-This Quick Start Guide is for users who have already installed Safe Autonomy Simulation and who are ready to take advantage of its features..
+This Quick Start Guide is for users who have already installed safe-autonomy-simulation and who are ready to take advantage of its features..
 
-You will be guided through the steps necessary to begin using Safe Autonomy Simulation
+You will be guided through the steps necessary to begin using safe-autonomy-simulation
 <!-- Include a Table of Contents that links to steps below if possible -->
 
 1. [Configuration](#configuration)

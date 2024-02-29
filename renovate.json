@@ -1,6 +1,12 @@
 {
-    "extends": [
-        ":semanticCommits",
-        ":semanticCommitType(fix)"
-    ]
+	"pre-commit": {
+		"enabled": true
+	},
+    "packageRules": [
+        {
+          "matchPackagePatterns": ["*"],
+          "enabled": false
+        }
+    ],
+    "automerge": false
 }
