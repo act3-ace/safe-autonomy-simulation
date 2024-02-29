@@ -1,12 +1,11 @@
-site_name: Safe Autonomy Simulation
+site_name: safe-autonomy-simulation
 site_author: ACT3
 repo_url: https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation
 
 plugins:
   - search
   - macros
-  - inari:
-      module: safe_autonomy_simulation # required
+
 
 markdown_extensions:
   - codehilite

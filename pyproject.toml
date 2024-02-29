@@ -2,77 +2,281 @@
 name = "safe-autonomy-simulation"
 version = "1.0.1"
 description = "Standalone context-aware simulation environments for Safe Autonomy research."
-authors = [
-    "james.cunningham <james.cunningham@jacobs.com>",
-]
+authors = ["Jamie Cunningham <james.cunningham@parallaxresearch.org>"]
 license = "Distribution C"
 readme = "README.md"
-homepage = ""
-repository = ""
-documentation = '/docs'
+homepage = "https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation.git"
+repository = "https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation.git"
+documentation = 'https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation'
 keywords = []
 include = ["docs/*"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
-packages = [
-        {include = "safe_autonomy_simulation"},
-    ]
+packages = [{ include = "safe_autonomy_simulation" }]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.13"
 MarkupSafe = "^2.1.1"
-Werkzeug = "^2.2.2"
-Flask = "^2.2.2"
+Werkzeug = "^3.0.0"
+Flask = "^3.0.0"
 itsdangerous = "^2.1.2"
 numpy = "^1.23.5"
-build = "^0.10.0"
+build = "^1.0.0"
 pydantic = "^1.10.9"
 pint = "^0.22"
 jax = "^0.4.13"
 scipy = "^1.11.1"
-scikit-learn = "^1.3.0"
+scikit-learn = "1.2.1"
 
-[tool.poetry.group.lint.dependencies]
-pylint = "2.15.4"
-flake8 = "3.9.2"
-yapf = "^0.40.0"
-mypy = "0.930"
-isort = "5.9.3"
-bashate = "^2.1.0"
-velin = "^0.0.11"
-blacken-docs = "^1.12.1"
-detect-secrets = "1.1.0"
+[tool.poetry.group.test]
+optional = true
 
 [tool.poetry.group.test.dependencies]
-pytest = "^7.1.2"
-pytest-cov = "2.11.1"
+pytest = "^8.0.0"
+pytest-cov = "4.1.0"
 pyinstrument = "^4.3.0"
-twine = "^4.0.2"
-coverage-badge = "^1.1.0"
+
+[tool.poetry.group.docs]
+optional = true
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.3.1"
 mkdocs-git-revision-date-localized-plugin = "^1.1.0"
 mkdocs-macros-plugin = "^1.0.0"
-mkdocs-material = "^8.4.2"
+mkdocs-material = "^9.0.0"
 mkdocs-material-extensions = "^1.0.3"
 mkdocs-mermaid-plugin = "^0.1.1"
 mkdocs-pdf-export-plugin = "^0.5.10"
-mktheapidocs = {extras = ["plugin"], version = "^0.3.1"}
-mkdocstrings = "0.18.0"
+mktheapidocs = { extras = ["plugin"], version = "^0.3.1" }
+mkdocstrings = "0.24.0"
 mkdocs-autorefs = "^0.5.0"
-mkdocs-coverage = "^0.2.5"
+mkdocs-coverage = "^1.0.0"
 mkdocs-gen-files = "^0.5.0"
-mkdocs-literate-nav = "^0.4.1"
+mkdocs-literate-nav = "^0.6.0"
 mkdocs-section-index = "^0.3.4"
 mkdocs-with-pdf = "^0.9.3"
 papermill = "^2.4.0"
-Pillow = "^9.2.0"
+Pillow = "^10.0.0"
 pymdown-extensions = "^9.5"
-inari = {extras = ["mkdocs"], version = "^0.2.1"}
+
+[tool.poetry.group.pipeline]
+optional = true
+
+[tool.poetry.group.pipeline.dependencies]
+twine = "^5.0.0"
+coverage-badge = "^1.1.0"
+
+[[tool.poetry.source]]
+name = "act3-rl"
+url = "https://git.act3-ace.com/api/v4/groups/478/-/packages/pypi/simple"
+priority = "explicit"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+### Example `pyproject.toml` configuration:
+
+[tool.poetry.group.lint]
+optional = true
+
+[tool.poetry.group.lint.dependencies]
+mypy = "^1.7.1"
+black = "^24.0.0"
+ruff = "^0.2.0"
+
+#########
+# Black #
+#########
+[tool.black]
+line-length = 140
+target-version = ["py310", "py311"]
+
+
+########
+# Ruff #
+########
+[tool.ruff]
+
+select = [
+    "A",    # flake8-builtins
+    "ANN",  # flake8-annotations
+    "ARG",  # flake8-unused-arguments
+    "B",    # flake8-bugbear
+    "BLE",  # flake8-blind-except
+    "C",    # mccabe, flake8-comprehensions
+    "C4",   # flake8-comprehensions
+    "COM",  # flake8-commas
+    "D",    # pydocstyle
+    "E",    # pycodestyle - Error
+    "EM",   # flake8-errmsg
+    "F",    # Pyflakes
+    "FA",   # flake8-future-annotations
+    "FURB", # refurb
+    "G002", # flake8-logging-format
+    "I",    # isort
+    "ICN",  # flake8-import-conventions
+    "INP",  # flake8-no-pep420
+    "ISC",  # flake8-implicit-str-concat
+    "N",    # pep8-naming
+    "NPY",  # NumPy-specific rules
+    "PD",   # Pandas vet
+    "PERF", # Perflint
+    "PGH",  # pygrep-hooks
+    "PIE",  # flake8-pie
+    "PL",   # Pylint
+    "PTH",  # flake8-use-pathlib
+    "PYI",  # flake8-pyi
+    "Q",    # flake8-quotes
+    "RET",  # flake8-return
+    "RSE",  # flake8-raise
+    "RUF",  # Ruff-specific rules
+    "S",    # flake8-bandit
+    "SIM",  # flake8-simplify
+    "SLF",  # flake8-self
+    "T",    # flake8-debugger, flake8-print
+    "TCH",  # flake8-type-checking
+    "UP",   # pyupgrade
+    "W",    # pycodestyle - Warning
+    "YTT",  # flake8-2020
+]
+ignore = [
+    "ARG005",
+    "ANN002",
+    "ANN003",
+    "ANN101",
+    "ANN102",
+    "C901",
+    "D401",
+    "D203",
+    "D213",
+    "E203",
+    "E731",
+    "T201",
+]
+
+exclude = [
+    ".svn",
+    "CVS",
+    ".bzr",
+    ".hg",
+    ".git",
+    "__pycache__",
+    ".tox",
+    ".nox",
+    ".eggs",
+    "*.egg",
+    "test/*",
+]
+line-length = 140
+target-version = "py310"
+preview = true # necessary for E266 and FURB
+
+fix = true
+fixable = ["ALL"]
+unfixable = []
+
+external = ["W503", "W504"]
+
+[tool.ruff.per-file-ignores]
+# don't complain about missing docstrings in __init__.py
+"**__init__.py" = ["D104"]
+
+[tool.ruff.pylint]
+# min-public-methods = 1 # not supported
+max-args = 15
+max-locals = 25
+# max-attributes=15 # not supported
+# max-parents=15 # not supported
+max-branches = 20
+
+# ignored PyLint codes:
+#     C0103: ignored by default since 'N' codes were not selected
+#     R0801: not supported
+#     R0902: not supported
+#     R0903: not supported
+#     W0511: ignored by default since 'FIX' codes were not selected
+#     W1202: ignored by default since 'G' codes were not selected
+#     W1203: ignored by default since 'G' codes were not selected
+#     R0401: not supported
+#     E0213: ignored by default since 'N' codes were not selected
+#     E1101: not supported
+
+[tool.ruff.flake8-annotations]
+allow-star-arg-any = true
+ignore-fully-untyped = true
+suppress-dummy-args = true
+suppress-none-returning = true
+
+[tool.ruff.isort]
+split-on-trailing-comma = false
+case-sensitive = true
+combine-as-imports = true
+force-wrap-aliases = true
+lines-between-types = 1
+
+[tool.ruff.flake8-unused-arguments]
+ignore-variadic-names = true
+
+[tool.ruff.pydocstyle]
+convention = "numpy"
+
+########
+# MyPy #
+########
+# For a list of configurations go to https://mypy.readthedocs.io/en/stable/config_file.html
+[tool.mypy]
+ignore_missing_imports = true
+files = "safe_autonomy_simulation"
+follow_imports = "silent"
+# keep code clean by removing unused ignores
+warn_unused_ignores = true
+warn_redundant_casts = true
+check_untyped_defs = true
+disable_error_code = "annotation-unchecked"
+# don't typecheck None -> otherwise Optional[<type>] will cause type errors
+strict_optional = false
+
+##########
+# PyTest #
+##########
+# For a list of configurations go to https://docs.pytest.org/en/stable/customize.html
+[tool.pytest.ini_options]
+testpaths = ["test"]
+addopts = "--strict-markers -m 'not slow' --disable-pytest-warnings"
+markers = [
+    # slow: marks tests as slow (deselect with '-m "not slow"')
+    "serial",
+    "skipif_activemq_down",
+    "integration",
+]
+junit_family = "xunit1"
+
+###########################
+# pytest coverage section #
+###########################
+# For a list of configurations go to https://pytest-cov.readthedocs.io/en/latest/config.html
+# must manually tell pytest coverage to use this file with --cov-config=setup.cfg
+[tool.coverage.run]
+branch = true
+source = ["safe_autonomy_simulation"]
+
+[tool.coverage.report]
+exclude_lines = [
+    # Have to re-enable the standard pragma
+    "pragma: no cover",
+
+    # Don't complain about missing debug-only code:
+    "def __repr__",
+    "if self\\.debug",
+
+    # Don't complain if tests don't hit defensive assertion code:
+    "raise AssertionError",
+    "raise NotImplementedError",
+
+    # Don't complain if non-runnable code isn't run:
+    "if 0:",
+    "if __name__ == .__main__.:",
+]
