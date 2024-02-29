@@ -29,6 +29,7 @@ pint = "^0.22"
 jax = "^0.4.13"
 scipy = "^1.11.1"
 scikit-learn = "1.2.1"
+gymnasium = "^0.29.1"
 
 [tool.poetry.group.test]
 optional = true
@@ -78,6 +79,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 ### Example `pyproject.toml` configuration:
+
 
 [tool.poetry.group.lint]
 optional = true

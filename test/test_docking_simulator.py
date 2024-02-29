@@ -1,4 +1,4 @@
-"""Unit tests for simulator.py"""
+"""Unit tests for docking_simulator.py"""
 
 import numpy as np
 import pytest

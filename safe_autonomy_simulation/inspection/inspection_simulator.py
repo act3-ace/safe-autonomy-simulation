@@ -145,35 +145,3 @@ class InspectionSimulator(ControlledDiscreteSimulator):
             for inspector_entity_name, inspector_entity in self.inspectors.items():
                 if inspection_entity_name is not inspector_entity_name:
                     points.update_points_inspection_status(inspector_entity)
-
-
-if __name__ == "__main__":
-    sc1 = CWHSpacecraft(name="sc1")
-    sc2 = CWHSpacecraft(name="sc2")
-    sun = SunEntity(name="sun")
-
-    entities = {
-        "sc1": sc1,
-        "sc2": sc2,
-        "sun": sun,
-    }
-
-    inspection_points_map = {
-        "sc2": {
-            "num_points": 100,
-            "radius": 10,
-            "points_algorithm": "fibonacci",
-        },
-    }
-
-    sim = InspectionSimulator(
-        entities=entities,
-        frame_rate=1,
-        inspection_points_map=inspection_points_map,
-        inspectors=["sc1"],
-    )
-    sim.reset()
-
-    while True:
-        sim.step()
-        print(sim.info())
