@@ -40,9 +40,9 @@ class InspectionEnv(gym.Env):
 
         # get info from simulator
         observation = self._get_obs()
-        reward = self._get_reward()
+        reward = self._get_reward(obs=observation)
         info = self._get_info()
-        terminated = self._get_terminated()
+        terminated = self._get_terminated(obs=observation)
         truncated = False  # used to signal episode ended unexpectedly
         return observation, reward, terminated, truncated, info
 
@@ -56,7 +56,7 @@ class InspectionEnv(gym.Env):
     def _get_reward(self, obs):
         # set reward as number of inspected points
         reward = 0
-        for inspector, points in self.simulator.inspection_points_map:
+        for inspector, points in self.simulator.inspection_points_map.items():
             reward += points.get_num_points_inspected()
             break  # assuming one inspector
         return reward
@@ -64,7 +64,7 @@ class InspectionEnv(gym.Env):
     def _get_terminated(self, obs):
         # terminate episode when 95% of points inspected
         percent_inspected = 0
-        for inspector, points in self.simulator.inspection_points_map:
+        for inspector, points in self.simulator.inspection_points_map.items():
             percent_inspected = points.get_percentage_of_points_inspected()
             break  # assuming one inspector
         return percent_inspected > 0.95
