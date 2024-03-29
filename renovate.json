@@ -1,6 +1,5 @@
 {
-    "extends": [
-        ":semanticCommits",
-        ":semanticCommitType(fix)"
-    ]
+	"pre-commit": {
+		"enabled": true
+	}
 }
