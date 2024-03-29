@@ -44,9 +44,9 @@ class DockingEnv(gym.Env):
 
         # get info from simulator
         observation = self._get_obs()
-        reward = self._get_reward()
+        reward = self._get_reward(obs=observation)
         info = self._get_info()
-        terminated = self._get_terminated()
+        terminated = self._get_terminated(obs=observation)
         truncated = False  # used to signal episode ended unexpectedly
         return observation, reward, terminated, truncated, info
 
