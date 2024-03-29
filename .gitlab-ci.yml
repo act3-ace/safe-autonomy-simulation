@@ -30,7 +30,3 @@ build tagged image:
         DESTINATION_PATH: /releases/$TARGET_STAGE
       - TARGET_STAGE: hub-coder-user
         DESTINATION_PATH: /development/$TARGET_STAGE
-
-renovate:
-  variables:
-    RENOVATE_ASSIGNEES: ""

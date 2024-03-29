@@ -7,8 +7,8 @@ blueprints:
     - ref: https://git.act3-ace.com/devsecops/project-templates/python-library.git@v2.0.1
       inputs:
         defaultAssignee:
-        packageName: safe_autonomy_simulation # Python package name
-        registryURL: reg.git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation # The container registry URL for your project. (ex: reg.git.act3-ace.com/example/project)
+        packageName: safe_autonomy_simulation
+        registryURL: reg.git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation
 
 # Edit configuration interactively:
 #   Edit metadata:         act3-pt edit
