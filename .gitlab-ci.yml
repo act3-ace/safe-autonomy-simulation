@@ -20,6 +20,9 @@ mkdocs:
     - "poetry install --only docs"
   allow_failure: true
 
+pages:
+  allow_failure: true
+
 build tagged image:
   parallel:
     matrix:
