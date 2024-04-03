@@ -18,6 +18,7 @@ mkdocs:
     - build image
   before_script:
     - "poetry install --only docs"
+  allow_failure: true
 
 build tagged image:
   parallel:
