@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "safe-autonomy-simulation"
-version = "0.1.0"
+version = "1.1.0"
 description = "Standalone context-aware simulation environments for Safe Autonomy research."
 authors = [
     "james.cunningham <james.cunningham@jacobs.com>",

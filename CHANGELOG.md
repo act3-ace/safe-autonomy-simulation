@@ -1,3 +1,16 @@
+# [1.1.0](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v1.0.1...v1.1.0) (2024-04-05)
+
+
+### Bug Fixes
+
+* **gymnasium:** fix invalid private method args ([d98ec14](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/commit/d98ec143fe88557536e4eac75555fae960cba5a0)), closes [#16](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/issues/16)
+* rendered project blueprints (checkpoint commit made by act3-pt) ([dcba879](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/commit/dcba8799ac9dc7b4d77134a64b53f407330e5eec))
+
+
+### Features
+
+* **gym:** add example gymnasiums environments using docking and inspection simulators ([5a8abf3](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/commit/5a8abf3e4f0585a5301287dc74e6da27c0e8e2c3)), closes [#14](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/issues/14)
+
 ## [1.0.1](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v1.0.0...v1.0.1) (2023-09-19)
 
 
