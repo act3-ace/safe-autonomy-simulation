@@ -1,3 +1,10 @@
+# [1.3.0](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v1.2.0...v1.3.0) (2024-04-15)
+
+
+### Features
+
+* **jax:** add jax support and rotational spacecraft model ([52e0f4b](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/commit/52e0f4bafe08aeeffe93cc5d3a93850521e63e72)), closes [#19](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/issues/19)
+
 # [1.2.0](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v1.1.0...v1.2.0) (2024-04-15)
 
 
