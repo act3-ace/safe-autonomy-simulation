@@ -1,3 +1,10 @@
+# [1.2.0](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v1.1.0...v1.2.0) (2024-04-15)
+
+
+### Features
+
+* add point mass integrators ([65a1d9f](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/commit/65a1d9f211a300a0d980a44c2efac45b8b60a8bb)), closes [#18](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/issues/18)
+
 # [1.1.0](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v1.0.1...v1.1.0) (2024-04-05)
 
 
