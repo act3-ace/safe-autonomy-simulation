@@ -17,7 +17,28 @@ from typing import Tuple
 import numpy as np
 
 
-def generate_cwh_matrices(m: float, n: float, mode: str = "2d") -> Tuple[np.ndarray, np.ndarray]:
+# CWH constants
+M_DEFAULT = 12
+N_DEFAULT = 0.001027
+INERTIA_DEFAULT = 0.0573
+INERTIA_MATRIX_DEFAULT = np.matrix(
+    [
+        [INERTIA_DEFAULT, 0.0, 0.0],
+        [0.0, INERTIA_DEFAULT, 0.0],
+        [0.0, 0.0, INERTIA_DEFAULT],
+    ]
+)
+INERTIA_WHEEL_DEFAULT = 4.1e-5
+ANG_ACC_LIMIT_DEFAULT = 0.017453
+ANG_VEL_LIMIT_DEFAULT = 0.034907
+ACC_LIMIT_WHEEL_DEFAULT = 181.3
+VEL_LIMIT_WHEEL_DEFAULT = 576
+THRUST_CONTROL_LIMIT_DEFAULT = 1.0
+
+
+def generate_cwh_matrices(
+    m: float, n: float, mode: str = "2d"
+) -> Tuple[np.ndarray, np.ndarray]:
     """Generates A and B Matrices from Clohessy-Wiltshire linearized dynamics of dx/dt = Ax + Bu
 
     Parameters

@@ -23,7 +23,8 @@ import numpy as np
 import pint
 import scipy.integrate
 import scipy.spatial
-from pydantic import BaseModel, Extra
+from pint import _typing as pintt
+from pydantic import BaseModel, ConfigDict
 
 if TYPE_CHECKING:
     import jax
@@ -49,12 +50,8 @@ class BaseEntityValidator(BaseModel):
     name : str
         Name of entity
     """
-
     name: str
-
-    class Config:  # pylint: disable=missing-class-docstring
-        arbitrary_types_allowed = True
-        extra = Extra.forbid
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
 
 
 def build_unit_conversion_validator_fn(unit: Union[str, pint.Unit]) -> Callable[[Union[float, pint.Quantity]], float]:
@@ -77,21 +74,22 @@ def build_unit_conversion_validator_fn(unit: Union[str, pint.Unit]) -> Callable[
 
     def fn(x: Union[float, pint.Quantity]) -> float:
         if isinstance(x, pint.Quantity):
-            return float(x.to(unit).magnitude)
+            try:
+                return float(x.to(unit).magnitude)
+            except pint.errors.DimensionalityError as e:
+                # Convert to an error type handled by Pydantic so that conversion issues show up as a Pydantic
+                # validation error for easier debugging rather than an error originating here
+                raise ValueError from e
         return float(x)
 
     return fn
 
 
 class BaseUnits:
-    """Provides unit system definitions for entities"""
+    """Provides unit system definitions for entities
+    """
 
-    def __init__(
-        self,
-        length: Union[str, pint.Unit],
-        time: Union[str, pint.Unit],
-        angle: Union[str, pint.Unit],
-    ):
+    def __init__(self, length: Union[str, pint.Unit], time: Union[str, pint.Unit], angle: Union[str, pint.Unit]):
         self.length: pint.Unit = pint.Unit(length)
         self.time: pint.Unit = pint.Unit(time)
         self.angle: pint.Unit = pint.Unit(angle)
@@ -171,17 +169,9 @@ class BaseEntity(abc.ABC):
         Allows dictionary action inputs in add_control().
     """
 
-    base_units = BaseUnits("meters", "seconds", "radians")
+    base_units = BaseUnits('meters', 'seconds', 'radians')
 
-    def __init__(
-        self,
-        dynamics,
-        control_default,
-        control_min=-np.inf,
-        control_max=np.inf,
-        control_map=None,
-        **kwargs,
-    ):
+    def __init__(self, dynamics, control_default, control_min=-np.inf, control_max=np.inf, control_map=None, **kwargs):
         self.config = self._get_config_validator()(**kwargs)
         self.name = self.config.name
         self.dynamics = dynamics
@@ -189,6 +179,7 @@ class BaseEntity(abc.ABC):
         self.control_default = control_default
         self.control_min = control_min
         self.control_max = control_max
+        self.control_map = control_map
 
         self._state = self._build_state()
         self.state_dot = np.zeros_like(self._state)
@@ -236,7 +227,7 @@ class BaseEntity(abc.ABC):
             control = self.control_queue.next_control()
 
         # enforce control bounds
-        if np.any(control < self.control_min) or np.any(control > self.control_max):
+        if (np.any(control < self.control_min) or np.any(control > self.control_max)):
             warnings.warn(f"Control input exceeded limits. Clipping to range ({self.control_min}, {self.control_max})")
         control = np.clip(control, self.control_min, self.control_max)
 
@@ -305,7 +296,7 @@ class BaseEntity(abc.ABC):
         raise NotImplementedError
 
     @property
-    def position_with_units(self) -> pint.Quantity[np.ndarray]:
+    def position_with_units(self) -> pintt.Quantity[np.ndarray]:
         """get position as a pint.Quantity with units"""
         return self.ureg.Quantity(self.position, self.base_units.length)
 
@@ -330,7 +321,7 @@ class BaseEntity(abc.ABC):
         raise NotImplementedError
 
     @property
-    def velocity_with_units(self) -> pint.Quantity[np.ndarray]:
+    def velocity_with_units(self) -> pintt.Quantity[np.ndarray]:
         """get velocity as a pint.Quantity with units"""
         return self.ureg.Quantity(self.velocity, self.base_units.velocity)
 
@@ -351,25 +342,17 @@ class BaseRotationEntity(BaseEntity):
         Optional maximum allowable control vector values. Control vectors that exceed this limit are clipped.
     control_map: dict
         Optional mapping for actuator names to their indices in the state vector.
-        Allows dictionary action inputs in step().
+        Allows dictionary action inputs in add_control().
     """
 
-    def __init__(
-        self,
-        dynamics,
-        control_default,
-        control_min=-np.inf,
-        control_max=np.inf,
-        control_map=None,
-        **kwargs,
-    ):
+    def __init__(self, dynamics, control_default, control_min=-np.inf, control_max=np.inf, control_map=None, **kwargs):
         super().__init__(
             dynamics=dynamics,
             control_default=control_default,
             control_min=control_min,
             control_max=control_max,
             control_map=control_map,
-            **kwargs,
+            **kwargs
         )
 
     @property
@@ -442,7 +425,7 @@ class BaseRotationEntity(BaseEntity):
         raise NotImplementedError
 
     @property
-    def angular_velocity_with_units(self) -> pint.Quantity[np.ndarray]:
+    def angular_velocity_with_units(self) -> pintt.Quantity[np.ndarray]:
         """get 3d angular velocity vector as pint.Quantity with units"""
         return self.ureg.Quantity(self.angular_velocity, self.base_units.angular_velocity)
 
@@ -476,7 +459,7 @@ class BaseDynamics(abc.ABC):
         self,
         state_min: Union[float, np.ndarray] = -np.inf,
         state_max: Union[float, np.ndarray] = np.inf,
-        angle_wrap_centers: np.ndarray = None,
+        angle_wrap_centers: Union[np.ndarray, None] = None,
         use_jax: bool = False,
     ):
         self.state_min = state_min
@@ -519,7 +502,7 @@ class BaseDynamics(abc.ABC):
         if self.angle_wrap_centers is not None:
             needs_wrap = self.np.logical_not(self.np.isnan(self.angle_wrap_centers))
 
-            wrapped_state = (((state + np.pi) % (2 * np.pi)) - np.pi + self.angle_wrap_centers)
+            wrapped_state = ((state + np.pi) % (2 * np.pi)) - np.pi + self.angle_wrap_centers
 
             output_state = self.np.where(needs_wrap, wrapped_state, state)
         else:
@@ -566,7 +549,7 @@ class BaseODESolverDynamics(BaseDynamics):
         state_dot_min: Union[float, np.ndarray] = -np.inf,
         state_dot_max: Union[float, np.ndarray] = np.inf,
         integration_method="RK45",
-        **kwargs,
+        **kwargs
     ):
         self.integration_method = integration_method
         self.state_dot_min = state_dot_min
@@ -624,18 +607,14 @@ class BaseODESolverDynamics(BaseDynamics):
         return state_dot
 
     def _step(self, step_size, state, control):
+
         if self.integration_method == "RK45":
+
             t_eval = None
             if self.trajectory_samples > 0:
                 t_eval = np.linspace(0, step_size, self.trajectory_samples + 1)[1:]
 
-            sol = scipy.integrate.solve_ivp(
-                self.compute_state_dot,
-                (0, step_size),
-                state,
-                args=(control, ),
-                t_eval=t_eval,
-            )
+            sol = scipy.integrate.solve_ivp(self.compute_state_dot, (0, step_size), state, args=(control, ), t_eval=t_eval)
 
             self.trajectory = sol.y.T
             self.trajectory_t = sol.t
@@ -646,18 +625,15 @@ class BaseODESolverDynamics(BaseDynamics):
             if not self.use_jax:
                 raise ValueError("use_jax must be set to True if using RK45_JAX")
 
-            assert (self.trajectory_samples <= 0), "trajectory sampling not currently supported with rk45 jax integration"
+            assert self.trajectory_samples <= 0, "trajectory sampling not currently supported with rk45 jax integration"
 
             sol = odeint(  # pylint: disable=used-before-assignment
-                self.compute_state_dot_jax,
-                state,
-                jnp.linspace(0.0, step_size, 11),
-                control,
+                self.compute_state_dot_jax, state, jnp.linspace(0., step_size, 11), control
             )
             next_state = sol[-1, :]  # save last timestep of integration solution
             state_dot = self.compute_state_dot(step_size, next_state, control)
         elif self.integration_method == "Euler":
-            assert (self.trajectory_samples <= 0), "trajectory sampling not currently supported with euler integration"
+            assert self.trajectory_samples <= 0, "trajectory sampling not currently supported with euler integration"
             state_dot = self.compute_state_dot(0, state, control)
             next_state = state + step_size * state_dot
         else:
@@ -666,7 +642,8 @@ class BaseODESolverDynamics(BaseDynamics):
         return next_state, state_dot
 
     def compute_state_dot_jax(self, state, t, control):
-        """Compute state dot for jax odeint"""
+        """Compute state dot for jax odeint
+        """
         return self._compute_state_dot(t, state, control)
 
 
@@ -689,7 +666,7 @@ class BaseControlAffineODESolverDynamics(BaseODESolverDynamics):
         super().__init__(**kwargs)
 
     def _compute_state_dot(self, t: float, state: np.ndarray, control: np.ndarray):
-        state_dot = (self.state_transition_system(state) + self.state_transition_input(state) @ control)
+        state_dot = self.state_transition_system(state) + self.state_transition_input(state) @ control
         return state_dot
 
     @abc.abstractmethod
@@ -748,9 +725,9 @@ class BaseLinearODESolverDynamics(BaseControlAffineODESolverDynamics):
     def __init__(self, A: np.ndarray, B: np.ndarray, **kwargs):
         super().__init__(**kwargs)
 
-        assert (len(A.shape) == 2), f"A must be square matrix. Instead got shape {A.shape}"
-        assert (len(B.shape) == 2), f"A must be square matrix. Instead got shape {B.shape}"
-        assert (A.shape[0] == A.shape[1]), f"A must be a square matrix, not dimension {A.shape}"
+        assert len(A.shape) == 2, f"A must be square matrix. Instead got shape {A.shape}"
+        assert len(B.shape) == 2, f"A must be square matrix. Instead got shape {B.shape}"
+        assert A.shape[0] == A.shape[1], f"A must be a square matrix, not dimension {A.shape}"
         assert A.shape[1] == B.shape[0], (
             "number of columns in A must match the number of rows in B." + f" However, got shapes {A.shape} for A and {B.shape} for B"
         )
