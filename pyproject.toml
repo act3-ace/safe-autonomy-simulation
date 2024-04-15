@@ -68,6 +68,10 @@ optional = true
 twine = "^5.0.0"
 coverage-badge = "^1.1.0"
 
+
+[tool.poetry.group.extras.dependencies]
+jax = {extras = ["cpu"], version = "^0.4.26"}
+
 [[tool.poetry.source]]
 name = "act3-rl"
 url = "https://git.act3-ace.com/api/v4/groups/478/-/packages/pypi/simple"
