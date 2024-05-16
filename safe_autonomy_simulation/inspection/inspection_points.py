@@ -1,199 +1,373 @@
-import copy
 import math
 import typing
 
 import numpy as np
-from pydantic import BaseModel, validator
 from sklearn.cluster import KMeans
 
-import safe_autonomy_simulation.inspection.illumination as illum
-from safe_autonomy_simulation.base_models import BaseEntity
-from safe_autonomy_simulation.spacecraft import CWHSpacecraft, SixDOFSpacecraft
+from safe_autonomy_simulation.spacecraft import CWHSpacecraft
+from safe_autonomy_simulation.entity import Entity, PhysicalEntity, Point
+from safe_autonomy_simulation.inspection.camera import Camera
+from safe_autonomy_simulation.inspection.utils import (
+    points_on_sphere_cmu,
+    points_on_sphere_fibonacci,
+    AVG_EARTH_TO_SUN_DIST,
+    is_illuminated,
+    evaluate_rgb,
+)
+from safe_autonomy_simulation.dynamics import Dynamics
 
 
-class InspectionPointsValidator(BaseModel):
-    """
-    Validator for an InspectionPoints object.
+class InspectionPointDynamics(Dynamics):
+    """Dynamics for an inspection point entity
 
-    num_points: int
-        The number of inspectable points maintained.
-    radius: float
-        The radius of the sphere on which the points will be generated.
-    points_algorithm: str
-        The name of the algorithm used to generate initial point positions.
-    sensor_fov: float
-        The field of view of the inspector's camera sensor in radians.
-    initial_sensor_unit_vec: list
-        The initial direction the inspector's camera sensor is pointing.
-    illumination_params: typing.Union[IlluminationValidator, None]
-        The parameters defining lighting of the environment.
-    """
+    Update the position of the point from its default position based on the parent entity's position and orientation.
 
-    num_points: int
-    radius: float
-    points_algorithm: str = "cmu"
-    sensor_fov: float = np.pi
-    initial_sensor_unit_vec: list = [1.0, 0.0, 0.0]
-    illumination_params: typing.Union[illum.IlluminationParams, None] = None
-
-    @validator("points_algorithm")
-    def valid_algorithm(cls, v):
-        """
-        Check if provided algorithm is a valid choice.
-        """
-        valid_algs = ["cmu", "fibonacci"]
-        if v not in valid_algs:
-            raise ValueError(f"field points_algorithm must be one of {valid_algs}")
-        return v
-
-
-class InspectionPoints:
-    """
-    A class maintaining the inspection status of an entity.
+    Parameters
+    ----------
+    default_position: np.ndarray
+        default position of the point
+    parent: PhysicalEntity
+        parent entity of the point which the point is anchored to
     """
 
-    def __init__(self, parent_entity: CWHSpacecraft, priority_vector: np.ndarray, **kwargs):
-        self.config: InspectionPointsValidator = self.get_validator(**kwargs)
-        self.sun_angle = 0.0
-        self.clock = 0.0
-        self.parent_entity = parent_entity
-        self.priority_vector = priority_vector
-        (
-            self._default_points_position_dict,
-            self.points_position_dict,
-            self.points_inspected_dict,
-            self.points_weights_dict,
-        ) = self._add_points()
-        self.last_points_inspected = 0
-        self.last_cluster = None
+    def __init__(self, default_position: np.ndarray, parent: PhysicalEntity):
+        super().__init__()
+        self._parent = parent
+        self._default_position = default_position
+
+    def _step(
+        self, step_size: float, state: np.ndarray, control: np.ndarray
+    ) -> typing.Tuple[np.ndarray, np.ndarray]:
+        new_position = self._parent.orientation.apply(self._default_position)
+        # translate from parent position
+        new_position = new_position + self._parent.position
+        next_state = np.concatenate((new_position, state[3:]))
+        return next_state, control
+
+
+class InspectionPoint(Point):
+    """A weighted inspection point entity
+
+    Parameters
+    ----------
+    position: np.ndarray
+        position of the point
+    inspected: bool
+        whether the point has been inspected
+    inspector: str
+        name of the entity that inspected the point
+    weight: float
+        weight of the point
+    parent: Entity
+        parent entity of the point which the point is anchored to
+    name: str, optional
+        name of the point, by default "point"
+    """
+
+    def __init__(
+        self,
+        position: np.ndarray,
+        inspected: bool,
+        inspector: str,
+        weight: float,
+        parent: Entity,
+        name: str = "point",
+    ):
+        super().__init__(
+            name=name,
+            position=position,
+            parent=parent,
+            dynamics=InspectionPointDynamics(position, parent),
+        )
+        self._default_position = position
+        self._inspected = inspected
+        self._inspector = inspector
+        self._weight = weight
+
+    def build_initial_state(self) -> np.ndarray:
+        # Append weight and inspection status to internal state
+        state = super().build_initial_state()
+        state = np.concatenate((state, self.weight, self.inspected))
+        return state
 
     @property
-    def get_validator(self) -> typing.Type[InspectionPointsValidator]:
-        """
-        Get the validator used to validate the kwargs passed to BaseAgent.
+    def state(self) -> np.ndarray:
+        """Inspection point state vector
+
+        Inspection point state vector is [x, y, z, x_dot, y_dot, z_dot, weight, inspected]
 
         Returns
         -------
-        BaseAgentParser
-            A BaseAgent kwargs parser and validator.
+        np.ndarray
+            inspection point state vector
         """
-        return InspectionPointsValidator
+        # Append weight and inspection status to parent state
+        state = super().state
+        state = np.concatenate((state, self.weight, self.inspected))
+        return state
 
-    def _add_points(self):
-        """
-        Generate a map of inspection point coordinates to inspected state.
-
-        Returns
-        -------
-        points_dict
-            dict of points_dict[cartesian_point] = initial_inspected_state
-        """
-        if self.config.points_algorithm == "cmu":
-            points_alg = self.points_on_sphere_cmu
-        else:
-            points_alg = self.points_on_sphere_fibonacci
-        points = points_alg(self.config.num_points, self.config.radius)  # TODO: HANDLE POSITION UNITS*
-        points_position_dict = {}
-        points_inspected_dict = {}
-        points_weights_dict = {}
-        for i, point in enumerate(points):
-            points_position_dict[i] = point
-            points_inspected_dict[i] = False
-            points_weights_dict[i] = (
-                np.arccos(np.dot(-self.priority_vector, point) / (np.linalg.norm(-self.priority_vector) * np.linalg.norm(point))) / np.pi
-            )
-
-        # Normalize weighting
-        total_weight = sum(list(points_weights_dict.values()))
-        points_weights_dict = {k: w / total_weight for k, w in points_weights_dict.items()}
-
-        default_points_position = copy.deepcopy(points_position_dict)
-
-        return (
-            default_points_position,
-            points_position_dict,
-            points_inspected_dict,
-            points_weights_dict,
-        )
-
-    # inspected or not
-    def update_points_inspection_status(self, inspector_entity):
-        """
-        Update the inspected state of all inspection points given an inspector's position.
+    @state.setter
+    def state(self, state: np.ndarray):
+        """Set inspection point state vector
 
         Parameters
         ----------
-        position: tuple or array
-            inspector's position in cartesian coords
+        state: np.ndarray
+            inspection point state vector
+        """
+        assert (
+            state.shape == self.state.shape
+        ), f"State vector must be of shape {self.state.shape}, got {state.shape}"
+        super().state = state[0:6]
+        self.weight = state[6]
+        self.inspected = state[7]
+
+    @property
+    def default_position(self) -> np.ndarray:
+        """Default position of the point
 
         Returns
         -------
-        None
+        np.ndarray
+            default position of the point
+        """
+        return self._default_position
+
+    @property
+    def inspected(self) -> bool:
+        """Inspection status of the point
+
+        Returns
+        -------
+        bool
+            inspection status of the point
+        """
+        return self._inspected
+
+    @inspected.setter
+    def inspected(self, inspected: bool):
+        self._inspected = inspected
+        self._state[-1] = inspected
+
+    @property
+    def inspector(self) -> str:
+        """Entity that inspected the point
+
+        Returns
+        -------
+        str
+            entity that inspected the point
+        """
+        return self._inspector
+
+    @inspector.setter
+    def inspector(self, inspector: str):
+        self._inspector = inspector
+
+    @property
+    def weight(self) -> float:
+        """Weight of the point
+
+        Returns
+        -------
+        float
+            weight of the point
+        """
+        return self._weight
+
+    @weight.setter
+    def weight(self, weight: float):
+        self._weight = weight
+        self._state[-2] = weight
+
+
+class InspectionPoints(Entity):
+    """
+    Inspection points entity containing a sphere of inspection points.
+
+    Parameters
+    ----------
+    name: str
+        name of the inspection points entity
+    parent: CWHSpacecraft
+        parent entity of the inspection points which the points are anchored to
+    num_points: int
+        number of inspection points
+    radius: float
+        radius of the sphere of inspection points
+    priority_vector: np.ndarray
+        priority vector for inspection points weighting
+    points_algorithm: str, optional
+        algorithm to generate points on sphere, either "cmu" or "fibonacci", by default "cmu"
+    """
+
+    def __init__(
+        self,
+        name: str,
+        parent: CWHSpacecraft,
+        num_points: int,
+        radius: float,
+        priority_vector: np.ndarray,
+        points_algorithm: str = "cmu",
+    ):
+        self._num_points = num_points
+        self._radius = radius
+        self._priority_vector = priority_vector
+        self._last_cluster = None
+        self._points: typing.Dict[int, InspectionPoint] = self._generate_points(
+            points_alg=points_algorithm
+        )
+        super().__init__(name=name, parent=parent)
+
+    def build_initial_state(self) -> np.ndarray:
+        state = np.array([p.state for p in self.points.values()])
+        return state
+
+    def _post_step(self, step_size: float):
+        super()._post_step(step_size)
+        # Updating state in post step to ensure that all points have been updated
+        self._state = np.array([p.state for p in self.points.values()])
+
+    def _generate_points(
+        self, points_algorithm: str = "cmu"
+    ) -> typing.Dict[int, InspectionPoint]:
+        """Generate a sphere of inspection points
+
+        Parameters
+        ----------
+        points_algorithm: str, optional
+            algorithm to generate points on sphere, either "cmu" or "fibonacci", by default "cmu"
+
+        Returns
+        -------
+        typing.Dict[int, Point]
+            dictionary of {point_id: Point}
+        """
+        assert (
+            points_algorithm in ["cmu", "fibonacci"]
+        ), f"Invalid points algorithm {points_algorithm}. Must be one of 'cmu' or 'fibonacci'"
+
+        if points_algorithm == "cmu":
+            points_alg = points_on_sphere_cmu
+        else:
+            points_alg = points_on_sphere_fibonacci
+
+        # generate point positions
+        point_positions = points_alg(
+            self.num_points, self.radius
+        )  # TODO: HANDLE POSITION UNITS*
+
+        points = {}
+        for i, pos in enumerate(point_positions):
+            weight = (
+                np.arccos(
+                    np.dot(-self.priority_vector, pos)
+                    / (np.linalg.norm(-self.priority_vector) * np.linalg.norm(pos))
+                )
+                / np.pi
+            )
+            point = InspectionPoint(
+                position=pos,
+                inspected=False,
+                inspector=None,
+                weight=weight,
+                parent=self,
+            )
+            points[i] = point
+
+        # normalize point weights
+        total_weight = sum([p.weight for p in points.values()])
+        for _, point in points.items():
+            point.weight /= total_weight
+
+        return points
+
+    def update_points_inspection_status(
+        self, camera: Camera, sun: Entity = None, binary_ray: bool = True
+    ):
+        """
+        Update the inspected state of all inspection points given an inspector's position.
+
+        If sun entity is given, check if point is illuminated. Otherwise, assume no illumination.
+
+        Parameters
+        ----------
+        camera: Camera
+            camera entity inspecting the points
+        sun: Entity, optional
+            sun entity, by default None
+        binary_ray: bool, optional
+            whether to use binary ray tracing for illumination, by default True
         """
         # calculate h of the spherical cap (inspection zone)
-        position = inspector_entity.position
-        if isinstance(inspector_entity, SixDOFSpacecraft):
-            r_c = inspector_entity.orientation.apply(self.config.initial_sensor_unit_vec)
-        else:
-            r_c = -position
-        r_c = r_c / np.linalg.norm(r_c)
+        cam_position = camera.position
+        r_c = camera.orientation
+        r_c = r_c / np.linalg.norm(r_c)  # inspector sensor unit vector
 
-        r = self.config.radius
-        rt = np.linalg.norm(position)
+        r = self.radius
+        rt = np.linalg.norm(cam_position)
         h = 2 * r * ((rt - r) / (2 * rt))
 
-        p_hat = position / np.linalg.norm(position)  # position unit vector (inspection zone cone axis)
+        p_hat = cam_position / np.linalg.norm(
+            cam_position
+        )  # position unit vector (inspection zone cone axis)
 
         for (
-            point_id,
-            point_position,
-        ) in (self.points_position_dict.items()):  # pylint: disable=too-many-nested-blocks
+            _,
+            point,
+        ) in self.points.items():  # pylint: disable=too-many-nested-blocks
             # check that point hasn't already been inspected
-            if not self.points_inspected_dict[point_id]:
-                p = point_position - position
+            if not point.inspected:
+                p = point.position - cam_position
                 p_rc = np.dot(p, r_c) * r_c
                 d = np.linalg.norm(p - p_rc)
-                c_r = np.linalg.norm(p_rc) * np.tan(self.config.sensor_fov / 2)
+                c_r = np.linalg.norm(p_rc) * np.tan(camera.fov / 2)
                 if c_r >= d:
-                    # if no illumination params detected
-                    if not self.config.illumination_params:
+                    # if no point light (sun), assume no illumination
+                    if not sun:
                         # project point onto inspection zone axis and check if in inspection zone
-                        if np.dot(point_position, p_hat) >= r - h:
-                            self.points_inspected_dict[point_id] = inspector_entity.name
+                        if np.dot(point.position, p_hat) >= r - h:
+                            point.inspected = True
+                            point.inspector = camera.name
                     else:
-                        mag = np.dot(point_position, p_hat)
-                        if mag >= r - h:
-                            r_avg = self.config.illumination_params.avg_rad_Earth2Sun
-                            chief_properties = (self.config.illumination_params.chief_properties)
-                            light_properties = (self.config.illumination_params.light_properties)
-                            current_theta = self.sun_angle
-                            if self.config.illumination_params.bin_ray_flag:
-                                if illum.check_illum(point_position, current_theta, r_avg, r):
-                                    self.points_inspected_dict[point_id] = inspector_entity.name
-                            else:
-                                RGB = illum.compute_illum_pt(
-                                    point_position,
-                                    current_theta,
-                                    position,
-                                    r_avg,
-                                    r,
-                                    chief_properties,
-                                    light_properties,
-                                )
-                                if illum.evaluate_RGB(RGB):
-                                    self.points_inspected_dict[point_id] = inspector_entity.name
+                        mag = np.dot(point.position, p_hat)
+                        if mag >= r - h and self.check_if_illuminated(
+                            point=point, camera=camera, sun=sun, binary_ray=binary_ray
+                        ):
+                            point.inspected = True
+                            point.inspector = camera.name
 
-    def kmeans_find_nearest_cluster(self, position):
-        """Finds nearest cluster of uninspected points using kmeans clustering"""
+    def kmeans_find_nearest_cluster(
+        self, camera: Camera, sun: Entity = None, binary_ray: bool = True
+    ) -> np.ndarray:
+        """Finds nearest cluster of uninspected points using kmeans clustering
+
+        If sun entity is given, check if point is illuminated. Otherwise, assume no illumination.
+
+        Parameters
+        ----------
+        camera: Camera
+            camera entity inspecting the points
+        sun: Entity, optional
+            sun entity, by default None
+        binary_ray: bool, optional
+            whether to use binary ray tracing for illumination, by default True
+
+        Returns
+        -------
+        np.ndarray
+            unit vector pointing to nearest cluster
+        """
         uninspected = []
-        for point_id, inspected in self.points_inspected_dict.items():
-            point_position = self.points_position_dict[point_id]
-            if not inspected:
-                if self.config.illumination_params:
-                    if self.check_if_illuminated(point_position, position):
-                        uninspected.append(point_position)
+        for _, point in self.points.items():
+            if not point.inspected:
+                if sun:
+                    if self.check_if_illuminated(
+                        point=point, camera=camera, sun=sun, binary_ray=binary_ray
+                    ):
+                        uninspected.append(point.position)
                 else:
-                    uninspected.append(point_position)
+                    uninspected.append(point.position)
         if len(uninspected) == 0:
             out = np.array([0.0, 0.0, 0.0])
         else:
@@ -203,7 +377,9 @@ class InspectionPoints:
                 init = np.zeros((n, 3))
             else:
                 if n > self.last_cluster.shape[0]:
-                    idxs = np.random.choice(self.last_cluster.shape[0], size=n - self.last_cluster.shape[0])
+                    idxs = np.random.choice(
+                        self.last_cluster.shape[0], size=n - self.last_cluster.shape[0]
+                    )
                     new = np.array(uninspected)[idxs, :]
                     init = np.vstack((self.last_cluster, new))
                 else:
@@ -218,177 +394,201 @@ class InspectionPoints:
             self.last_cluster = kmeans.cluster_centers_
             dist = []
             for center in self.last_cluster:
-                dist.append(np.linalg.norm(position - center))
+                dist.append(np.linalg.norm(camera.position - center))
             out = kmeans.cluster_centers_[np.argmin(dist)]
             out = out / np.linalg.norm(out)
         return out
 
-    def check_if_illuminated(self, point, position):
-        """Check if points is illuminated"""
-        r = self.config.radius
-        r_avg = self.config.illumination_params.avg_rad_Earth2Sun
-        chief_properties = self.config.illumination_params.chief_properties
-        light_properties = self.config.illumination_params.light_properties
-        current_theta = self.sun_angle
-        if self.config.illumination_params.bin_ray_flag:
-            illuminated = illum.check_illum(point, current_theta, r_avg, r)
-        else:
-            RGB = illum.compute_illum_pt(
-                point,
-                current_theta,
-                position,
-                r_avg,
-                r,
-                chief_properties,
-                light_properties,
+    def check_if_illuminated(
+        self, point: Point, camera: Camera, sun: Entity, binary_ray: bool = False
+    ) -> bool:
+        """Check if point is illuminated
+
+        Parameters
+        ----------
+        point: Point
+            point to check for illumination
+        camera: Camera
+            camera entity inspecting the points
+        sun: Entity
+            sun entity
+        binary_ray: bool, optional
+            whether to use binary ray tracing for illumination, by default False
+
+        Returns
+        -------
+        bool
+            point illumination status, True if illuminated, False if not
+        """
+        if binary_ray:
+            illuminated = is_illuminated(
+                point=point, sun=sun, r_avg=AVG_EARTH_TO_SUN_DIST, radius=self.radius
             )
-            illuminated = illum.evaluate_RGB(RGB)
+        else:
+            rgb = camera.capture_point(
+                point=point,
+                light=sun,
+                viewed_object=self.parent,
+                r_avg=AVG_EARTH_TO_SUN_DIST,
+                radius=self.radius,
+            )
+            illuminated = evaluate_rgb(rgb)
         return illuminated
 
-    def points_on_sphere_fibonacci(self, num_points: int, radius: float) -> list:
-        """
-        Generate a set of equidistant points on sphere using the
-        Fibonacci Sphere algorithm: https://arxiv.org/pdf/0912.4540.pdf
+    def get_num_points_inspected(self, inspector_entity: Entity = None) -> int:
+        """Get total number of points inspected by an entity.
+
+        If no entity is provided, return total number of points inspected.
 
         Parameters
         ----------
-        num_points: int
-            number of points to attempt to place on a sphere
-        radius: float
-            radius of the sphere
+        inspector_entity: Entity, optional
+            entity inspecting the points, by default None
 
         Returns
         -------
-        points: list
-            Set of equidistant points on sphere in cartesian coordinates
+        int
+            number of points inspected
         """
-        points = []
-        phi = math.pi * (3.0 - math.sqrt(5.0))  # golden angle in radians
-
-        for i in range(num_points):
-            y = 1 - (i / float(num_points - 1)) * 2  # y goes from 1 to -1
-            r = math.sqrt(1 - y * y)  # radius at y
-
-            theta = phi * i  # golden angle increment
-
-            x = math.cos(theta) * r
-            z = math.sin(theta) * r
-
-            points.append(radius * np.array([x, y, z]))
-
-        return points
-
-    def points_on_sphere_cmu(self, num_points: int, radius: float) -> list:
-        """
-        Generate a set of equidistant points on a sphere using the algorithm
-        in https://www.cmu.edu/biolphys/deserno/pdf/sphere_equi.pdf. Number
-        of points may not be exact.
-
-        Mostly the same as CMU algorithm, most important tweak is that the constant "a" should not depend on r
-        (Paper assumed r = 1)
-
-        Parameters
-        ----------
-        num_points: int
-            number of points to attempt to place on a sphere
-        radius: float
-            radius of the sphere
-
-        Returns
-        -------
-        points: list
-            Set of equidistant points on sphere in cartesian coordinates
-        """
-        points = []
-
-        a = 4.0 * math.pi * (1 / num_points)
-        d = math.sqrt(a)
-        m_theta = int(round(math.pi / d))
-        d_theta = math.pi / m_theta
-        d_phi = a / d_theta
-
-        for m in range(0, m_theta):
-            theta = math.pi * (m + 0.5) / m_theta
-            m_phi = int(round(2.0 * math.pi * math.sin(theta) / d_phi))
-            for n in range(0, m_phi):
-                phi = 2.0 * math.pi * n / m_phi
-
-                x = radius * math.sin(theta) * math.cos(phi)
-                y = radius * math.sin(theta) * math.sin(phi)
-                z = radius * math.cos(theta)
-
-                points.append(np.array([x, y, z]))
-
-        return points
-
-    def update_points_position(self):
-        """
-        Return the new locations of the points on the chief after rotation
-
-        Parameters
-        ----------
-        points: list
-            points on spherical chief
-        current_quat:
-            current attitude of chief according to propagation with angular velocities
-
-        Returns
-        -------
-        newPoints: dict
-            rotated points on the chief
-        """
-
-        # get parent entity info
-        parent_position = self.parent_entity.position
-        parent_orientation = self.parent_entity.orientation
-
-        for point_id, default_position in self._default_points_position_dict.items():
-            # rotate about origin
-            new_position = parent_orientation.apply(default_position)
-            # translate from origin
-            new_position = new_position + parent_position
-            self.points_position_dict[point_id] = new_position
-
-    # getters / setters
-    def get_num_points_inspected(self, inspector_entity: BaseEntity = None):
-        """Get total number of points inspected"""
         num_points = 0
-        if inspector_entity:
-            # count number of points inspected by the provided entity
-            for _, point_inspector_entity in self.points_inspected_dict.items():
-                num_points += (1 if point_inspector_entity == inspector_entity.name else 0)
-        else:
-            # count the total number of points inspected
-            for _, point_inspector_entity in self.points_inspected_dict.items():
-                num_points += 1 if point_inspector_entity else 0
-
+        for _, point in self.points.items():
+            if point.inspected:
+                if inspector_entity and point.inspector == inspector_entity.name:
+                    num_points += 1
+                else:
+                    num_points += 1
         return num_points
 
-    def get_percentage_of_points_inspected(self, inspector_entity: BaseEntity = None):
-        """Get the percentage of points inspected"""
-        total_num_points = len(self.points_inspected_dict.keys())
+    def get_percentage_of_points_inspected(
+        self, inspector_entity: Entity = None
+    ) -> float:
+        """Get the percentage of points inspected by an entity.
 
-        if inspector_entity:
-            percent = (self.get_num_points_inspected(inspector_entity=inspector_entity) / total_num_points)
-        else:
-            percent = self.get_num_points_inspected() / total_num_points
+        If no entity is provided, return total percentage of points inspected.
+
+        Parameters
+        ----------
+        inspector_entity: Entity, optional
+            entity inspecting the points, by default None
+
+        Returns
+        -------
+        float
+            percentage of points inspected
+        """
+        total_num_points = len(self.points)
+        percent = self.get_num_points_inspected(inspector_entity) / total_num_points
         return percent
 
-    def get_cluster_location(self, inspector_position):
-        """Get the location of the nearest cluster of uninspected points"""
-        return self._kmeans_find_nearest(inspector_position)
+    def get_total_weight_inspected(self, inspector_entity: Entity = None) -> float:
+        """Get total weight of points inspected by an entity.
 
-    def get_total_weight_inspected(self, inspector_entity: BaseEntity = None):
-        """Get total weight of points inspected"""
-        weights = 0
-        if inspector_entity:
-            for point_inspector_entity, weight in zip(self.points_inspected_dict.values(), self.points_weights_dict.values()):
-                weights += (weight if point_inspector_entity == inspector_entity.name else 0.0)
-        else:
-            for point_inspector_entity, weight in zip(self.points_inspected_dict.values(), self.points_weights_dict.values()):
-                weights += weight if point_inspector_entity else 0.0
-        return weights
+        If no entity is provided, return total weight of points inspected.
 
-    def set_sun_angle(self, sun_angle: np.ndarray):
-        """Get the current sun angle"""
-        self.sun_angle = float(sun_angle)
+        Parameters
+        ----------
+        inspector_entity: Entity, optional
+            entity inspecting the points, by default None
+
+        Returns
+        -------
+        float
+            total weight of points inspected
+        """
+        weight = 0
+        for _, point in self.points.items():
+            if inspector_entity:
+                weight += (
+                    point.weight if point.inspector == inspector_entity.name else 0.0
+                )
+            else:
+                weight += point.weight if point.inspected else 0.0
+        return weight
+
+    @property
+    def num_points(self) -> int:
+        """Number of inspection points
+
+        Returns
+        -------
+        int
+            number of inspection points
+        """
+        return self._num_points
+
+    @property
+    def radius(self) -> float:
+        """Radius of inspection points sphere
+
+        Returns
+        -------
+        float
+            radius of inspection points sphere
+        """
+        return self._radius
+
+    @property
+    def priority_vector(self) -> np.ndarray:
+        """Priority vector for inspection points weighting
+
+        Returns
+        -------
+        np.ndarray
+            priority vector for inspection points weighting
+        """
+        return self._priority_vector
+
+    @property
+    def points(self) -> typing.Dict[int, InspectionPoint]:
+        """Inspection points dictionary
+
+        Returns
+        -------
+        typing.Dict[int, InspectionPoint]
+            dictionary of {point_id: InspectionPoint}
+        """
+        return self._points
+
+    @property
+    def last_cluster(self) -> typing.Union[np.ndarray, None]:
+        """Last cluster of uninspected points
+
+        Returns
+        -------
+        typing.Union[np.ndarray, None]
+            last cluster of uninspected points
+        """
+        return self._last_cluster
+
+    @last_cluster.setter
+    def last_cluster(self, last_cluster: typing.Union[np.ndarray, None]):
+        self._last_cluster = last_cluster
+
+    @property
+    def state(self) -> np.ndarray:
+        """Inspection points state vector
+
+        Inspection points state vector is [point_1_state, point_2_state, ..., point_n_state]
+
+        Returns
+        -------
+        np.ndarray
+            inspection points state vector
+        """
+        return self._state
+
+    @state.setter
+    def state(self, state: np.ndarray):
+        """Set inspection points state vector
+
+        Parameters
+        ----------
+        state: np.ndarray
+            inspection points state vector
+        """
+        assert (
+            state.shape == self.state.shape
+        ), f"State vector must be of shape {self.state.shape}, got {state.shape}"
+        for i, point in self.points.items():
+            point.state = state[i]
+        self._state = state

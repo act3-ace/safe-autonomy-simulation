@@ -13,86 +13,97 @@ This module contains base simulator classes for building new simulations.
 """
 
 import typing
+import numpy as np
 from abc import ABC, abstractmethod
 
-from pydantic import BaseModel
-
-from safe_autonomy_simulation.base_models import BaseEntity
-
-
-class SimulatorValidator(BaseModel):
-    """A configuration validator for the Simulator class"""
-
-    frame_rate: float
+from safe_autonomy_simulation.entity import Entity
 
 
 class Simulator(ABC):
-    """An abstract simulator class for building new simulations"""
+    """An abstract simulator class
 
-    def __init__(self, **kwargs):
-        self.config = self.get_sim_validator(**kwargs)
+    Parameters
+    ----------
+    frame_rate : float
+        simulation frame rate
+
+    Attributes
+    ----------
+    sim_time : float
+        current simulation time
+    frame_rate : float
+        simulation frame rate
+    """
+
+    def __init__(self, frame_rate: float):
+        self._frame_rate = frame_rate
         self._sim_time = 0
-
-    @property
-    def get_sim_validator(self):
-        """
-        Returns a pydantic model used for validating the simulator configuration options.
-
-        Returns:
-            SimulatorValidator
-        """
-        return SimulatorValidator
 
     def reset(self):
         """
-        Reset the simulation to an initial state.
+        Reset the simulation to an initial state
         """
         self._sim_time = 0
 
     def step(self):
         """
-        Move the simulation forward one time step.
+        Move the simulation forward one time step
         """
         self._sim_time += 1 / self.frame_rate
 
     @abstractmethod
-    def info(self):
+    def info(self) -> typing.Dict[str, typing.Any]:
         """
-        Return info about the current state of the simulation.
+        Return info about the current state of the simulation
         """
+        raise NotImplementedError
 
     @property
-    def frame_rate(self):
+    def frame_rate(self) -> float:
+        """Simulation frame rate in Hz
+
+        Returns
+        -------
+        float
+            simulation frame rate
         """
-        Simulation frame rate in Hz
-        """
-        return self.config.frame_rate
+        return self._frame_rate
 
     @property
-    def sim_time(self):
-        """
-        Current simulation time
+    def sim_time(self) -> float:
+        """Current simulation time
+
+        Returns
+        -------
+        float
+            current simulation time
         """
         return self._sim_time
 
 
-class DiscreteSimulatorValidator(SimulatorValidator):
-    """A configuration validator for DiscreteSimulator"""
-
-    entities: typing.Dict[str, BaseEntity]
-
-    class Config:
-        """Allows arbitrary parameter types"""
-
-        arbitrary_types_allowed = True
-
-
 class DiscreteSimulator(Simulator):
-    """A class for building discrete simulations."""
+    """A class for building discrete simulations
 
-    @property
-    def get_sim_validator(self):
-        return DiscreteSimulatorValidator
+    Parameters
+    ----------
+    frame_rate : float
+        simulation frame rate
+    entities : dict
+        simulation entities dict of the form {entity_name: entity_class}
+
+    Attributes
+    ----------
+    sim_time : float
+        current simulation time
+    frame_rate : float
+        simulation frame rate
+    entities : dict
+        simulation entities dict of the form {entity_name: entity_class}
+    """
+
+    def __init__(self, frame_rate: float, entities: typing.Dict[str, Entity]):
+        super().__init__(frame_rate=frame_rate)
+        self._entities = entities
 
     def reset(self):
         for _, entity in self.entities.items():
@@ -105,28 +116,55 @@ class DiscreteSimulator(Simulator):
             entity.step(step_size=step_size)
         super().step()
 
-    def info(self):
-        entity_states = {entity.name: entity.state for _, entity in self.entities.items()}
+    def info(self) -> typing.Dict[str, np.ndarray]:
+        entity_states = {
+            entity.name: entity.state for _, entity in self.entities.items()
+        }
         return entity_states
 
     @property
-    def entities(self):
+    def entities(self) -> typing.Dict[str, Entity]:
+        """Set of simulator entities
+
+        Returns
+        -------
+        dict
+            simulation entities dict of the form {entity_name: entity_class}
         """
-        Set of simulator entities
-        """
-        return self.config.entities
+        return self._entities
 
 
 class ControlledDiscreteSimulator(DiscreteSimulator):
     """
     A class for building discrete simulations where
-    user controls can be applied at any time step.
+    user controls can be applied at any time step
+
+    Parameters
+    ----------
+    frame_rate : float
+        simulation frame rate
+    entities : dict
+        simulation entities dict of the form {entity_name: entity_class}
+
+    Attributes
+    ----------
+    sim_time : float
+        current simulation time
+    frame_rate : float
+        simulation frame rate
+    entities : dict
+        simulation entities dict of the form {entity_name: entity_class}
     """
 
-    def add_controls(self, control_dict: dict):
-        """
-        Add controls to the sim entities control queues.
-        Expects a dict of entity_name: control_to_add items.
+    def add_controls(
+        self, control_dict: typing.Dict[str, typing.Union[np.ndarray, dict]]
+    ):
+        """Add controls to the control queues of the simulation entities
+
+        Parameters
+        ----------
+        control_dict : typing.Dict[str, np.ndarray]
+            dictionary of controls to be added to the control queues of the form {entity_name: control}
         """
         for e_name, e_control in control_dict.items():
             self.entities[e_name].add_control(e_control)

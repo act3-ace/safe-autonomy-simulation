@@ -16,17 +16,7 @@ Hill's reference frame along with 3D rotational dynamics using quaternions for a
 from typing import Union
 
 import numpy as np
-import pint
-from pydantic import validator
-from scipy.spatial.transform import Rotation
 
-from safe_autonomy_simulation.base_models import (
-    BaseControlAffineODESolverDynamics,
-    BaseEntityValidator,
-    BaseRotationEntity,
-    BaseUnits,
-    build_unit_conversion_validator_fn,
-)
 from safe_autonomy_simulation.spacecraft.utils import (
     generate_cwh_matrices,
     M_DEFAULT,
@@ -38,77 +28,14 @@ from safe_autonomy_simulation.spacecraft.utils import (
     ACC_LIMIT_WHEEL_DEFAULT,
     VEL_LIMIT_WHEEL_DEFAULT,
     THRUST_CONTROL_LIMIT_DEFAULT,
+    CWHMaterial,
 )
 from safe_autonomy_simulation.utils import number_list_to_np
+from safe_autonomy_simulation.entity import Entity, PhysicalEntity
+from safe_autonomy_simulation.dynamics import ControlAffineODESolverDynamics
 
 
-class SixDOFSpacecraftValidator(BaseEntityValidator):
-    """
-    Validator for SixDOFSpacecraft kwargs.
-
-    Parameters
-    ----------
-    x: float or pint.Quantity
-       x position value
-    y: float or pint.Quantity
-       y position value
-    z: float or pint.Quantity
-       z position value
-    x_dot: float or pint.Quantity
-       x velocity value
-    y_dot: float or pint.Quantity
-       y velocity value
-    z_dot: float or pint.Quantity
-       z velocity value
-    q1: float
-       first element of quaternion - rotation from body to Hill frame
-    q2: float
-       second element of quaternion value - rotation from body to Hill frame
-    q3: float
-       third element of quaternion value - rotation from body to Hill frame
-    q4: float
-       fourth element of quaternion value (scalar) - rotation from body to Hill frame
-       Placing the scalar as the 4th element matches the convention used by scipy
-    wx: float or pint.Quantity
-       x axis local body reference frame angular rate value
-    wy: float or pint.Quantity
-       y axis local body reference frame angular rate value
-    wz: float or pint.Quantity
-       z axis local body reference frame angular rate value
-
-    Raises
-    ------
-    ValueError
-        Improper list lengths for parameters 'x', 'y', 'z', 'x_dot', 'y_dot', 'z_dot', 'q1', 'q2', 'q3', 'q4', 'wx', 'wy', 'wz'
-    """
-
-    x: Union[float, pint.Quantity] = 0
-    y: Union[float, pint.Quantity] = 0
-    z: Union[float, pint.Quantity] = 0
-    x_dot: Union[float, pint.Quantity] = 0
-    y_dot: Union[float, pint.Quantity] = 0
-    z_dot: Union[float, pint.Quantity] = 0
-    q1: float = 0
-    q2: float = 0
-    q3: float = 0
-    q4: float = 0
-    wx: Union[float, pint.Quantity] = 0
-    wy: Union[float, pint.Quantity] = 0
-    wz: Union[float, pint.Quantity] = 0
-
-    # validators
-    _unit_validator_position = validator("x", "y", "z", allow_reuse=True)(
-        build_unit_conversion_validator_fn("meters")
-    )
-    _unit_validator_velocity = validator("x_dot", "y_dot", "z_dot", allow_reuse=True)(
-        build_unit_conversion_validator_fn("meters/second")
-    )
-    _unit_validator_wz = validator("wx", "wy", "wz", allow_reuse=True)(
-        build_unit_conversion_validator_fn("radians/second")
-    )
-
-
-class SixDOFSpacecraft(BaseRotationEntity):  # pylint: disable=too-many-public-methods
+class SixDOFSpacecraft(PhysicalEntity):  # pylint: disable=too-many-public-methods
     """
     Spacecraft with 3D Clohessy-Wiltshire translational dynamics, in Hill's frame and 3D rotational dynamics
 
@@ -134,41 +61,56 @@ class SixDOFSpacecraft(BaseRotationEntity):  # pylint: disable=too-many-public-m
 
     Parameters
     ----------
-    m: float
+    name: str
+        Name of the entity
+    position: np.ndarray, optional
+        Initial position of spacecraft in meters, by default np.zeros(3)
+    velocity: np.ndarray, optional
+        Initial velocity of spacecraft in meters/second, by default np.zeros(3)
+    orientation: np.ndarray, optional
+        Initial orientation of spacecraft as quaternion, by default np.array([0, 0, 0, 1])
+    angular_velocity: np.ndarray, optional
+        Initial angular velocity of spacecraft in rad/s, by default np.zeros(3)
+    m: float, optional
         Mass of spacecraft in kilograms, by default 12
-    inertia_matrix: float
-        Inertia matrix of spacecraft (3x3) in kg*m^2
-    ang_acc_limit: float
-        Angular acceleration limit in rad/s^2
-    ang_vel_limit: float
-        Angular velocity limit in rad/s
-    inertia_wheel: float
-        Inertia of reaction wheel in kg*m^2
-    acc_limit_wheel: float
-        Acceleration limit of reaction wheel in rad/s^2
-    vel_limit_wheel: float
-        Velocity limit of reaction wheel in rad/s
-    thrust_control_limit: float
-        Thrust control limit in N
-    body_frame_thrust: bool
+    inertia_matrix: float, optional
+        Inertia matrix of spacecraft (3x3) in kg*m^2, by default np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+    ang_acc_limit: float, optional
+        Angular acceleration limit in rad/s^2, by default 0.017453
+    ang_vel_limit: float, optional
+        Angular velocity limit in rad/s, by default 0.034907
+    inertia_wheel: float, optional
+        Inertia of reaction wheel in kg*m^2, by default 4.1e-5
+    acc_limit_wheel: float, optional
+        Acceleration limit of reaction wheel in rad/s^2, by default 181.3
+    vel_limit_wheel: float, optional
+        Velocity limit of reaction wheel in rad/s, by default 576
+    thrust_control_limit: float, optional
+        Thrust control limit in N, by default 1.0
+    body_frame_thrust: bool, optional
         Flag indicating the reference frame for the control thrust vector: True- Body frame, False - Hill's frame
         by default, True
-    n: float
+    n: float, optional
         Orbital mean motion of Hill's reference frame's circular orbit in rad/s, by default 0.001027.
-    trajectory_samples : int
-        number of trajectory samples the generate and store on steps
-    integration_method: str
-        Numerical integration method passed to dynamics model. See BaseODESolverDynamics.
-    kwargs:
-        Additional keyword arguments passed to parent class BaseRotationSpacecraft.
-        body_frame_thrust: bool
-            Flag indicating the reference frame for the control thrust vector: True- Body frame, False - Hill's frame
+    trajectory_samples : int, optional
+        number of trajectory samples the generate and store on steps, by default 0
+    integration_method: str, optional
+        Numerical integration method passed to dynamics model. See BaseODESolverDynamics. By default "RK45".
+    material: CWHMaterial, optional
+        Material properties of the spacecraft, by default CWHMaterial()
+    parent: Union[PhysicalEntity, None], optional
+        Parent entity of spacecraft, by default None
+    children: set[PhysicalEntity], optional
+        Set of children entities of spacecraft, by default {}
     """
-
-    base_units = BaseUnits("meters", "seconds", "radians")
 
     def __init__(
         self,
+        name: str,
+        position: np.ndarray = np.zeros(3),
+        velocity: np.ndarray = np.zeros(3),
+        orientation: np.ndarray = np.array([0, 0, 0, 1]),
+        angular_velocity: np.ndarray = np.zeros(3),
         m=M_DEFAULT,
         inertia_matrix=INERTIA_MATRIX_DEFAULT,
         ang_acc_limit=ANG_ACC_LIMIT_DEFAULT,
@@ -181,10 +123,10 @@ class SixDOFSpacecraft(BaseRotationEntity):  # pylint: disable=too-many-public-m
         n=N_DEFAULT,
         trajectory_samples=0,
         integration_method="RK45",
-        **kwargs,
+        material: CWHMaterial = CWHMaterial(),
+        parent: Union[PhysicalEntity, None] = None,
+        children: set[PhysicalEntity] = {},
     ):
-        self._state = np.array([])
-
         # Define limits for angular acceleration, angular velocity, and control inputs
         ang_acc_limit = number_list_to_np(ang_acc_limit, shape=(3,))  # rad/s^2
         ang_vel_limit = number_list_to_np(ang_vel_limit, shape=(3,))  # rad/s
@@ -213,7 +155,7 @@ class SixDOFSpacecraft(BaseRotationEntity):  # pylint: disable=too-many-public-m
             "moment_y": 4,
             "moment_z": 5,
         }
-        """ Create instance of dynamics class """
+
         dynamics = SixDOFDynamics(
             m=m,
             inertia_matrix=inertia_matrix,
@@ -227,34 +169,28 @@ class SixDOFSpacecraft(BaseRotationEntity):  # pylint: disable=too-many-public-m
         self.lead = None
 
         super().__init__(
-            dynamics,
+            name=name,
+            position=position,
+            velocity=velocity,
+            orientation=orientation,
+            angular_velocity=angular_velocity,
+            dynamics=dynamics,
             control_default=control_default,
             control_min=control_min,
             control_max=control_max,
             control_map=control_map,
-            **kwargs,
+            material=material,
+            parent=parent,
+            children=children,
         )
 
-    @classmethod
-    def _get_config_validator(cls):
-        return SixDOFSpacecraftValidator
-
-    def __eq__(self, other):
-        if isinstance(other, SixDOFSpacecraft):
-            eq = (self.velocity == other.velocity).all()
-            eq = eq and (self.position == other.position).all()
-            eq = eq and (self.orientation.as_quat == other.orientation.as_quat).all()
-            eq = eq and (self.angular_velocity == other.angular_velocity).all()
-            return eq
-        return False
-
-    def register_lead(self, lead: BaseRotationEntity):
+    def register_lead(self, lead: Entity):
         """
         Register another entity as this entity's lead. Defines line of communication between entities.
 
         Parameters
         ----------
-        lead: BaseRotationEntity
+        lead: Entity
             Entity with line of communication to this entity.
 
         Returns
@@ -263,153 +199,70 @@ class SixDOFSpacecraft(BaseRotationEntity):  # pylint: disable=too-many-public-m
         """
         self.lead = lead
 
-    def _build_state(self):
-        """form state vector"""
-        state = np.array(
-            [self.config.x, self.config.y, self.config.z]
-            + [self.config.q1, self.config.q2, self.config.q3, self.config.q4]
-            + [self.config.x_dot, self.config.y_dot, self.config.z_dot]
-            + [self.config.wx, self.config.wy, self.config.wz],
-            dtype=np.float32,
-        )
-
-        return state
-
     @property
-    def x(self):
-        return self._state[0]
-
-    @property
-    def y(self):
-        return self._state[1]
-
-    @property
-    def z(self):
-        return self._state[2]
-
-    @property
-    def q1(self):
-        """get first element of quaternion"""
-        return self._state[3]
-
-    @property
-    def q2(self):
-        """get second element of quaternion"""
-        return self._state[4]
-
-    @property
-    def q3(self):
-        """get third element of quaternion"""
-        return self._state[5]
-
-    @property
-    def q4(self):
-        """get fourth element of quaternion (scalar)"""
-        return self._state[6]
-
-    @property
-    def x_dot(self):
-        """get x_dot, the velocity component in the x direction"""
-        return self._state[7]
-
-    @property
-    def x_dot_with_units(self):
-        """Get x_dot as a pint.Quantity with units"""
-        return self.ureg.Quantity(self.x_dot, self.base_units.velocity)
-
-    @property
-    def y_dot(self):
-        """get y_dot, the velocity component in the y direction"""
-        return self._state[8]
-
-    @property
-    def y_dot_with_units(self):
-        """Get y_dot as a pint.Quantity with units"""
-        return self.ureg.Quantity(self.y_dot, self.base_units.velocity)
-
-    @property
-    def z_dot(self):
-        """get z_dot, the velocity component in the z axis"""
-        return self._state[9]
-
-    @property
-    def z_dot_with_units(self):
-        """Get z_dot as a pint.Quantity with units"""
-        return self.ureg.Quantity(self.z_dot, self.base_units.velocity)
-
-    @property
-    def wx(self):
-        return self._state[10]
-
-    @property
-    def wy(self):
-        return self._state[11]
-
-    @property
-    def wz(self):
-        return self._state[12]
-
-    @property
-    def position(self):
-        """get 3d position vector"""
-        position = np.array([self.x, self.y, self.z])
-        return position
-
-    @property
-    def orientation(self):
-        """
-        Get orientation of CWHRotationSpacecraft
+    def state(self) -> np.ndarray:
+        """State vector of spacecraft
 
         Returns
         -------
-        scipy.spatial.transform.Rotation
-            Rotation transformation of the entity's local reference frame basis vectors in the global reference frame.
-            i.e. applying this rotation to [1, 0, 0] yields the entity's local x-axis in the global frame.
-
-            In this implementation local frame is body, global frame is Hill's frame
-            Quaternion order (scalar in 4th element) matches scipy convention of [x,y,z,w]
+        np.ndarray
+            state vector of form [x, y, z, x_dot, y_dot, z_dot, q1, q2, q3, q4, wx, wy, wz]
         """
-        return Rotation.from_quat([self.q1, self.q2, self.q3, self.q4])
+        return self._state
 
-    @property
-    def quaternion(self):
-        """get 4d quaternion"""
-        return self.orientation.as_quat()
+    @state.setter
+    def state(self, state: np.ndarray):
+        """Set state of spacecraft
 
-    @property
-    def velocity(self):
-        """Get 3d velocity vector"""
-        return np.array([self.x_dot, self.y_dot, self.z_dot])
+        Parameters
+        ----------
+        state : np.ndarray
+            state vector of form [x, y, z, x_dot, y_dot, z_dot, q1, q2, q3, q4, wx, wy, wz]
+        """
+        assert (
+            state.shape == self.state.shape
+        ), f"State shape must match {self.state.shape}, got {state.shape}"
+        # Internal state is [x, y, z, x_dot, y_dot, z_dot, q1, q2, q3, q4, wx, wy, wz]
+        self._state = state
 
-    @property
-    def angular_velocity(self):
-        """Get 3d angular velocity vector"""
-        return np.array([self.wx, self.wy, self.wz])
 
-
-class SixDOFDynamics(BaseControlAffineODESolverDynamics):
+class SixDOFDynamics(ControlAffineODESolverDynamics):
     """
     State transition implementation of 3D Clohessy-Wiltshire dynamics model and 3D rotational dynamics model.
 
     Parameters
     ----------
-    m: float
+    m: float, optional
         Mass of spacecraft in kilograms, by default 12
-    inertia_matrix: float
-        Inertia matrix of spacecraft (3x3) in kg*m^2
-    ang_acc_limit: float, list, np.ndarray
-        Angular acceleration limit in rad/s^2. If array_like, applied to x, y, z elementwise
-    ang_vel_limit: float, list, np.ndarray
-        Angular velocity limit in rad/s. If array_like, applied to x, y, z elementwise
-    thrust_control_limit: float
-        Thrust control limit in N
-    n: float
+    inertia_matrix: float, optional
+        Inertia matrix of spacecraft (3x3) in kg*m^2, by default np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+    ang_acc_limit: float, list, np.ndarray, optional
+        Angular acceleration limit in rad/s^2. If array_like, applied to x, y, z elementwise, by default 0.017453
+    ang_vel_limit: float, list, np.ndarray, optional
+        Angular velocity limit in rad/s. If array_like, applied to x, y, z elementwise, by default 0.034907
+    thrust_control_limit: float, optional
+        Thrust control limit in N, by default 1.0
+    n: float, optional
         Orbital mean motion of Hill's reference frame's circular orbit in rad/s, by default 0.001027
-    body_frame_thrust: bool
+    body_frame_thrust: bool, optional
         Flag indicating the reference frame for the control thrust vector: True- Body frame, False - Hill's frame
         by default, True
-    kwargs:
-        Additional keyword arguments passed to parent class BaseLinearODESolverDynamics constructor
+    trajectory_samples : int, optional
+        number of trajectory samples the generate and store on steps, by default 0
+    state_max : float or np.ndarray, optional
+        Maximum state values, by default None
+    state_min : float or np.ndarray, optional
+        Minimum state values, by default None
+    state_dot_max : float or np.ndarray, optional
+        Maximum state derivative values, by default None
+    state_dot_min : float or np.ndarray, optional
+        Minimum state derivative values, by default None
+    angle_wrap_centers : np.ndarray, optional
+        Centers for angle wrapping, by default None
+    integration_method: str, optional
+        Numerical integration method passed to dynamics model. See BaseODESolverDynamics. By default "RK45"
+    use_jax: bool, optional
+        Flag to use JAX for numerical integration, by default False
     """
 
     def __init__(
@@ -420,10 +273,14 @@ class SixDOFDynamics(BaseControlAffineODESolverDynamics):
         ang_vel_limit=ANG_VEL_LIMIT_DEFAULT,
         n=N_DEFAULT,
         body_frame_thrust=True,
+        trajectory_samples: int = 0,
         state_max: Union[float, np.ndarray] = None,
         state_min: Union[float, np.ndarray] = None,
+        state_dot_max: Union[float, np.ndarray] = None,
+        state_dot_min: Union[float, np.ndarray] = None,
         angle_wrap_centers: np.ndarray = None,
-        **kwargs,
+        integration_method="RK45",
+        use_jax=False,
     ):
         self.m = m  # kg
         self.inertia_matrix = inertia_matrix  # kg*m^2
@@ -494,10 +351,14 @@ class SixDOFDynamics(BaseControlAffineODESolverDynamics):
             )
 
         super().__init__(
+            trajectory_samples=trajectory_samples,
             state_min=state_min,
             state_max=state_max,
+            state_dot_min=state_dot_min,
+            state_dot_max=state_dot_max,
             angle_wrap_centers=angle_wrap_centers,
-            **kwargs,
+            integration_method=integration_method,
+            use_jax=use_jax,
         )
 
     def state_transition_system(self, state: np.ndarray) -> np.ndarray:

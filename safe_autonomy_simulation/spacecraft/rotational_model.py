@@ -18,17 +18,8 @@ from typing import Union
 
 import numpy as np
 import pint
-from pydantic import AfterValidator
 from scipy.spatial.transform import Rotation
-from typing_extensions import Annotated
 
-from safe_autonomy_simulation.base_models import (
-    BaseControlAffineODESolverDynamics,
-    BaseEntityValidator,
-    BaseRotationEntity,
-    BaseUnits,
-    build_unit_conversion_validator_fn,
-)
 from safe_autonomy_simulation.spacecraft.utils import (
     M_DEFAULT,
     N_DEFAULT,
@@ -39,61 +30,14 @@ from safe_autonomy_simulation.spacecraft.utils import (
     ANG_VEL_LIMIT_DEFAULT,
     ACC_LIMIT_WHEEL_DEFAULT,
     VEL_LIMIT_WHEEL_DEFAULT,
+    CWHMaterial,
 )
 
-
-class CWHRotation2dSpacecraftValidator(BaseEntityValidator):
-    """
-    Validator for CWHRotation2dSpacecraft kwargs.
-
-    Parameters
-    ----------
-    x: float or pint.Quantity
-       Length 1, x position value. m
-    y: float or pint.Quantity
-       Length 1, y position value. m
-    theta: float or pint.Quantity
-       Length 1, rotation angle value. rad
-    x_dot: float or pint.Quantity
-       Length 1, x velocity value. m/s
-    y_dot: float or pint.Quantity
-       Length 1, y velocity value. m/s
-    wz: float or pint.Quantity
-       Length 1, rotation rate value. rad/s
-
-    Raises
-    ------
-    ValueError
-        Improper list lengths for parameters 'x', 'y', 'theta', 'x_dot', 'y_dot', 'theta_dot'
-    """
-
-    x: Annotated[
-        Union[float, pint.Quantity],
-        AfterValidator(build_unit_conversion_validator_fn("meters")),
-    ] = 0
-    y: Annotated[
-        Union[float, pint.Quantity],
-        AfterValidator(build_unit_conversion_validator_fn("meters")),
-    ] = 0
-    theta: Annotated[
-        Union[float, pint.Quantity],
-        AfterValidator(build_unit_conversion_validator_fn("radians")),
-    ] = 0
-    x_dot: Annotated[
-        Union[float, pint.Quantity],
-        AfterValidator(build_unit_conversion_validator_fn("meters/second")),
-    ] = 0
-    y_dot: Annotated[
-        Union[float, pint.Quantity],
-        AfterValidator(build_unit_conversion_validator_fn("meters/second")),
-    ] = 0
-    wz: Annotated[
-        Union[float, pint.Quantity],
-        AfterValidator(build_unit_conversion_validator_fn("radians/second")),
-    ] = 0
+from safe_autonomy_simulation.entity import PhysicalEntity
+from safe_autonomy_simulation.dynamics import ControlAffineODESolverDynamics
 
 
-class CWHRotation2dSpacecraft(BaseRotationEntity):  # pylint: disable=too-many-public-methods
+class CWHRotation2dSpacecraft(PhysicalEntity):  # pylint: disable=too-many-public-methods
     """
     Spacecraft with 2D translational Clohessy-Wiltshire dynamics in Hill's reference frame.
     In-plane motion (x,y) using +/- x thruster rotated to desired direction
@@ -118,37 +62,51 @@ class CWHRotation2dSpacecraft(BaseRotationEntity):  # pylint: disable=too-many-p
 
     Parameters
     ----------
-    m: float
+    name: str
+        Name of spacecraft
+    x: float or pint.Quantity, optional
+        Initial x position value, by default 0
+    y: float or pint.Quantity, optional
+        Initial y position value, by default 0
+    theta: float or pint.Quantity, optional
+        Initial rotation angle value, by default 0
+    x_dot: float or pint.Quantity, optional
+        Initial x velocity value, by default 0
+    y_dot: float or pint.Quantity, optional
+        Initial y velocity value, by default 0
+    wz: float or pint.Quantity, optional
+        Initial rotation rate value, by default 0
+    m: float, optional
         Mass of spacecraft in kilograms, by default 12.
-    inertia: float
-        Inertia of spacecraft in kg*m^2
-    ang_acc_limit: float
-        Angular acceleration limit in rad/s^2
-    ang_vel_limit: float
-        Angular velocity limit in rad/s
-    inertia_wheel: float
-        Inertia of reaction wheel in kg*m^2
-    acc_limit_wheel: float
-         Acceleration limit of reaction wheel in rad/s^2
-    vel_limit_wheel: float
-         Velocity limit of reaction wheel in rad/s
-    n: float
+    inertia: float, optional
+        Inertia of spacecraft in kg*m^2, by default 0.0573
+    ang_acc_limit: float, optional
+        Angular acceleration limit in rad/s^2, by default 0.017453
+    ang_vel_limit: float, optional
+        Angular velocity limit in rad/s, by default 0.034907
+    inertia_wheel: float, optional
+        Inertia of reaction wheel in kg*m^2, by default 4.1e-5
+    acc_limit_wheel: float, optional
+         Acceleration limit of reaction wheel in rad/s^2, by default 181.3
+    vel_limit_wheel: float, optional
+         Velocity limit of reaction wheel in rad/s, by default 576
+    n: float, optional
         Orbital mean motion of Hill's reference frame's circular orbit in rad/s, by default 0.001027.
-    trajectory_samples : int
-        number of trajectory samples the generate and store on steps
-    integration_method: str
-        Numerical integration method passed to dynamics model. See BaseODESolverDynamics.
-    use_jax : bool
+    trajectory_samples : int, optional
+        number of trajectory samples the generate and store on steps, by default 0
+    integration_method: str, optional
+        Numerical integration method passed to dynamics model. See BaseODESolverDynamics. By default "RK45".
+    use_jax : bool, optional
         True if using jax version of numpy/scipy in dynamics model. By default, False
-    kwargs:
-        Additional keyword arguments passed to parent class BaseRotationEntity.
     """
-
-    base_units = BaseUnits("meters", "seconds", "radians")
 
     def __init__(
         self,
-        sim=None,
+        name: str,
+        position: np.ndarray = np.zeros(2),
+        velocity: np.ndarray = np.zeros(2),
+        theta: Union[float, pint.Quantity] = 0,
+        wz: Union[float, pint.Quantity] = 0,
         m=M_DEFAULT,
         inertia=INERTIA_DEFAULT,
         ang_acc_limit=ANG_ACC_LIMIT_DEFAULT,
@@ -160,9 +118,12 @@ class CWHRotation2dSpacecraft(BaseRotationEntity):  # pylint: disable=too-many-p
         trajectory_samples=0,
         integration_method="RK45",
         use_jax: bool = False,
-        **kwargs,
+        material: CWHMaterial = CWHMaterial(),
+        parent: Union[PhysicalEntity, None] = None,
+        children: set[PhysicalEntity] = {},
     ):
-        self._state = np.array([])
+        assert position.shape == (2,), f"Position must be 2D. Instead got {position}"
+        assert velocity.shape == (2,), f"Velocity must be 2D. Instead got {velocity}"
 
         self.m = m  # kg
         self.inertia = inertia  # kg*m^2
@@ -172,7 +133,8 @@ class CWHRotation2dSpacecraft(BaseRotationEntity):  # pylint: disable=too-many-p
         self.acc_limit_wheel = acc_limit_wheel  # rad/s^2
         self.vel_limit_wheel = vel_limit_wheel  # rad/s
         self.n = n  # rads/s
-        """ Define limits for angular acceleration, angular velocity, and control inputs """
+
+        # Define limits for angular acceleration, angular velocity, and control inputs
         ang_acc_limit = min(
             self.ang_acc_limit, self.inertia_wheel * self.acc_limit_wheel / self.inertia
         )
@@ -188,7 +150,7 @@ class CWHRotation2dSpacecraft(BaseRotationEntity):  # pylint: disable=too-many-p
             "thrust_y": 1,
             "moment_z": 2,
         }
-        """ Create instance of dynamics class """
+
         dynamics = CWHRotation2dDynamics(
             m=m,
             inertia=inertia,
@@ -201,232 +163,122 @@ class CWHRotation2dSpacecraft(BaseRotationEntity):  # pylint: disable=too-many-p
         )
 
         super().__init__(
-            dynamics,
+            name=name,
+            dynamics=dynamics,
+            position=np.concatenate([position, np.array([0])]),  # z=0
+            velocity=np.concatenate([velocity, np.array([0])]),  # z_dot=0
+            orientation=Rotation.from_euler("ZYX", [theta, 0, 0]).as_quat(),
+            angular_velocity=np.array([0, 0, wz]),
             control_default=control_default,
             control_min=control_min,
             control_max=control_max,
             control_map=control_map,
-            **kwargs,
-        )
-        self._sim = sim
-
-    @classmethod
-    def _get_config_validator(cls):
-        return CWHRotation2dSpacecraftValidator
-
-    def __eq__(self, other):
-        if isinstance(other, CWHRotation2dSpacecraft):
-            eq = (self.velocity == other.velocity).all()
-            eq = eq and (self.position == other.position).all()
-            eq = eq and (self.quaternion == other.quaternion).all()
-            eq = eq and (self.angular_velocity == other.angular_velocity).all()
-            return eq
-        return False
-
-    def _build_state(self):
-        """form state vector"""
-        state = np.array(
-            [self.config.x, self.config.y, self.config.theta]
-            + [self.config.x_dot, self.config.y_dot, self.config.wz],
-            dtype=np.float32,
+            material=material,
+            parent=parent,
+            children=children,
         )
 
-        return state
-
     @property
-    def x(self):
-        """get x"""
-        return self._state[0]
-
-    @property
-    def y(self):
-        """get y"""
-        return self._state[1]
-
-    @property
-    def z(self):
-        """get z"""
-        return 0
-
-    @property
-    def q1(self):
-        """get first element of quaternion"""
-        return self.quaternion[0]
-
-    @property
-    def q2(self):
-        """get second element of quaternion"""
-        return self.quaternion[1]
-
-    @property
-    def q3(self):
-        """get third element of quaternion"""
-        return self.quaternion[2]
-
-    @property
-    def q4(self):
-        """get fourth element of quaternion (scalar)"""
-        return self.quaternion[3]
-
-    @property
-    def theta(self):
-        """get theta"""
-        return self._state[2]
-
-    @property
-    def x_dot(self):
-        """get x_dot, the velocity component in the x direction"""
-        return self._state[3]
-
-    @property
-    def x_dot_with_units(self):
-        """Get x_dot as a pint.Quantity with units"""
-        return self.ureg.Quantity(self.x_dot, self.base_units.velocity)
-
-    @property
-    def y_dot(self):
-        """get y_dot, the velocity component in the y direction"""
-        return self._state[4]
-
-    @property
-    def y_dot_with_units(self):
-        """Get y_dot as a pint.Quantity with units"""
-        return self.ureg.Quantity(self.y_dot, self.base_units.velocity)
-
-    @property
-    def z_dot(self):
-        """get z_dot, the velocity component in the z axis"""
-        return 0
-
-    @property
-    def z_dot_with_units(self):
-        """Get z_dot as a pint.Quantity with units"""
-        return self.ureg.Quantity(self.z_dot, self.base_units.velocity)
-
-    @property
-    def wx(self):
-        return 0
-
-    @property
-    def wy(self):
-        return 0
-
-    @property
-    def wz(self):
-        return self._state[5]
-
-    @property
-    def position(self):
-        """get 3d position vector"""
-        position = np.array([self.x, self.y, self.z])
-        return position
-
-    @property
-    def orientation(self):
-        """
-        Get orientation of CWHRotationSpacecraft
+    def theta(self) -> float:
+        """Rotation angle about z axis
 
         Returns
         -------
-        scipy.spatial.transform.Rotation
-            Rotation transformation of the entity's local reference frame basis vectors in the global reference frame.
-            i.e. applying this rotation to [1, 0, 0] yields the entity's local x-axis in the global frame.
+        float
+            Rotation angle about z axis
         """
-        return Rotation.from_euler("ZYX", [self.theta, 0, 0])
+        return self.orientation.as_euler("ZYX")[0]
 
     @property
-    def quaternion(self):
-        """get 4d quaternion
-        Quaternion order (scalar in 4th element) matches scipy convention of [x,y,z,w]
+    def theta_with_units(self) -> pint.Quantity:
+        """Rotation angle about z axis as a pint.Quantity with units
+
+        Returns
+        -------
+        pint.Quantity
+            Rotation angle about z axis with units
         """
-        return self.orientation.as_quat()
+        return self._ureg.Quantity(self.theta, self.base_units.angle)
 
     @property
-    def velocity(self):
-        """Get 3d velocity vector"""
-        return np.array([self.x_dot, self.y_dot, self.z_dot])
-
-    @property
-    def angular_velocity(self):
-        """Get 3d angular velocity vector"""
-        return np.array([self.wx, self.wy, self.wz])
-
-    def set_sim(self, sim):
-        """sets internal sim reference
-
-        Parameters
-        ----------
-        sim
-            sim to set internal sim reference to
-        """
-        self._sim = sim
-
-    def entity_relative_position(self, entity_name) -> np.ndarray:
-        """Returns the position of another entitiy relative to this entities position
-
-        Parameters
-        ----------
-        entity_name: str
-            name of entity to get relative position of
+    def state(self) -> np.ndarray:
+        """State vector of spacecraft
 
         Returns
         -------
         np.ndarray
-            3d relative position of other entity
+            state vector of form [x, y, x_dot, y_dot, theta, wz]
         """
-        other_entity = self._sim.sim_entities[entity_name]
-        return other_entity.position - self.position
+        return np.concatenate([self.position, self.velocity, self.theta, self.wz])
 
-    def entity_relative_velocity(self, entity_name) -> np.ndarray:
-        """Returns the position of another entitiy relative to this entities position
+    @state.setter
+    def state(self, state: np.ndarray):
+        """Set state of spacecraft
 
         Parameters
         ----------
-        entity_name: str
-            name of entity to get relative position of
-
-        Returns
-        -------
-        np.ndarray
-            3d relative position of other entity
+        state : np.ndarray
+            state vector of form [x, y, x_dot, y_dot, theta, wz]
         """
-        other_entity = self._sim.sim_entities[entity_name]
-        return other_entity.velocity - self.velocity
+        assert (
+            state.shape == self.state.shape
+        ), f"State shape must match {self.state.shape}, got {state.shape}"
+        # Internal state is [x, y, z, x_dot, y_dot, z_dot, q0, q1, q2, q3, wx, wy, wz]
+        self._state[0:2] = state[0:2]
+        self._state[3:4] = state[2:4]
+        self._state[6:10] = Rotation.from_euler("ZYX", [state[4], 0, 0]).as_quat()
+        self._state[12] = state[5]
 
 
-class CWHRotation2dDynamics(BaseControlAffineODESolverDynamics):
+class CWHRotation2dDynamics(ControlAffineODESolverDynamics):
     """
     State transition implementation of 3D Clohessy-Wiltshire dynamics model.
 
     Parameters
     ----------
-    m: float
+    m: float, optional
         Mass of spacecraft in kilograms, by default 12
-    inertia: float
-        Inertia of spacecraft in kg*m^2
-    ang_acc_limit: float
-         Angular acceleration limit in rad/s^2
-    ang_vel_limit: float
-         Angular velocity limit in rad/s
-    n: float
+    inertia: float, optional
+        Inertia of spacecraft in kg*m^2, by default 0.0573
+    ang_acc_limit: float, optional
+         Angular acceleration limit in rad/s^2, by default 0.017453
+    ang_vel_limit: float, optional
+         Angular velocity limit in rad/s, by default 0.034907
+    n: float, optional
         Orbital mean motion of Hill's reference frame's circular orbit in rad/s, by default 0.001027
-    kwargs:
-        Additional keyword arguments passed to parent class BaseODESolverDynamics constructor
+    trajectory_samples : int, optional
+        number of trajectory samples the generate and store on steps, by default 0
+    state_min : float or np.ndarray, optional
+        Minimum state values, by default None
+    state_max : float or np.ndarray, optional
+        Maximum state values, by default None
+    state_dot_min : float or np.ndarray, optional
+        Minimum state derivative values, by default None
+    state_dot_max : float or np.ndarray, optional
+        Maximum state derivative values, by default None
+    angle_wrap_centers: np.ndarray, optional
+        Angle wrap centers, by default None
+    integration_method: str, optional
+        Numerical integration method, by default "RK45"
+    use_jax: bool, optional
+        Use jax version of numpy/scipy, by default False
     """
 
     def __init__(
         self,
-        m=M_DEFAULT,
-        inertia=INERTIA_DEFAULT,
-        ang_acc_limit=ANG_ACC_LIMIT_DEFAULT,
-        ang_vel_limit=ANG_VEL_LIMIT_DEFAULT,
-        n=N_DEFAULT,
+        m: float = M_DEFAULT,
+        inertia: float = INERTIA_DEFAULT,
+        ang_acc_limit: float = ANG_ACC_LIMIT_DEFAULT,
+        ang_vel_limit: float = ANG_VEL_LIMIT_DEFAULT,
+        n: float = N_DEFAULT,
+        trajectory_samples: int = 0,
         state_min: Union[float, np.ndarray, None] = None,
         state_max: Union[float, np.ndarray, None] = None,
         state_dot_min: Union[float, np.ndarray, None] = None,
         state_dot_max: Union[float, np.ndarray, None] = None,
         angle_wrap_centers: Union[np.ndarray, None] = None,
-        **kwargs,
+        integration_method: str = "RK45",
+        use_jax: bool = False,
     ):
         self.m = m  # kg
         self.inertia = inertia  # kg*m^2
@@ -465,12 +317,14 @@ class CWHRotation2dDynamics(BaseControlAffineODESolverDynamics):
             )
 
         super().__init__(
+            trajectory_samples=trajectory_samples,
             state_min=state_min,
             state_max=state_max,
             angle_wrap_centers=angle_wrap_centers,
             state_dot_min=state_dot_min,
             state_dot_max=state_dot_max,
-            **kwargs,
+            integration_method=integration_method,
+            use_jax=use_jax,
         )
 
         A, B = generate_cwh_matrices(self.m, self.n, "2d")

@@ -15,27 +15,30 @@ using a 3D CWH point mass spacecraft model.
 
 import typing
 
-from safe_autonomy_simulation.simulator import ControlledDiscreteSimulator, DiscreteSimulatorValidator
+from safe_autonomy_simulation.simulator import ControlledDiscreteSimulator
 from safe_autonomy_simulation.spacecraft.point_model import CWHSpacecraft
-
-
-class DockingSimulatorValidator(DiscreteSimulatorValidator):
-    """A configuration validator for DockingSimulator"""
-
-    entities: typing.Dict[str, CWHSpacecraft]
-
-    class Config:
-        """Allows arbitrary parameter types"""
-
-        arbitrary_types_allowed = True
 
 
 class DockingSimulator(ControlledDiscreteSimulator):
     """
-    A discrete simulation of spacecraft docking using
-    3D CWH point mass spacecraft models.
+    A discrete spacecraft docking simulation using 3D CWH point mass spacecraft models.
+
+    Parameters
+    ----------
+    frame_rate : float
+        simulation frame rate
+    entities : dict[str, CWHSpacecraft]
+        simulation entities dict of the form {entity_name: entity_class}
+
+    Attributes
+    ----------
+    sim_time : float
+        current simulation time
+    frame_rate : float
+        simulation frame rate
+    entities : dict[str, CWHSpacecraft]
+        simulation entities dict of the form {entity_name: entity_class}
     """
 
-    @property
-    def get_sim_validator(self):
-        return DockingSimulatorValidator
+    def __init__(self, frame_rate: float, entities: typing.Dict[str, CWHSpacecraft]):
+        super().__init__(frame_rate=frame_rate, entities=entities)
