@@ -25,14 +25,8 @@ class Simulator(ABC):
     Parameters
     ----------
     frame_rate : float
-        simulation frame rate
+        simulation frame rate in hertz (Hz)
 
-    Attributes
-    ----------
-    sim_time : float
-        current simulation time
-    frame_rate : float
-        simulation frame rate
     """
 
     def __init__(self, frame_rate: float):
@@ -47,7 +41,7 @@ class Simulator(ABC):
 
     def step(self):
         """
-        Move the simulation forward one time step
+        Move the simulation forward one frame
         """
         self._sim_time += 1 / self.frame_rate
 
@@ -71,7 +65,9 @@ class Simulator(ABC):
 
     @property
     def sim_time(self) -> float:
-        """Current simulation time
+        """Current simulation time in seconds
+
+        Equal to the number of frames that have passed divided by the frame rate
 
         Returns
         -------
@@ -87,18 +83,9 @@ class DiscreteSimulator(Simulator):
     Parameters
     ----------
     frame_rate : float
-        simulation frame rate
+        simulation frame rate in hertz (Hz)
     entities : dict
-        simulation entities dict of the form {entity_name: entity_class}
-
-    Attributes
-    ----------
-    sim_time : float
-        current simulation time
-    frame_rate : float
-        simulation frame rate
-    entities : dict
-        simulation entities dict of the form {entity_name: entity_class}
+        simulation entities dict of the form {entity_name: entity_object}
     """
 
     def __init__(self, frame_rate: float, entities: typing.Dict[str, Entity]):
