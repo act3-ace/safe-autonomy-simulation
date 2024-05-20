@@ -297,7 +297,7 @@ class Entity(abc.ABC):
         self._last_control = None
 
         # Register parent and children
-        self.set_parent(parent)
+        self.parent = parent
         self._children = children
 
         # Set material
@@ -612,8 +612,6 @@ class PhysicalEntity(Entity):
         self._initial_velocity = velocity
         self._initial_orientation = orientation
         self._initial_angular_velocity = angular_velocity
-        self._state_dot = np.zeros_like(self.state)
-        self._ureg: pint.UnitRegistry = pint.get_application_registry()
         super().__init__(
             name=name,
             dynamics=dynamics,
@@ -625,6 +623,8 @@ class PhysicalEntity(Entity):
             children=children,
             material=material,
         )
+        self._state_dot = np.zeros_like(self.state)
+        self._ureg: pint.UnitRegistry = pint.get_application_registry()
 
     def __eq__(self, other):
         if isinstance(other, type(self)):
@@ -1031,7 +1031,7 @@ class Point(PhysicalEntity):
         self,
         name: str,
         position: np.ndarray,
-        velocity: np.ndarray = [0, 0, 0],
+        velocity: np.ndarray = np.array([0, 0, 0]),
         dynamics: Dynamics = PassThroughDynamics(),
         control_default: Union[np.ndarray, dict] = np.zeros(1),
         control_min: float = -np.inf,
@@ -1049,7 +1049,7 @@ class Point(PhysicalEntity):
             dynamics=dynamics,
             position=position,
             velocity=velocity,
-            orientation=Rotation.from_quat([0, 0, 0, 1]),
+            orientation=Rotation.from_euler("ZYX", [0, 0, 0]).as_quat(),
             angular_velocity=np.zeros(3),
             control_default=control_default,
             control_min=control_min,
