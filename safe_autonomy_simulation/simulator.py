@@ -77,8 +77,11 @@ class Simulator(ABC):
         return self._sim_time
 
 
-class DiscreteSimulator(Simulator):
-    """A class for building discrete simulations
+class ContinuousSimulator(Simulator):
+    """A class for building continuous simulations using incremental time progression
+
+    See https://en.wikipedia.org/wiki/Continuous_simulation for more information
+    on continuous simulations.
 
     Parameters
     ----------
@@ -121,9 +124,9 @@ class DiscreteSimulator(Simulator):
         return self._entities
 
 
-class ControlledDiscreteSimulator(DiscreteSimulator):
+class ControlledContinuousSimulator(ContinuousSimulator):
     """
-    A class for building discrete simulations where
+    A class for building continuous simulations where
     user controls can be applied at any time step
 
     Parameters
@@ -131,16 +134,7 @@ class ControlledDiscreteSimulator(DiscreteSimulator):
     frame_rate : float
         simulation frame rate
     entities : dict
-        simulation entities dict of the form {entity_name: entity_class}
-
-    Attributes
-    ----------
-    sim_time : float
-        current simulation time
-    frame_rate : float
-        simulation frame rate
-    entities : dict
-        simulation entities dict of the form {entity_name: entity_class}
+        simulation entities dict of the form {entity_name: entity_object}
     """
 
     def add_controls(

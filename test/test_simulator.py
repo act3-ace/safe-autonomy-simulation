@@ -3,20 +3,20 @@
 import pytest
 import numpy as np
 from safe_autonomy_simulation.simulator import (
-    DiscreteSimulator,
-    ControlledDiscreteSimulator,
+    ContinuousSimulator,
+    ControlledContinuousSimulator,
 )
 from safe_autonomy_simulation.entity import Point
 
 
-class TestDiscreteSimulator:
+class TestContinuousSimulator:
     @pytest.fixture
     def entity(self):
         return Point(name="test_entity", position=np.zeros(3))
     
     @pytest.fixture
     def sim(self, entity):
-        return DiscreteSimulator(
+        return ContinuousSimulator(
             frame_rate=1, entities={"test_entity": entity}
         )
 
@@ -50,10 +50,10 @@ class TestDiscreteSimulator:
         assert sim.entities == {"test_entity": entity}
 
 
-class TestControlledDiscreteSimulator:
+class TestControlledContinuousSimulator:
     @pytest.fixture
     def sim(self, entity):
-        return ControlledDiscreteSimulator(
+        return ControlledContinuousSimulator(
             frame_rate=1, entities={"test_entity": entity}
         )
     

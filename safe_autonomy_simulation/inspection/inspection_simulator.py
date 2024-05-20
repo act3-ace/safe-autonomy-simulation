@@ -17,13 +17,13 @@ import typing
 
 from safe_autonomy_simulation.inspection.sun import SunEntity
 from safe_autonomy_simulation.simulator import (
-    ControlledDiscreteSimulator,
+    ControlledContinuousSimulator,
 )
 from safe_autonomy_simulation.inspection.inspector import Inspector, SixDOFInspector
 from safe_autonomy_simulation.inspection.target import Target, SixDOFTarget
 
 
-class InspectionSimulator(ControlledDiscreteSimulator):
+class InspectionSimulator(ControlledContinuousSimulator):
     """
     Inspection simulator for a spacecraft inspection environment.
 
