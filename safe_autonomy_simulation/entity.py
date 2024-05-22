@@ -91,7 +91,7 @@ class BaseUnits:
 
 class ControlQueue:
     """
-    A buffer of entity controls to be applied to an Entity.
+    A queue of entity controls to be applied to an Entity.
 
     Parameters
     ----------
