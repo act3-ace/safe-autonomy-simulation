@@ -149,7 +149,7 @@ class ControlQueue:
         """
         return self.controls.empty()
 
-    def next_control(self) -> Union[np.ndarray, dict]:
+    def next_control(self) -> Union[np.ndarray, jnp.ndarray]:
         """Removes and returns the next control in the control queue.
 
         If control queue is empty, returns the default control.
@@ -176,6 +176,8 @@ class ControlQueue:
                 )
 
             control_vector[self.control_map[k]] = v
+        if jnp is not None:
+            control_vector = jnp.array(control_vector)
         return control_vector
 
     def add_control(self, control: Union[np.ndarray, dict, list, jnp.ndarray]):
