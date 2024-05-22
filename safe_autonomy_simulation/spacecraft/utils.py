@@ -35,6 +35,9 @@ ANG_VEL_LIMIT_DEFAULT = 0.034907
 ACC_LIMIT_WHEEL_DEFAULT = 181.3
 VEL_LIMIT_WHEEL_DEFAULT = 576
 THRUST_CONTROL_LIMIT_DEFAULT = 1.0
+
+
+# Spacecraft material
 CWH_MATERIAL = Material(
     specular=np.array([1.0, 1.0, 1.0]),
     diffuse=np.array([0.7, 0, 0]),

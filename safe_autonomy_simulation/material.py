@@ -32,6 +32,7 @@ class Material:
     reflection: float
 
 
+# Black material
 BLACK = Material(
     specular=np.array([0.0, 0.0, 0.0]),
     diffuse=np.array([0.0, 0.0, 0.0]),
@@ -41,6 +42,7 @@ BLACK = Material(
 )
 
 
+# Light material (point light source)
 LIGHT = Material(
     specular=np.array([1.0, 1.0, 1.0]),
     diffuse=np.array([1.0, 1.0, 1.0]),
