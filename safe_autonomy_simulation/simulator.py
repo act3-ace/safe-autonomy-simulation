@@ -45,13 +45,6 @@ class Simulator(ABC):
         """
         self._sim_time += 1 / self.frame_rate
 
-    @abstractmethod
-    def info(self) -> typing.Dict[str, typing.Any]:
-        """
-        Return info about the current state of the simulation
-        """
-        raise NotImplementedError
-
     @property
     def frame_rate(self) -> float:
         """Simulation frame rate in Hz
@@ -105,12 +98,6 @@ class ContinuousSimulator(Simulator):
         for _, entity in self.entities.items():
             entity.step(step_size=step_size)
         super().step()
-
-    def info(self) -> typing.Dict[str, np.ndarray]:
-        entity_states = {
-            entity.name: entity.state for _, entity in self.entities.items()
-        }
-        return entity_states
 
     @property
     def entities(self) -> typing.Dict[str, Entity]:
