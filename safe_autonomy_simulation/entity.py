@@ -43,12 +43,12 @@ else:
 
 
 class BaseUnits:
-    """Provides unit system definitions for phsyical entities
+    """Provides unit system definitions for physical entities
 
     Parameters
     ----------
-    length : Union[str, pint.Unit]
-        Length unit definition
+    distance : Union[str, pint.Unit]
+        Distance unit definition
     time : Union[str, pint.Unit]
         Time unit definition
     angle : Union[str, pint.Unit]
@@ -56,8 +56,8 @@ class BaseUnits:
 
     Attributes
     ----------
-    length : pint.Unit
-        Length unit definition
+    distance : pint.Unit
+        Distance unit definition
     time : pint.Unit
         Time unit definition
     angle : pint.Unit
@@ -74,18 +74,18 @@ class BaseUnits:
 
     def __init__(
         self,
-        length: Union[str, pint.Unit],
+        distance: Union[str, pint.Unit],
         time: Union[str, pint.Unit],
         angle: Union[str, pint.Unit],
     ):
-        self.length: pint.Unit = pint.Unit(length)
+        self.distance: pint.Unit = pint.Unit(distance)
         self.time: pint.Unit = pint.Unit(time)
         self.angle: pint.Unit = pint.Unit(angle)
 
-        self.velocity: pint.Unit = self.length / self.time
+        self.velocity: pint.Unit = self.distance / self.time
         self.angular_velocity: pint.Unit = self.angle / self.time
 
-        self.acceleration: pint.Unit = self.length / (self.time**2)
+        self.acceleration: pint.Unit = self.distance / (self.time**2)
         self.angular_acceleration: pint.Unit = self.angle / (self.time**2)
 
 
