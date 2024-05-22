@@ -21,11 +21,12 @@ from safe_autonomy_simulation.spacecraft.utils import (
     generate_cwh_matrices,
     M_DEFAULT,
     N_DEFAULT,
-    CWHMaterial,
+    CWH_MATERIAL,
 )
 
 from safe_autonomy_simulation.entity import PhysicalEntity
 from safe_autonomy_simulation.dynamics import LinearODESolverDynamics
+from safe_autonomy_simulation.material import Material
 
 
 class CWHSpacecraft(PhysicalEntity):
@@ -63,7 +64,7 @@ class CWHSpacecraft(PhysicalEntity):
     integration_method: str, optional
         Numerical integration method passed to dynamics model. See BaseODESolverDynamics. By default "RK45"
     material: Material, optional
-        Material properties of the spacecraft, by default CWHMaterial()
+        Material properties of the spacecraft, by default CWH_MATERIAL
     parent: Union[PhysicalEntity, None], optional
         Parent entity of spacecraft, by default None
     children: set[PhysicalEntity], optional
@@ -79,7 +80,7 @@ class CWHSpacecraft(PhysicalEntity):
         n=N_DEFAULT,
         trajectory_samples=0,
         integration_method="RK45",
-        material: CWHMaterial = CWHMaterial(),
+        material: Material = CWH_MATERIAL,
         parent: Union[PhysicalEntity, None] = None,
         children: set[PhysicalEntity] = {},
     ):

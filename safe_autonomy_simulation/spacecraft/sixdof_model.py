@@ -28,11 +28,12 @@ from safe_autonomy_simulation.spacecraft.utils import (
     ACC_LIMIT_WHEEL_DEFAULT,
     VEL_LIMIT_WHEEL_DEFAULT,
     THRUST_CONTROL_LIMIT_DEFAULT,
-    CWHMaterial,
+    CWH_MATERIAL,
 )
 from safe_autonomy_simulation.utils import number_list_to_np
 from safe_autonomy_simulation.entity import Entity, PhysicalEntity
 from safe_autonomy_simulation.dynamics import ControlAffineODESolverDynamics
+from safe_autonomy_simulation.material import Material
 
 
 class SixDOFSpacecraft(PhysicalEntity):  # pylint: disable=too-many-public-methods
@@ -96,8 +97,8 @@ class SixDOFSpacecraft(PhysicalEntity):  # pylint: disable=too-many-public-metho
         number of trajectory samples the generate and store on steps, by default 0
     integration_method: str, optional
         Numerical integration method passed to dynamics model. See BaseODESolverDynamics. By default "RK45".
-    material: CWHMaterial, optional
-        Material properties of the spacecraft, by default CWHMaterial()
+    material: Material, optional
+        Material properties of the spacecraft, by default CWH_MATERIAL
     parent: Union[PhysicalEntity, None], optional
         Parent entity of spacecraft, by default None
     children: set[PhysicalEntity], optional
@@ -123,7 +124,7 @@ class SixDOFSpacecraft(PhysicalEntity):  # pylint: disable=too-many-public-metho
         n=N_DEFAULT,
         trajectory_samples=0,
         integration_method="RK45",
-        material: CWHMaterial = CWHMaterial(),
+        material: Material = CWH_MATERIAL,
         parent: Union[PhysicalEntity, None] = None,
         children: set[PhysicalEntity] = {},
     ):

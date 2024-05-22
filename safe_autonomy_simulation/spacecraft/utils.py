@@ -35,35 +35,13 @@ ANG_VEL_LIMIT_DEFAULT = 0.034907
 ACC_LIMIT_WHEEL_DEFAULT = 181.3
 VEL_LIMIT_WHEEL_DEFAULT = 576
 THRUST_CONTROL_LIMIT_DEFAULT = 1.0
-
-
-class CWHMaterial(Material):
-    """
-    Material properties of a CWH spacecraft
-
-    Parameters
-    ----------
-    specular: np.ndarray, optional
-        RGB specular reflection coefficients, by default np.array([1.0, 1.0, 1.0])
-    diffuse: np.ndarray, optional
-        RGB diffuse reflection coefficients, by default np.array([0.7, 0, 0])
-    ambient: np.ndarray, optional
-        RGB ambient reflection coefficients, by default np.array([0.1, 0, 0])
-    shininess: float, optional
-        shininess coefficient, by default 100
-    reflection: float, optional
-        reflection coefficient, by default 0.5
-    """
-
-    def __init__(
-        self,
-        specular: np.ndarray = np.array([1.0, 1.0, 1.0]),
-        diffuse: np.ndarray = np.array([0.7, 0, 0]),
-        ambient: np.ndarray = np.array([0.1, 0, 0]),
-        shininess: float = 100,
-        reflection: float = 0.5,
-    ):
-        super().__init__(specular, diffuse, ambient, shininess, reflection)
+CWH_MATERIAL = Material(
+    specular=np.array([1.0, 1.0, 1.0]),
+    diffuse=np.array([0.7, 0, 0]),
+    ambient=np.array([0.1, 0, 0]),
+    shininess=100,
+    reflection=0.5,
+)
 
 
 def generate_cwh_matrices(

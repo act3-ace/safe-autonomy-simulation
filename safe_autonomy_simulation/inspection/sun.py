@@ -20,7 +20,7 @@ import pint
 from safe_autonomy_simulation.spacecraft.point_model import N_DEFAULT
 from safe_autonomy_simulation.entity import Point
 from safe_autonomy_simulation.dynamics import ODESolverDynamics
-from safe_autonomy_simulation.material import Material, Light
+from safe_autonomy_simulation.material import Material, LIGHT
 
 
 class SunEntity(Point):
@@ -41,7 +41,7 @@ class SunEntity(Point):
     use_jax: bool, optional
         whether to use jax for dynamics, by default False
     material: Material, optional
-        material properties of the sun, by default Light()
+        material properties of the sun, by default LIGHT
     """
 
     def __init__(
@@ -51,7 +51,7 @@ class SunEntity(Point):
         n: float = N_DEFAULT,
         integration_method: str = "RK45",
         use_jax: bool = False,
-        material: Material = Light(),
+        material: Material = LIGHT,
     ):
         self._initial_theta = theta
         self._n = n  # rads/s

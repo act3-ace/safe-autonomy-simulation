@@ -13,15 +13,16 @@ from safe_autonomy_simulation.spacecraft.utils import (
     ACC_LIMIT_WHEEL_DEFAULT,
     VEL_LIMIT_WHEEL_DEFAULT,
     THRUST_CONTROL_LIMIT_DEFAULT,
-    CWHMaterial,
+    CWH_MATERIAL,
 )
 from safe_autonomy_simulation.spacecraft.point_model import CWHSpacecraft
 from safe_autonomy_simulation.spacecraft.sixdof_model import SixDOFSpacecraft
+from safe_autonomy_simulation.material import Material
 
 
 class Inspector(CWHSpacecraft):
     """Inspector spacecraft with a camera.
-    
+
     Parameters
     ----------
     name : str
@@ -41,12 +42,13 @@ class Inspector(CWHSpacecraft):
     integration_method : str, optional
         Numerical integration method passed to dynamics model. See ODESolverDynamics. By default "RK45"
     material : Material, optional
-        Material properties of the spacecraft, by default CWHMaterial()
+        Material properties of the spacecraft, by default CWH_MATERIAL
     parent : Union[PhysicalEntity, None], optional
         Parent entity of spacecraft, by default None
     children : set[PhysicalEntity], optional
         Set of children entities of spacecraft, by default {}
     """
+
     def __init__(
         self,
         name: str,
@@ -57,7 +59,7 @@ class Inspector(CWHSpacecraft):
         n: float = N_DEFAULT,
         trajectory_samples: int = 0,
         integration_method: str = "RK45",
-        material: CWHMaterial = CWHMaterial(),
+        material: Material = CWH_MATERIAL,
         parent: Union[PhysicalEntity, None] = None,
         children: set[PhysicalEntity] = {},
     ):
@@ -75,11 +77,11 @@ class Inspector(CWHSpacecraft):
         )
         self._camera = camera
         self.add_child(camera)
-    
+
     @property
     def camera(self) -> Camera:
         """Inspector camera sensor
-        
+
         Returns
         -------
         Camera
@@ -90,7 +92,7 @@ class Inspector(CWHSpacecraft):
 
 class SixDOFInspector(SixDOFSpacecraft):
     """SixDOF Inspector spacecraft with a camera.
-    
+
     Parameters
     ----------
     name : str
@@ -130,12 +132,13 @@ class SixDOFInspector(SixDOFSpacecraft):
     integration_method : str, optional
         Numerical integration method passed to dynamics model. See ODESolverDynamics. By default "RK45"
     material : Material, optional
-        Material properties of the spacecraft, by default CWHMaterial()
+        Material properties of the spacecraft, by default CWH_MATERIAL
     parent : Union[PhysicalEntity, None], optional
         Parent entity of spacecraft, by default None
     children : set[PhysicalEntity], optional
         Set of children entities of spacecraft, by default {}
     """
+
     def __init__(
         self,
         name: str,
@@ -156,7 +159,7 @@ class SixDOFInspector(SixDOFSpacecraft):
         body_frame_thrust: bool = True,
         trajectory_samples: int = 0,
         integration_method: str = "RK45",
-        material: CWHMaterial = CWHMaterial(),
+        material: Material = CWH_MATERIAL,
         parent: Union[PhysicalEntity, None] = None,
         children: set[PhysicalEntity] = {},
     ):
@@ -188,7 +191,7 @@ class SixDOFInspector(SixDOFSpacecraft):
     @property
     def camera(self) -> Camera:
         """Inspector camera sensor
-        
+
         Returns
         -------
         Camera

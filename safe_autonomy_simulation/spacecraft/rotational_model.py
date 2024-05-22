@@ -30,11 +30,12 @@ from safe_autonomy_simulation.spacecraft.utils import (
     ANG_VEL_LIMIT_DEFAULT,
     ACC_LIMIT_WHEEL_DEFAULT,
     VEL_LIMIT_WHEEL_DEFAULT,
-    CWHMaterial,
+    CWH_MATERIAL,
 )
 
 from safe_autonomy_simulation.entity import PhysicalEntity
 from safe_autonomy_simulation.dynamics import ControlAffineODESolverDynamics
+from safe_autonomy_simulation.material import Material
 
 
 class CWHRotation2dSpacecraft(PhysicalEntity):  # pylint: disable=too-many-public-methods
@@ -98,6 +99,12 @@ class CWHRotation2dSpacecraft(PhysicalEntity):  # pylint: disable=too-many-publi
         Numerical integration method passed to dynamics model. See BaseODESolverDynamics. By default "RK45".
     use_jax : bool, optional
         True if using jax version of numpy/scipy in dynamics model. By default, False
+    material: Material, optional
+        Material properties of the spacecraft, by default CWH_MATERIAL
+    parent: Union[PhysicalEntity, None], optional
+        Parent entity of spacecraft, by default None
+    children: set[PhysicalEntity], optional
+        Set of children entities of spacecraft, by default {}
     """
 
     def __init__(
@@ -118,7 +125,7 @@ class CWHRotation2dSpacecraft(PhysicalEntity):  # pylint: disable=too-many-publi
         trajectory_samples=0,
         integration_method="RK45",
         use_jax: bool = False,
-        material: CWHMaterial = CWHMaterial(),
+        material: Material = CWH_MATERIAL,
         parent: Union[PhysicalEntity, None] = None,
         children: set[PhysicalEntity] = {},
     ):

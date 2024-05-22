@@ -25,7 +25,7 @@ from scipy.spatial.transform import Rotation
 from pint import _typing as pintt
 
 from safe_autonomy_simulation.dynamics import Dynamics, PassThroughDynamics
-from safe_autonomy_simulation.material import Material, Black
+from safe_autonomy_simulation.material import Material, BLACK
 
 if TYPE_CHECKING:
     import jax
@@ -248,7 +248,7 @@ class Entity(abc.ABC):
     children : set[Entity], optional
         Optional set of child entities of the entity. By default {}.
     material : Material, optional
-        Material properties of the entity. By default Black().
+        Material properties of the entity. By default BLACK().
 
     Attributes
     ----------
@@ -280,7 +280,7 @@ class Entity(abc.ABC):
         control_map: Union[dict, None] = None,
         parent: Union[Entity, None] = None,
         children: set[Entity] = {},
-        material: Material = Black(),
+        material: Material = BLACK(),
     ):
         self.name = name
 
@@ -561,7 +561,7 @@ class PhysicalEntity(Entity):
     children : set[Entity], optional
         Optional set of child entities of the entity. By default {}.
     material : Material, optional
-        Material properties of the entity. By default Black().
+        Material properties of the entity. By default BLACK.
 
     Attributes
     ----------
@@ -593,7 +593,7 @@ class PhysicalEntity(Entity):
         dynamics: Dynamics = PassThroughDynamics(),
         parent: Union[Entity, None] = None,
         children: set[Entity] = {},
-        material: Material = Black(),
+        material: Material = BLACK(),
     ):
         assert position.shape == (
             3,
@@ -1024,7 +1024,7 @@ class Point(PhysicalEntity):
     children : set[Entity], optional
         Optional set of child entities of the entity. By default {}.
     material : Material, optional
-        Material properties of the entity. By default Black().
+        Material properties of the entity. By default BLACK.
     """
 
     def __init__(
@@ -1039,7 +1039,7 @@ class Point(PhysicalEntity):
         control_map: Union[dict, None] = None,
         parent: Union[Entity, None] = None,
         children: set[Entity] = {},
-        material: Material = Black(),
+        material: Material = BLACK(),
     ):
         self._initial_position = position
         self._initial_velocity = velocity

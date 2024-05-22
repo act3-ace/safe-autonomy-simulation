@@ -12,11 +12,12 @@ from safe_autonomy_simulation.spacecraft.utils import (
     ACC_LIMIT_WHEEL_DEFAULT,
     VEL_LIMIT_WHEEL_DEFAULT,
     THRUST_CONTROL_LIMIT_DEFAULT,
-    CWHMaterial,
+    CWH_MATERIAL,
 )
 from safe_autonomy_simulation.spacecraft.point_model import CWHSpacecraft
 from safe_autonomy_simulation.spacecraft.sixdof_model import SixDOFSpacecraft
 from safe_autonomy_simulation.inspection.inspection_points import InspectionPoints
+from safe_autonomy_simulation.material import Material
 
 
 class Target(CWHSpacecraft):
@@ -41,7 +42,7 @@ class Target(CWHSpacecraft):
     integration_method : str, optional
         Numerical integration method passed to dynamics model. See ODESolverDynamics. By default "RK45"
     material : Material, optional
-        Material properties of the spacecraft, by default CWHMaterial()
+        Material properties of the spacecraft, by default CWH_MATERIAL
     parent : Union[PhysicalEntity, None], optional
         Parent entity of spacecraft, by default None
     children : set[PhysicalEntity], optional
@@ -57,7 +58,7 @@ class Target(CWHSpacecraft):
         n: float = N_DEFAULT,
         trajectory_samples: int = 0,
         integration_method: str = "RK45",
-        material: CWHMaterial = CWHMaterial(),
+        material: Material = CWH_MATERIAL, 
         parent: Union[PhysicalEntity, None] = None,
         children: set[PhysicalEntity] = {},
     ):
@@ -130,7 +131,7 @@ class SixDOFTarget(SixDOFSpacecraft):
     integration_method : str, optional
         Numerical integration method passed to dynamics model. See ODESolverDynamics. By default "RK45"
     material : Material, optional
-        Material properties of the spacecraft, by default CWHMaterial()
+        Material properties of the spacecraft, by default CWH_MATERIAL
     parent : Union[PhysicalEntity, None], optional
         Parent entity of spacecraft, by default None
     children : set[PhysicalEntity], optional
@@ -156,7 +157,7 @@ class SixDOFTarget(SixDOFSpacecraft):
         body_frame_thrust: bool = True,
         trajectory_samples: int = 0,
         integration_method: str = "RK45",
-        material: CWHMaterial = CWHMaterial(),
+        material: Material = CWH_MATERIAL,
         parent: Union[PhysicalEntity, None] = None,
         children: set[PhysicalEntity] = {},
     ):
