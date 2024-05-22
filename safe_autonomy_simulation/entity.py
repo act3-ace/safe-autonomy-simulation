@@ -355,7 +355,7 @@ class Entity(abc.ABC):
         control : np.ndarray
             Control vector to be added to the control queue
         """
-        self.control_queue.add_control(control=control)
+        self.control_queue.add_control(control)
 
     def add_child(self, child: Entity):
         """
