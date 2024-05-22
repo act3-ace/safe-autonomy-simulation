@@ -218,6 +218,12 @@ class ControlQueue:
         self.controls.put(control)
 
 
+class DefaultControlQueue(ControlQueue):
+    """A control queue with an empty default control vector."""
+    def __init__(self):
+        super().__init__(default_control=np.empty(0))
+
+
 class Entity(abc.ABC):
     """
     Base implementation of a dynamics controlled entity within the simulation.
@@ -236,50 +242,21 @@ class Entity(abc.ABC):
         Name of the entity
     dynamics : Dynamics, optional
         Dynamics object for computing state transitions, by default PassThroughDynamics()
-    control_default: Union[np.ndarray, dict], optional
-        Default control used when control queue is empty. By default [0].
-    control_min: np.ndarray, optional
-        Optional minimum allowable control vector values. Control vectors that exceed this limit are clipped. By default -np.inf.
-    control_max: np.ndarray, optional
-        Optional maximum allowable control vector values. Control vectors that exceed this limit are clipped. By default np.inf.
-    control_map: dict, optional
-        Optional mapping for actuator names to their indices in the state vector.
-        Allows dictionary action inputs in add_control(). By default None.
+    control_queue : ControlQueue, optional
+        Queue of control vectors to be applied to the entity, by default DefaultControlQueue()
     parent : Union[Entity, None], optional
         Optional parent entity of the entity. By default None.
     children : set[Entity], optional
         Optional set of child entities of the entity. By default {}.
     material : Material, optional
-        Material properties of the entity. By default BLACK().
-
-    Attributes
-    ----------
-    name : str
-        Name of the entity
-    last_control : Union[np.ndarray, None]
-        Last control vector applied to the entity
-    control_queue : ControlQueue
-        Queue of control vectors to be applied to the entity
-    state : np.ndarray
-        Entity state vector
-    parent : Union[Entity, None]
-        Parent entity of the entity
-    children : set[Entity]
-        Set of child entities of the entity
-    material : Material
-        Material properties of the entity
-    dynamics : Dynamics
-        Dynamics object for computing state transitions
+        Material properties of the entity. By default BLACK.
     """
 
     def __init__(
         self,
         name: str,
         dynamics: Dynamics = PassThroughDynamics(),
-        control_default: Union[np.ndarray, dict] = np.array([0]),
-        control_min: float = -np.inf,
-        control_max: float = np.inf,
-        control_map: Union[dict, None] = None,
+        control_queue: ControlQueue = DefaultControlQueue(),
         parent: Union[Entity, None] = None,
         children: set[Entity] = {},
         material: Material = BLACK(),
@@ -290,12 +267,7 @@ class Entity(abc.ABC):
 
         self._dynamics = dynamics
 
-        self.control_queue = ControlQueue(
-            control_map=control_map,
-            default_control=control_default,
-            control_min=control_min,
-            control_max=control_max,
-        )
+        self._control_queue = control_queue
         self._last_control = None
 
         # Register parent and children
@@ -519,6 +491,18 @@ class Entity(abc.ABC):
         """
         return self._dynamics
 
+    @property
+    def control_queue(self) -> ControlQueue:
+        """
+        Queue of control vectors to be applied to the entity
+
+        Returns
+        -------
+        ControlQueue
+            Queue of control vectors to be applied to the entity
+        """
+        return self._control_queue
+
 
 class PhysicalEntity(Entity):
     """
@@ -547,15 +531,8 @@ class PhysicalEntity(Entity):
         Initial orientation quaternion of the entity
     angular_velocity : np.ndarray
         Initial angular velocity of the entity
-    control_default: Union[np.ndarray, dict]
-        Default control vector used when no action is passed to step(). Typically 0 or neutral for each actuator.
-    control_min: np.ndarray, optional
-        Optional minimum allowable control vector values. Control vectors that exceed this limit are clipped. By default -np.inf.
-    control_max: np.ndarray, optional
-        Optional maximum allowable control vector values. Control vectors that exceed this limit are clipped. By default np.inf.
-    control_map: dict, optional
-        Optional mapping for actuator names to their indices in the state vector.
-        Allows dictionary action inputs in add_control(). By default None.
+    control_queue : ControlQueue, optional
+        Queue of control vectors to be applied to the entity, by default DefaultControlQueue()
     dynamics : Dynamics, optional
         Dynamics object for computing state transitions. By default PassThroughDynamics()
     parent : Union[Entity, None], optional
@@ -564,19 +541,6 @@ class PhysicalEntity(Entity):
         Optional set of child entities of the entity. By default {}.
     material : Material, optional
         Material properties of the entity. By default BLACK.
-
-    Attributes
-    ----------
-    name : str
-        Name of the entity
-    dynamics : Dynamics
-        Dynamics object for computing state transitions
-    base_units : BaseUnits
-        Unit system definitions for the entity
-    last_control : Union[np.ndarray, None]
-        Last control vector applied to the entity
-    control_queue : ControlQueue
-        Queue of control vectors to be applied to the entity
     """
 
     base_units = BaseUnits("meters", "seconds", "radians")
@@ -588,10 +552,7 @@ class PhysicalEntity(Entity):
         velocity: np.ndarray,
         orientation: np.ndarray,
         angular_velocity: np.ndarray,
-        control_default: Union[np.ndarray, dict],
-        control_min: float = -np.inf,
-        control_max: float = np.inf,
-        control_map: Union[dict, None] = None,
+        control_queue: ControlQueue = DefaultControlQueue(),
         dynamics: Dynamics = PassThroughDynamics(),
         parent: Union[Entity, None] = None,
         children: set[Entity] = {},
@@ -617,10 +578,7 @@ class PhysicalEntity(Entity):
         super().__init__(
             name=name,
             dynamics=dynamics,
-            control_default=control_default,
-            control_min=control_min,
-            control_max=control_max,
-            control_map=control_map,
+            control_queue=control_queue,
             parent=parent,
             children=children,
             material=material,
@@ -1012,15 +970,8 @@ class Point(PhysicalEntity):
         Initial velocity of the entity. By default [0, 0, 0]
     dynamics : Dynamics, optional
         Dynamics object for computing state transitions. By default PassThroughDynamics()
-    control_default: Union[np.ndarray, dict], optional
-        Default control vector used when no action is passed to step(). Typically 0 or neutral for each actuator. By default [0].
-    control_min: np.ndarray, optional
-        Optional minimum allowable control vector values. Control vectors that exceed this limit are clipped. By default -np.inf.
-    control_max: np.ndarray, optional
-        Optional maximum allowable control vector values. Control vectors that exceed this limit are clipped. By default np.inf.
-    control_map: dict, optional
-        Optional mapping for actuator names to their indices in the state vector.
-        Allows dictionary action inputs in add_control(). By default None
+    control_queue : ControlQueue, optional
+        Queue of control vectors to be applied to the entity. By default DefaultControlQueue()
     parent : Union[Entity, None], optional
         Optional parent entity of the entity. By default None.
     children : set[Entity], optional
@@ -1035,10 +986,7 @@ class Point(PhysicalEntity):
         position: np.ndarray,
         velocity: np.ndarray = np.array([0, 0, 0]),
         dynamics: Dynamics = PassThroughDynamics(),
-        control_default: Union[np.ndarray, dict] = np.zeros(1),
-        control_min: float = -np.inf,
-        control_max: float = np.inf,
-        control_map: Union[dict, None] = None,
+        control_queue: ControlQueue = DefaultControlQueue(),
         parent: Union[Entity, None] = None,
         children: set[Entity] = {},
         material: Material = BLACK(),
@@ -1053,10 +1001,7 @@ class Point(PhysicalEntity):
             velocity=velocity,
             orientation=Rotation.from_euler("ZYX", [0, 0, 0]).as_quat(),
             angular_velocity=np.zeros(3),
-            control_default=control_default,
-            control_min=control_min,
-            control_max=control_max,
-            control_map=control_map,
+            control_queue=control_queue,
             parent=parent,
             children=children,
             material=material,

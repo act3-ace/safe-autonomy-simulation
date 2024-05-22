@@ -33,7 +33,7 @@ from safe_autonomy_simulation.spacecraft.utils import (
     CWH_MATERIAL,
 )
 
-from safe_autonomy_simulation.entity import PhysicalEntity
+from safe_autonomy_simulation.entity import PhysicalEntity, ControlQueue
 from safe_autonomy_simulation.dynamics import ControlAffineODESolverDynamics
 from safe_autonomy_simulation.material import Material
 
@@ -149,14 +149,12 @@ class CWHRotation2dSpacecraft(PhysicalEntity):  # pylint: disable=too-many-publi
             self.ang_vel_limit, self.inertia_wheel * self.vel_limit_wheel / self.inertia
         )
 
-        control_default = np.zeros((3,))
-        control_min = np.array([-1, -1, -ang_acc_limit * self.inertia])
-        control_max = np.array([1, 1, ang_acc_limit * self.inertia])
-        control_map = {
-            "thrust_x": 0,
-            "thrust_y": 1,
-            "moment_z": 2,
-        }
+        control_queue = ControlQueue(
+            default_control=np.zeros(3),
+            control_map={"thrust_x": 0, "thrust_y": 1, "moment_z": 2},
+            control_min=np.array([-1, -1, -ang_acc_limit * self.inertia]),
+            control_max=np.array([1, 1, ang_acc_limit * self.inertia]),
+        )
 
         dynamics = CWHRotation2dDynamics(
             m=m,
@@ -176,10 +174,7 @@ class CWHRotation2dSpacecraft(PhysicalEntity):  # pylint: disable=too-many-publi
             velocity=np.concatenate([velocity, np.array([0])]),  # z_dot=0
             orientation=Rotation.from_euler("ZYX", [theta, 0, 0]).as_quat(),
             angular_velocity=np.array([0, 0, wz]),
-            control_default=control_default,
-            control_min=control_min,
-            control_max=control_max,
-            control_map=control_map,
+            control_queue=control_queue,
             material=material,
             parent=parent,
             children=children,

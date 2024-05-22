@@ -24,7 +24,7 @@ from safe_autonomy_simulation.spacecraft.utils import (
     CWH_MATERIAL,
 )
 
-from safe_autonomy_simulation.entity import PhysicalEntity
+from safe_autonomy_simulation.entity import PhysicalEntity, ControlQueue
 from safe_autonomy_simulation.dynamics import LinearODESolverDynamics
 from safe_autonomy_simulation.material import Material
 
@@ -91,11 +91,12 @@ class CWHSpacecraft(PhysicalEntity):
             integration_method=integration_method,
         )
 
-        control_map = {
-            "thrust_x": 0,
-            "thrust_y": 1,
-            "thrust_z": 2,
-        }
+        control_queue = ControlQueue(
+            default_control=np.zeros(3),
+            control_map={"thrust_x": 0, "thrust_y": 1, "thrust_z": 2},
+            control_min=-1,
+            control_max=1,
+        )
 
         super().__init__(
             name=name,
@@ -104,10 +105,7 @@ class CWHSpacecraft(PhysicalEntity):
             velocity=velocity,
             orientation=np.ndarray([0, 0, 0, 1]),  # no rotation
             angular_velocity=np.zeros(3),  # no rotation
-            control_default=np.zeros((3,)),
-            control_min=-1,
-            control_max=1,
-            control_map=control_map,
+            control_queue=control_queue,
             material=material,
             parent=parent,
             children=children,
@@ -220,6 +218,3 @@ class CWHDynamics(LinearODESolverDynamics):
             integration_method=integration_method,
             use_jax=use_jax,
         )
-
-
-

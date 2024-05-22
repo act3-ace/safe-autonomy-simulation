@@ -31,7 +31,7 @@ from safe_autonomy_simulation.spacecraft.utils import (
     CWH_MATERIAL,
 )
 from safe_autonomy_simulation.utils import number_list_to_np
-from safe_autonomy_simulation.entity import Entity, PhysicalEntity
+from safe_autonomy_simulation.entity import Entity, PhysicalEntity, ControlQueue
 from safe_autonomy_simulation.dynamics import ControlAffineODESolverDynamics
 from safe_autonomy_simulation.material import Material
 
@@ -145,17 +145,19 @@ class SixDOFSpacecraft(PhysicalEntity):  # pylint: disable=too-many-public-metho
             control_limit[i] = thrust_control_limit
             control_limit[i + 3] = acc_limit_combined[i] * inertia_matrix[i, i]
 
-        control_default = np.zeros((6,))
-        control_min = -1 * control_limit
-        control_max = control_limit
-        control_map = {
-            "thrust_x": 0,
-            "thrust_y": 1,
-            "thrust_z": 2,
-            "moment_x": 3,
-            "moment_y": 4,
-            "moment_z": 5,
-        }
+        control_queue = ControlQueue(
+            default_control=np.zeros(6),
+            control_map={
+                "thrust_x": 0,
+                "thrust_y": 1,
+                "thrust_z": 2,
+                "moment_x": 3,
+                "moment_y": 4,
+                "moment_z": 5,
+            },
+            control_min=-control_limit,
+            control_max=control_limit,
+        )
 
         dynamics = SixDOFDynamics(
             m=m,
@@ -176,10 +178,7 @@ class SixDOFSpacecraft(PhysicalEntity):  # pylint: disable=too-many-public-metho
             orientation=orientation,
             angular_velocity=angular_velocity,
             dynamics=dynamics,
-            control_default=control_default,
-            control_min=control_min,
-            control_max=control_max,
-            control_map=control_map,
+            control_queue=control_queue,
             material=material,
             parent=parent,
             children=children,
