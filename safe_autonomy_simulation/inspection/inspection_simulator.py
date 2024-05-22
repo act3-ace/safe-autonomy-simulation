@@ -16,14 +16,12 @@ using a 6DOF or point mass spacecraft model with or without illumination.
 import typing
 
 from safe_autonomy_simulation.inspection.sun import SunEntity
-from safe_autonomy_simulation.simulator import (
-    ControlledContinuousSimulator,
-)
+from safe_autonomy_simulation.simulator import Simulator
 from safe_autonomy_simulation.inspection.inspector import Inspector, SixDOFInspector
 from safe_autonomy_simulation.inspection.target import Target, SixDOFTarget
 
 
-class InspectionSimulator(ControlledContinuousSimulator):
+class InspectionSimulator(Simulator):
     """
     Inspection simulator for a spacecraft inspection environment.
 
@@ -115,7 +113,7 @@ class InspectionSimulator(ControlledContinuousSimulator):
             sun entity or None if no sun entity is present
         """
         return self._sun
-    
+
     @property
     def binary_ray(self) -> bool:
         """Binary ray tracing

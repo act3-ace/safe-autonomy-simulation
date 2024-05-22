@@ -15,25 +15,16 @@ using a 3D CWH point mass spacecraft model.
 
 import typing
 
-from safe_autonomy_simulation.simulator import ControlledContinuousSimulator
+from safe_autonomy_simulation.simulator import Simulator
 from safe_autonomy_simulation.spacecraft.point_model import CWHSpacecraft
 
 
-class DockingSimulator(ControlledContinuousSimulator):
+class DockingSimulator(Simulator):
     """
     A discrete spacecraft docking simulation using 3D CWH point mass spacecraft models.
 
     Parameters
     ----------
-    frame_rate : float
-        simulation frame rate
-    entities : dict[str, CWHSpacecraft]
-        simulation entities dict of the form {entity_name: entity_class}
-
-    Attributes
-    ----------
-    sim_time : float
-        current simulation time
     frame_rate : float
         simulation frame rate
     entities : dict[str, CWHSpacecraft]
