@@ -181,7 +181,7 @@ class InspectionPoint(Point):
         self._state[-2] = weight
 
 
-class InspectionPoints(Entity):
+class InspectionPointSet(Entity):
     """
     Inspection points entity containing a sphere of inspection points.
 
@@ -217,7 +217,8 @@ class InspectionPoints(Entity):
         self._points: typing.Dict[int, InspectionPoint] = self._generate_points(
             points_alg=points_algorithm
         )
-        super().__init__(name=name, parent=parent)
+        dynamics = InspectionPointSetDynamics(self.points)
+        super().__init__(name=name, dynamics=dynamics, parent=parent)
 
     def build_initial_state(self) -> np.ndarray:
         state = np.array([p.state for p in self.points.values()])

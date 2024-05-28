@@ -269,6 +269,7 @@ class Entity(abc.ABC):
 
         self._control_queue = control_queue
         self._last_control = None
+        self._state_dot = np.zeros_like(self.state)
 
         # Register parent and children
         self.parent = parent
@@ -276,42 +277,6 @@ class Entity(abc.ABC):
 
         # Set material
         self._material = material
-
-    def _pre_step(self, step_size: float):
-        """
-        Pre-step hook for entity to perform any pre-step actions.
-
-        Parameters
-        ----------
-        step_size : float
-            Duration of simulation step in seconds.
-        """
-        pass
-
-    def _post_step(self, step_size: float):
-        """
-        Post-step hook for entity to perform any post-step actions.
-
-        Parameters
-        ----------
-        step_size : float
-            Duration of simulation step in seconds.
-        """
-        for child in self.children:
-            child.step(step_size)
-
-    def _step(self, step_size: float):
-        """
-        Executes a state transition simulation step for the entity.
-
-        This is the main step function that should be implemented by subclasses.
-
-        Parameters
-        ----------
-        step_size : float
-            Duration of simulation step in seconds.
-        """
-        self._last_control = self.control_queue.next_control()
 
     @abc.abstractmethod
     def build_initial_state(self) -> np.ndarray:
@@ -330,13 +295,50 @@ class Entity(abc.ABC):
         """
         self._state = self.build_initial_state()
         self._last_control = None
+        self._state_dot = np.zeros_like(self.state)
         self.control_queue.reset()
         for child in self.children:
             child.reset()
 
+    def _pre_step(self, step_size: float):
+        """
+        Pre-step hook for entity dynamics.
+
+        This method is called before the entity's state is updated in the step() method.
+        It can be used to perform any necessary pre-step computations or updates to the entity's state.
+
+        Parameters
+        ----------
+        step_size : float
+            Duration of simulation step in seconds.
+        """
+        pass
+
+    def _post_step(self, step_size: float):
+        """
+        Post-step hook for entity dynamics.
+
+        This method is called after the entity's state is updated in the step() method.
+        It can be used to perform any necessary post-step computations or updates to the entity's state.
+
+        Parameters
+        ----------
+        step_size : float
+            Duration of simulation step in seconds.
+        """
+        pass
+
     def step(self, step_size: float):
         """
-        Executes a state transition simulation step for the entity.
+        Executes a state transition simulation step for the entity and its children.
+
+        This method should only update the `state`, `state_dot`, and `last_control` vectors
+        of the entity and its children and should not modify any other entity attributes.
+        The entity's state vector is updated according to its dynamics, the previous state,
+        and the next control vector in the control queue.
+
+        Entity children are stepped after the parent entity to ensure that the parent state
+        is updated before the children are stepped.
 
         Parameters
         ----------
@@ -344,7 +346,12 @@ class Entity(abc.ABC):
             Duration of simulation step in seconds.
         """
         self._pre_step(step_size)
-        self._step(step_size)
+        self._last_control = self.control_queue.next_control()
+        self.state, self._state_dot = self.dynamics.step(
+            step_size, self.state, self.last_control
+        )
+        for child in self.children:
+            child.step(step_size)
         self._post_step(step_size)
 
     def add_control(self, control: Union[np.ndarray, list, jnp.ndarray, dict]):
@@ -503,6 +510,17 @@ class Entity(abc.ABC):
         """
         return self._control_queue
 
+    @property
+    def state_dot(self) -> np.ndarray:
+        """Time derivative of the entity state vector
+        
+        Returns
+        -------
+        np.ndarray
+            Time derivative of the entity state vector
+        """
+        return self._state_dot
+
 
 class PhysicalEntity(Entity):
     """
@@ -583,7 +601,6 @@ class PhysicalEntity(Entity):
             children=children,
             material=material,
         )
-        self._state_dot = np.zeros_like(self.state)
         self._ureg: pint.UnitRegistry = pint.get_application_registry()
 
     def __eq__(self, other):
@@ -609,18 +626,6 @@ class PhysicalEntity(Entity):
                 self._initial_orientation,
                 self._initial_angular_velocity,
             )
-        )
-
-    def reset(self):
-        super().reset()
-        self._state_dot = np.zeros_like(self.state)
-
-    def _step(self, step_size: float):
-        super()._step(step_size)
-
-        # compute new state from dynamics
-        self.state, self._state_dot = self.dynamics.step(
-            step_size, self.state, self.last_control
         )
 
     @property
