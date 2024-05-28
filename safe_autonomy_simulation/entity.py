@@ -111,13 +111,13 @@ class ControlQueue:
         Queue of control vectors to be applied to the entity.
     default_control : np.ndarray
         Default control vector used when the control queue is empty. Typically 0 or neutral for each actuator.
-    control_min : Union[float, None]
+    control_min : Union[np.ndarray, None], optional
         Minimum allowable control vector values. Control vectors that exceed this limit are clipped. By default None.
-    control_max : Union[float, None]
+    control_max : Union[np.ndarray, None], optional
         Maximum allowable control vector values. Control vectors that exceed this limit are clipped. By default None.
-    control_map : Union[dict, None]
+    control_map : Union[dict, None], optional
         Mapping for actuator names to their indices in the state vector.
-        Allows dictionary action inputs in add_control(). By default None.
+        Required for dictionary action inputs in add_control(). By default None.
     """
 
     def __init__(
