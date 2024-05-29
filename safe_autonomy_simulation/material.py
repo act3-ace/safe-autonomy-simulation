@@ -50,3 +50,13 @@ LIGHT = Material(
     shininess=0.0,
     reflection=0.0,
 )
+
+
+# Metallic grey material
+METALLIC_GREY = Material(
+    specular=np.array([1, 1, 1]),
+    diffuse=np.array([0.1, 0.1, 0.1]),
+    ambient=np.array([0.4, 0.4, 0.4]),
+    shininess=100.0,
+    reflection=0.0,
+)
