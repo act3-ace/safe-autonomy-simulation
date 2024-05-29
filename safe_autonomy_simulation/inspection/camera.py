@@ -84,7 +84,6 @@ class Camera(PhysicalEntity):
         point: Point,
         light: PhysicalEntity,
         viewed_object: Entity,
-        r_avg: float,
         radius: float,
     ) -> np.ndarray:
         """Capture a point on an object in the environment
@@ -97,8 +96,6 @@ class Camera(PhysicalEntity):
             light source entity
         viewed_object: Entity
             object to capture the point from
-        r_avg: float
-            average distance between light and viewed_object in meters
         radius: float
             radius of the object in meters
 
@@ -113,12 +110,7 @@ class Camera(PhysicalEntity):
         normal_to_surface = normalize(point.position)
         # Get a point slightly off the surface of the sphere so don't detect surface as an intersection
         shifted_point = point.position + 1e-5 * normal_to_surface
-        sun_position = [
-            r_avg * (math.cos(light.theta)),
-            -r_avg * (math.sin(light.theta)),
-            0,
-        ]
-        intersection_to_light = normalize(sun_position - shifted_point)
+        intersection_to_light = normalize(light.position - shifted_point)
         intersect_var = sphere_intersect(
             center, radius, shifted_point, intersection_to_light
         )
