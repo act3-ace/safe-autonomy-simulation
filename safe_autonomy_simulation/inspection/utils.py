@@ -226,29 +226,28 @@ def is_illuminated(point: Point, sun: SunEntity, r_avg: float, radius: float) ->
     return bool_val
 
 
-def evaluate_rgb(rgb: np.ndarray) -> bool:
+def evaluate_rgb(
+    rgb: np.ndarray,
+    rgb_min: np.ndarray = np.array([0.8, 0.8, 0.8]),
+    rgb_max: np.ndarray = np.array([0.12, np.inf, np.inf]),
+) -> bool:
     """
     Determine if given RGB value is sufficient for illumination
-
-    For now only considers the red channel
+    given minimum and maximum RGB values.
 
     Parameters
     ----------
     rgb: np.ndarray
         3x1 array containing RGB value
+    rgb_min: np.ndarray, optional
+        minimum RGB value for illumination, by default [0.8, 0.8, 0.8]
+    rgb_max: np.ndarray, optional
+        maximum RGB value for illumination, by default [0.12, np.inf, np.inf]
 
     Returns
     -------
     bool:
         whether RGB value is sufficient for illumination, True if sufficient, False if not
     """
-    rgb_bool = True
-
-    # Too dark
-    if rgb[0] < 0.12:
-        rgb_bool = False
-    # Too bright/white
-    if rgb[0] > 0.8 and rgb[1] > 0.8 and rgb[2] > 0.8:
-        rgb_bool = False
-
+    rgb_bool = np.greater(rgb, rgb_min).all() and np.less(rgb, rgb_max).all()
     return rgb_bool
