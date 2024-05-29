@@ -217,8 +217,7 @@ class InspectionPointSet(Entity):
         self._points: typing.Dict[int, InspectionPoint] = self._generate_points(
             points_alg=points_algorithm
         )
-        dynamics = InspectionPointSetDynamics(self.points)
-        super().__init__(name=name, dynamics=dynamics, parent=parent)
+        super().__init__(name=name, parent=parent)
 
     def build_initial_state(self) -> np.ndarray:
         state = np.array([p.state for p in self.points.values()])
