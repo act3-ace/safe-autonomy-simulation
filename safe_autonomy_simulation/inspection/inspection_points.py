@@ -7,6 +7,7 @@ from sklearn.cluster import KMeans
 from safe_autonomy_simulation.spacecraft import CWHSpacecraft
 from safe_autonomy_simulation.entity import Entity, PhysicalEntity, Point
 from safe_autonomy_simulation.inspection.camera import Camera
+from safe_autonomy_simulation.inspection.sun import SunEntity
 from safe_autonomy_simulation.inspection.utils import (
     points_on_sphere_cmu,
     points_on_sphere_fibonacci,
@@ -283,7 +284,10 @@ class InspectionPointSet(Entity):
         return points
 
     def update_points_inspection_status(
-        self, camera: Camera, sun: Entity = None, binary_ray: bool = True
+        self,
+        camera: Camera,
+        sun: typing.Union[SunEntity, None] = None,
+        binary_ray: bool = True,
     ):
         """
         Update the inspected state of all inspection points given an inspector's position.
@@ -294,7 +298,7 @@ class InspectionPointSet(Entity):
         ----------
         camera: Camera
             camera entity inspecting the points
-        sun: Entity, optional
+        sun: Union[SunEntity, None], optional
             sun entity, by default None
         binary_ray: bool, optional
             whether to use binary ray tracing for illumination, by default True
@@ -338,7 +342,7 @@ class InspectionPointSet(Entity):
                             point.inspector = camera.name
 
     def kmeans_find_nearest_cluster(
-        self, camera: Camera, sun: Entity = None, binary_ray: bool = True
+        self, camera: Camera, sun: typing.Union[SunEntity, None] = None, binary_ray: bool = True
     ) -> np.ndarray:
         """Finds nearest cluster of uninspected points using kmeans clustering
 
@@ -348,7 +352,7 @@ class InspectionPointSet(Entity):
         ----------
         camera: Camera
             camera entity inspecting the points
-        sun: Entity, optional
+        sun: Union[SunEntity, None], optional
             sun entity, by default None
         binary_ray: bool, optional
             whether to use binary ray tracing for illumination, by default True
@@ -400,7 +404,7 @@ class InspectionPointSet(Entity):
         return out
 
     def check_if_illuminated(
-        self, point: Point, camera: Camera, sun: Entity, binary_ray: bool = False
+        self, point: Point, camera: Camera, sun: SunEntity, binary_ray: bool = False
     ) -> bool:
         """Check if point is illuminated
 
@@ -410,7 +414,7 @@ class InspectionPointSet(Entity):
             point to check for illumination
         camera: Camera
             camera entity inspecting the points
-        sun: Entity
+        sun: SunEntity
             sun entity
         binary_ray: bool, optional
             whether to use binary ray tracing for illumination, by default False
