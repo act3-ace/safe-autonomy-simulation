@@ -112,6 +112,18 @@ class Dynamics(abc.ABC):
         return next_state, state_dot
 
     def _wrap_angles(self, state: Union[np.ndarray, jnp.ndarray]):
+        """Wraps angles in state to be within [0, 2 * pi] range
+        
+        Parameters
+        ----------
+        state : Union[np.ndarray, jnp.ndarray]
+            State vector of the system.
+            
+        Returns
+        -------
+        Union[np.ndarray, jnp.ndarray]
+            State vector with angles wrapped to be within [0, 2 * pi] range
+        """
         if self.angle_wrap_centers is not None:
             needs_wrap = self.np.logical_not(self.np.isnan(self.angle_wrap_centers))
 
@@ -204,7 +216,7 @@ class ODESolverDynamics(Dynamics):
     Parameters
     ----------
     trajectory_samples : int, optional
-        number of trajectory samples the generate and store on steps, by default 0
+        Number of trajectory samples to generate and step through, by default 0
     state_min : float or np.ndarray, optional
         Minimum allowable value for the next state. State values that exceed this are clipped.
         When a float, represents single limit applied to entire state vector.
@@ -305,9 +317,35 @@ class ODESolverDynamics(Dynamics):
         raise NotImplementedError
 
     def _clip_state_dot_direct(self, state_dot: np.ndarray):
+        """Clips state derivative values to be within `self.state_dot_min` and `self.state_dot_max`
+        
+        Parameters
+        ----------
+        state_dot : np.ndarray
+            State derivative values
+            
+        Returns
+        -------
+        np.ndarray
+            State derivative values clipped to be within state_dot_min and state_dot_max
+        """
         return self.np.clip(state_dot, self.state_dot_min, self.state_dot_max)
 
     def _clip_state_dot_by_state_limits(self, state: np.ndarray, state_dot: np.ndarray):
+        """Clips state derivative values where the state is at its limits
+        
+        Parameters
+        ----------
+        state : np.ndarray
+            Current state vector
+        state_dot : np.ndarray
+            State derivative values
+        
+        Returns
+        -------
+        np.ndarray
+            State derivative values clipped where the state is at its limits
+        """
         lower_bounded_states = state <= self.state_min
         upper_bounded_states = state >= self.state_max
 
