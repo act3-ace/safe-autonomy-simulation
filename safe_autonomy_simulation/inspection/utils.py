@@ -184,7 +184,7 @@ def sphere_intersect(
     return None
 
 
-def is_illuminated(point: Point, sun: SunEntity, r_avg: float, radius: float) -> bool:
+def is_illuminated(point: Point, sun: SunEntity, radius: float) -> bool:
     """
     Check illumination status of a point on a spacecraft situated at the origin (CWH dynamics)
 
@@ -210,7 +210,7 @@ def is_illuminated(point: Point, sun: SunEntity, r_avg: float, radius: float) ->
     normal_to_surface = normalize(point.position)
     # Get a point slightly off the surface of the sphere so don't detect surface as an intersection
     shifted_point = point.position + 1e-5 * normal_to_surface
-    sun_position = [r_avg * (math.cos(sun.theta)), -r_avg * (math.sin(sun.theta)), 0]
+    sun_position = sun.position
     intersection_to_light = normalize(sun_position - shifted_point)
 
     intersect_var = sphere_intersect(
