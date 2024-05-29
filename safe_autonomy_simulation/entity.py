@@ -970,7 +970,7 @@ class PhysicalEntity(Entity):
 
 
 class Point(PhysicalEntity):
-    """A point entity with pass-through dynamics and three degrees of freedom.
+    """A point entity with three degrees of freedom.
 
     Parameters
     ----------
