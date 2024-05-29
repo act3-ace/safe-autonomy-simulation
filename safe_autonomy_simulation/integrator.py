@@ -12,15 +12,15 @@ limitation or restriction. See accompanying README and LICENSE for details.
 This module implements 1d, 2d, and 3d point mass integrators.
 """
 
-from typing import Tuple
+from typing import Tuple, Union
 
 import numpy as np
 
 from safe_autonomy_simulation.entity import PhysicalEntity
 from safe_autonomy_simulation.dynamics import LinearODESolverDynamics
 
-M_DEFAULT = 1
-DAMPING_DEFAULT = 0
+M_DEFAULT = 1  # default mass in kg
+DAMPING_DEFAULT = 0  # default damping coefficient
 
 
 class PointMassIntegrator1d(PhysicalEntity):
@@ -44,7 +44,7 @@ class PointMassIntegrator1d(PhysicalEntity):
     velocity: np.ndarray, optional
         initial velocity, by default np.array([0])
     m: float, optional
-        Mass of integrator, by default 1.
+        Mass of integrator in kg, by default 1.
     trajectory_samples : int, optional
         number of trajectory samples the generate and store on steps, by default 0
     integration_method: str, optional
@@ -143,7 +143,7 @@ class PointMassIntegrator2d(PhysicalEntity):
     velocity: np.ndarray, optional
         initial 2d velocity, by default np.array([0, 0])
     m: float, optional
-        Mass of integrator, by default 1.
+        Mass of integrator in kg, by default 1.
     trajectory_samples : int, optional
         number of trajectory samples the generate and store on steps, by default 0
     integration_method: str, optional
@@ -249,7 +249,7 @@ class PointMassIntegrator3d(PhysicalEntity):
     velocity: np.ndarray, optional
         initial 3d velocity, by default np.array([0, 0, 0])
     m: float
-        Mass of integrator, by default 1.
+        Mass of integrator in kg, by default 1.
     trajectory_samples : int
         number of trajectory samples the generate and store on steps
     integration_method: str
@@ -336,101 +336,136 @@ class PointMassIntegratorDynamics(LinearODESolverDynamics):
     Parameters
     ----------
     m: float, optional
-        Mass of object, by default 1
+        Mass of object in kg, by default 1
     damping: float, optional
         linear velocity damper, by default 0
     mode : str, optional
         dimensionality of dynamics matrices. '1d', '2d', or '3d', by default '1d'
+    trajectory_samples : int, optional
+        number of trajectory samples the generate and store on steps, by default 0
+    state_min : Union[float, np.ndarray], optional
+        minimum state values, by default -np.inf
+    state_max : Union[float, np.ndarray], optional
+        maximum state values, by default np.inf
+    state_dot_min : Union[float, np.ndarray], optional
+        minimum state derivative values, by default -np.inf
+    state_dot_max : Union[float, np.ndarray], optional
+        maximum state derivative values, by default np.inf
+    angle_wrap_centers : Union[np.ndarray, None], optional
+        centers for angle wrapping, by default None
+    integration_method : str, optional
+        Numerical integration method passed to dynamics model. See BaseODESolverDynamics. By default "RK45"
+    use_jax : bool, optional
+        Use JAX for numerical integration, by default False
     """
 
-    def __init__(self, m=M_DEFAULT, damping=DAMPING_DEFAULT, mode="1d", **kwargs):
+    def __init__(
+        self,
+        m=M_DEFAULT,
+        damping=DAMPING_DEFAULT,
+        mode="1d",
+        trajectory_samples: int = 0,
+        state_min: Union[float, np.ndarray] = -np.inf,
+        state_max: Union[float, np.ndarray] = np.inf,
+        state_dot_min: Union[float, np.ndarray] = -np.inf,
+        state_dot_max: Union[float, np.ndarray] = np.inf,
+        angle_wrap_centers: Union[np.ndarray, None] = None,
+        integration_method: str = "RK45",
+        use_jax: bool = False,
+    ):
         self.m = m
         self.damping = damping
-        A, B = generate_dynamics_matrices(self.m, self.damping, mode)
-        super().__init__(A=A, B=B, **kwargs)
-
-
-def generate_dynamics_matrices(
-    m: float, damping: float = 0, mode: str = "1d"
-) -> Tuple[np.ndarray, np.ndarray]:
-    """Generates A and B Matrices for linearized dynamics of dx/dt = Ax + Bu
-
-    Parameters
-    ----------
-    m : float
-        mass of object
-    damping : float, optional
-        linear velocity damper. Default is zero
-    mode : str, optional
-        dimensionality of dynamics matrices. '1d', '2d', or '3d', by default '1d'
-
-    Returns
-    -------
-    np.ndarray
-        A dynamics matrix
-    np.ndarray
-        B dynamics matrix
-    """
-    assert mode in ["1d", "2d", "3d"], "mode must be one of ['1d', '2d', '3d']"
-    if mode == "1d":
-        A = np.array(
-            [
-                [0, 1],
-                [0, -damping],
-            ],
-            dtype=np.float64,
+        A, B = self.generate_dynamics_matrices(mode=mode)
+        super().__init__(
+            A=A,
+            B=B,
+            trajectory_samples=trajectory_samples,
+            state_min=state_min,
+            state_max=state_max,
+            state_dot_min=state_dot_min,
+            state_dot_max=state_dot_max,
+            angle_wrap_centers=angle_wrap_centers,
+            integration_method=integration_method,
+            use_jax=use_jax,
         )
 
-        B = np.array(
-            [
-                [0],
-                [1 / m],
-            ],
-            dtype=np.float64,
-        )
-    elif mode == "2d":
-        A = np.array(
-            [
-                [0, 0, 1, 0],
-                [0, 0, 0, 1],
-                [0, 0, -damping, 0],
-                [0, 0, 0, -damping],
-            ],
-            dtype=np.float64,
-        )
+    def generate_dynamics_matrices(
+        self, mode: str = "1d"
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """Generates A and B Matrices for linearized dynamics of dx/dt = Ax + Bu
 
-        B = np.array(
-            [
-                [0, 0],
-                [0, 0],
-                [1 / m, 0],
-                [0, 1 / m],
-            ],
-            dtype=np.float64,
-        )
-    else:
-        A = np.array(
-            [
-                [0, 0, 0, 1, 0, 0],
-                [0, 0, 0, 0, 1, 0],
-                [0, 0, 0, 0, 0, 1],
-                [0, 0, 0, -damping, 0, 0],
-                [0, 0, 0, 0, -damping, 0],
-                [0, 0, 0, 0, 0, -damping],
-            ],
-            dtype=np.float64,
-        )
+        Parameters
+        ----------
+        mode : str, optional
+            dimensionality of dynamics matrices. '1d', '2d', or '3d', by default '1d'
 
-        B = np.array(
-            [
-                [0, 0, 0],
-                [0, 0, 0],
-                [0, 0, 0],
-                [1 / m, 0, 0],
-                [0, 1 / m, 0],
-                [0, 0, 1 / m],
-            ],
-            dtype=np.float64,
-        )
+        Returns
+        -------
+        np.ndarray
+            A dynamics matrix
+        np.ndarray
+            B dynamics matrix
+        """
+        assert mode in ["1d", "2d", "3d"], "mode must be one of ['1d', '2d', '3d']"
+        if mode == "1d":
+            A = np.array(
+                [
+                    [0, 1],
+                    [0, -self.damping],
+                ],
+                dtype=np.float64,
+            )
 
-    return A, B
+            B = np.array(
+                [
+                    [0],
+                    [1 / self.m],
+                ],
+                dtype=np.float64,
+            )
+        elif mode == "2d":
+            A = np.array(
+                [
+                    [0, 0, 1, 0],
+                    [0, 0, 0, 1],
+                    [0, 0, -self.damping, 0],
+                    [0, 0, 0, -self.damping],
+                ],
+                dtype=np.float64,
+            )
+
+            B = np.array(
+                [
+                    [0, 0],
+                    [0, 0],
+                    [1 / self.m, 0],
+                    [0, 1 / self.m],
+                ],
+                dtype=np.float64,
+            )
+        else:
+            A = np.array(
+                [
+                    [0, 0, 0, 1, 0, 0],
+                    [0, 0, 0, 0, 1, 0],
+                    [0, 0, 0, 0, 0, 1],
+                    [0, 0, 0, -self.damping, 0, 0],
+                    [0, 0, 0, 0, -self.damping, 0],
+                    [0, 0, 0, 0, 0, -self.damping],
+                ],
+                dtype=np.float64,
+            )
+
+            B = np.array(
+                [
+                    [0, 0, 0],
+                    [0, 0, 0],
+                    [0, 0, 0],
+                    [1 / self.m, 0, 0],
+                    [0, 1 / self.m, 0],
+                    [0, 0, 1 / self.m],
+                ],
+                dtype=np.float64,
+            )
+
+        return A, B
