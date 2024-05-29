@@ -340,6 +340,9 @@ class Entity(abc.ABC):
         Entity children are stepped after the parent entity to ensure that the parent state
         is updated before the children are stepped.
 
+        Note: This method should not be overridden by subclasses. To customize entity behavior,
+        override the `_pre_step` and `_post_step` methods.
+
         Parameters
         ----------
         step_size : float
