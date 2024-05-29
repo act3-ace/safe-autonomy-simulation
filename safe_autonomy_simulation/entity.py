@@ -272,7 +272,7 @@ class Entity(abc.ABC):
         self._state_dot = np.zeros_like(self.state)
 
         # Register parent and children
-        self.parent = parent
+        self._parent = parent
         self._children = children
 
         # Set material
@@ -367,6 +367,28 @@ class Entity(abc.ABC):
         """
         self.control_queue.add_control(control)
 
+    def _is_ancestor(self, entity: Entity) -> bool:
+        """
+        Check if the entity is an ancestor of self
+
+        Returns True if the entity is an ancestor of self (including self), False otherwise
+
+        Parameters
+        ----------
+        entity : Entity
+            Entity to check if it is an ancestor
+
+        Returns
+        -------
+        bool
+            True if the entity is an ancestor, False otherwise
+        """
+        if self is entity:
+            return True
+        if self.parent is None:
+            return False
+        return self.parent._is_ancestor(entity)
+
     def add_child(self, child: Entity):
         """
         Adds a child entity to the entity
@@ -378,11 +400,12 @@ class Entity(abc.ABC):
         """
         assert child is not self, "Entity cannot be its own child"
         assert (
-            child is not self.parent
-        ), f"Entity cannot be a parent of its parent {child}"
-        assert child.parent is None, "Entity already has a parent"
+            not self._is_ancestor(child)
+        ), f"New child {child} cannot be an ancestor of self {self}"
+        if child.parent is not None:
+            child.parent.remove_child(child)
+        child._parent = self
         self._children.add(child)
-        child.parent = self
 
     def remove_child(self, child: Entity):
         """
@@ -437,33 +460,14 @@ class Entity(abc.ABC):
     @property
     def parent(self) -> Union[Entity, None]:
         """
-        Parent entity of the entity
+        Parent entity
 
         Returns
         -------
         Union[Entity, None]
-            Parent entity of the entity
+            Parent entity
         """
         return self._parent
-    
-    @parent.setter
-    def parent(self, parent: Entity):
-        """
-        Set the parent entity of the entity
-
-        Parameters
-        ----------
-        parent : Entity
-            Parent entity of the entity
-        """
-        assert parent is not self, "Entity cannot be its own parent"
-        assert (
-            parent not in self.children
-        ), f"Entity cannot be a child of its child {parent}"
-        if self._parent is not None:
-            self._parent.remove_child(self)
-        self._parent = parent
-        self._parent.add_child(self)
 
     @property
     def children(self) -> set[Entity]:
