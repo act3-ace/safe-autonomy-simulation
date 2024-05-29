@@ -39,6 +39,7 @@ class Simulator:
     """
 
     def __init__(self, frame_rate: float, entities: list[Entity]):
+        assert frame_rate > 0, "Frame rate must be greater than 0"
         self._frame_rate = frame_rate
         self._sim_time = 0
         self._entities = {entity.name: entity for entity in entities}
