@@ -2,7 +2,6 @@ import numpy as np
 from safe_autonomy_simulation.entity import Entity, PhysicalEntity
 from safe_autonomy_simulation.dynamics import Dynamics, PassThroughDynamics
 from safe_autonomy_simulation.inspection.inspection_points import Point
-import math
 from safe_autonomy_simulation.inspection.utils import normalize, sphere_intersect
 from scipy.spatial.transform import Rotation
 
