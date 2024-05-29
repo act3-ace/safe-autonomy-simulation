@@ -234,7 +234,8 @@ class CWHRotation2dSpacecraft(PhysicalEntity):  # pylint: disable=too-many-publi
 
 class CWHRotation2dDynamics(ControlAffineODESolverDynamics):
     """
-    State transition implementation of 3D Clohessy-Wiltshire dynamics model.
+    State transition implementation of a Clohessy-Wiltshire dynamics model
+    with 2D translational motion and 1D rotational motion.
 
     Parameters
     ----------
