@@ -214,7 +214,7 @@ class InspectionPointSet(Entity):
         self._num_points = num_points
         self._radius = radius
         self._priority_vector = priority_vector
-        self._last_cluster = None
+        self._clusters = None
         self._points: typing.Dict[int, InspectionPoint] = self._generate_points(
             points_alg=points_algorithm
         )
@@ -388,17 +388,17 @@ class InspectionPointSet(Entity):
         else:
             n = math.ceil(len(uninspected) / 10)
             data = np.array(uninspected)
-            if self.last_cluster is None:
+            if self.clusters is None:
                 init = np.zeros((n, 3))
             else:
-                if n > self.last_cluster.shape[0]:
+                if n > self.clusters.shape[0]:
                     idxs = np.random.choice(
-                        self.last_cluster.shape[0], size=n - self.last_cluster.shape[0]
+                        self.clusters.shape[0], size=n - self.clusters.shape[0]
                     )
                     new = np.array(uninspected)[idxs, :]
-                    init = np.vstack((self.last_cluster, new))
+                    init = np.vstack((self.clusters, new))
                 else:
-                    init = self.last_cluster[0:n, :]
+                    init = self.clusters[0:n, :]
             kmeans = KMeans(
                 init=init,
                 n_clusters=n,
@@ -406,9 +406,9 @@ class InspectionPointSet(Entity):
                 max_iter=50,
             )
             kmeans.fit(data)
-            self.last_cluster = kmeans.cluster_centers_
+            self.clusters = kmeans.cluster_centers_
             dist = []
-            for center in self.last_cluster:
+            for center in self.clusters:
                 dist.append(np.linalg.norm(camera.position - center))
             out = kmeans.cluster_centers_[np.argmin(dist)]
             out = out / np.linalg.norm(out)
@@ -529,19 +529,19 @@ class InspectionPointSet(Entity):
         return self._points
 
     @property
-    def last_cluster(self) -> typing.Union[np.ndarray, None]:
-        """Last cluster of uninspected points
+    def clusters(self) -> typing.Union[np.ndarray, None]:
+        """Clusters of uninspected points
 
         Returns
         -------
         typing.Union[np.ndarray, None]
-            last cluster of uninspected points
+            clusters of uninspected points
         """
-        return self._last_cluster
+        return self._clusters
 
-    @last_cluster.setter
-    def last_cluster(self, last_cluster: typing.Union[np.ndarray, None]):
-        self._last_cluster = last_cluster
+    @clusters.setter
+    def clusters(self, clusters: typing.Union[np.ndarray, None]):
+        self._clusters = clusters
 
     @property
     def state(self) -> np.ndarray:
