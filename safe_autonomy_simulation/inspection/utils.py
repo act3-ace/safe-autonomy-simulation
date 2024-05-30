@@ -224,7 +224,7 @@ def is_illuminated(point: Point, light: PhysicalEntity, radius: float) -> bool:
     return bool_val
 
 
-def evaluate_rgb(
+def is_illuminated_rgb(
     rgb: np.ndarray,
     rgb_min: np.ndarray = np.array([0.8, 0.8, 0.8]),
     rgb_max: np.ndarray = np.array([0.12, np.inf, np.inf]),
