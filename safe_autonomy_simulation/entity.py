@@ -22,7 +22,7 @@ from typing import TYPE_CHECKING, Union
 import numpy as np
 import pint
 from scipy.spatial.transform import Rotation
-from pint import _typing as pintt
+from pint._typing import Quantity
 
 from safe_autonomy_simulation.dynamics import Dynamics, PassThroughDynamics
 from safe_autonomy_simulation.material import Material, BLACK
@@ -712,7 +712,7 @@ class PhysicalEntity(Entity):
         return self._state[:3]
 
     @property
-    def position_with_units(self) -> pintt.Quantity[np.ndarray]:
+    def position_with_units(self) -> Quantity[np.ndarray]:
         """Entity position vector with units
 
         Returns
@@ -800,7 +800,7 @@ class PhysicalEntity(Entity):
         return self._state[3:6]
 
     @property
-    def velocity_with_units(self) -> pintt.Quantity[np.ndarray]:
+    def velocity_with_units(self) -> Quantity[np.ndarray]:
         """Entity velocity vector with units
 
         Returns
@@ -943,7 +943,7 @@ class PhysicalEntity(Entity):
         self._state[9:12]
 
     @property
-    def angular_velocity_with_units(self) -> pintt.Quantity[np.ndarray]:
+    def angular_velocity_with_units(self) -> Quantity[np.ndarray]:
         """Entity angular velocity vector with units
 
         Returns
