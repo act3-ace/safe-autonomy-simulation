@@ -6,7 +6,7 @@ import math
 import numpy as np
 from typing import Union, Tuple
 from safe_autonomy_simulation.inspection.inspection_points import Point
-from safe_autonomy_simulation.inspection.sun import SunEntity
+from safe_autonomy_simulation.entity import PhysicalEntity
 
 
 AVG_EARTH_TO_SUN_DIST = 150000000000  # meters
@@ -184,7 +184,7 @@ def sphere_intersect(
     return None
 
 
-def is_illuminated(point: Point, sun: SunEntity, radius: float) -> bool:
+def is_illuminated(point: Point, light: PhysicalEntity, radius: float) -> bool:
     """
     Check illumination status of a point on a spacecraft situated at the origin (CWH dynamics)
 
@@ -192,10 +192,8 @@ def is_illuminated(point: Point, sun: SunEntity, radius: float) -> bool:
     ----------
     point: Point
         point on origin-situated spacecraft to check for illumination
-    sun: SunEntity
-        sun entity
-    r_avg: float
-        average distance from earth to sun in meters
+    light: PhysicalEntity
+        light entity
     radius: float
         radius of spacecraft in meters
 
@@ -210,8 +208,8 @@ def is_illuminated(point: Point, sun: SunEntity, radius: float) -> bool:
     normal_to_surface = normalize(point.position)
     # Get a point slightly off the surface of the sphere so don't detect surface as an intersection
     shifted_point = point.position + 1e-5 * normal_to_surface
-    sun_position = sun.position
-    intersection_to_light = normalize(sun_position - shifted_point)
+    light_position = light.position
+    intersection_to_light = normalize(light_position - shifted_point)
 
     intersect_var = sphere_intersect(
         center, radius, shifted_point, intersection_to_light

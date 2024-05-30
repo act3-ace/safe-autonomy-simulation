@@ -335,14 +335,21 @@ class InspectionPointSet(Entity):
                             point.inspector = camera.name
                     else:
                         mag = np.dot(point.position, p_hat)
-                        if mag >= r - h and self.check_if_illuminated(
-                            point=point, camera=camera, sun=sun, binary_ray=binary_ray
+                        if mag >= r - h and camera.check_point_illumination(
+                            point=point,
+                            light=sun,
+                            viewed_object=self.parent,
+                            radius=self.radius,
+                            binary_ray=binary_ray,
                         ):
                             point.inspected = True
                             point.inspector = camera.name
 
     def kmeans_find_nearest_cluster(
-        self, camera: Camera, sun: typing.Union[SunEntity, None] = None, binary_ray: bool = True
+        self,
+        camera: Camera,
+        sun: typing.Union[SunEntity, None] = None,
+        binary_ray: bool = True,
     ) -> np.ndarray:
         """Finds nearest cluster of uninspected points using kmeans clustering
 
@@ -366,8 +373,12 @@ class InspectionPointSet(Entity):
         for _, point in self.points.items():
             if not point.inspected:
                 if sun:
-                    if self.check_if_illuminated(
-                        point=point, camera=camera, sun=sun, binary_ray=binary_ray
+                    if camera.check_point_illumination(
+                        point=point,
+                        light=sun,
+                        viewed_object=self.parent,
+                        radius=self.radius,
+                        binary_ray=binary_ray,
                     ):
                         uninspected.append(point.position)
                 else:
@@ -402,42 +413,6 @@ class InspectionPointSet(Entity):
             out = kmeans.cluster_centers_[np.argmin(dist)]
             out = out / np.linalg.norm(out)
         return out
-
-    def check_if_illuminated(
-        self, point: Point, camera: Camera, sun: SunEntity, binary_ray: bool = False
-    ) -> bool:
-        """Check if point is illuminated
-
-        Parameters
-        ----------
-        point: Point
-            point to check for illumination
-        camera: Camera
-            camera entity inspecting the points
-        sun: SunEntity
-            sun entity
-        binary_ray: bool, optional
-            whether to use binary ray tracing for illumination, by default False
-
-        Returns
-        -------
-        bool
-            point illumination status, True if illuminated, False if not
-        """
-        if binary_ray:
-            illuminated = is_illuminated(
-                point=point, sun=sun, r_avg=AVG_EARTH_TO_SUN_DIST, radius=self.radius
-            )
-        else:
-            rgb = camera.capture_point(
-                point=point,
-                light=sun,
-                viewed_object=self.parent,
-                r_avg=AVG_EARTH_TO_SUN_DIST,
-                radius=self.radius,
-            )
-            illuminated = evaluate_rgb(rgb)
-        return illuminated
 
     def get_num_points_inspected(self, inspector_entity: Entity = None) -> int:
         """Get total number of points inspected by an entity.

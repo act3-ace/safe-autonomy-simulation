@@ -2,7 +2,7 @@ import numpy as np
 from safe_autonomy_simulation.entity import Entity, PhysicalEntity
 from safe_autonomy_simulation.dynamics import Dynamics, PassThroughDynamics
 from safe_autonomy_simulation.inspection.inspection_points import Point
-from safe_autonomy_simulation.inspection.utils import normalize, sphere_intersect
+from safe_autonomy_simulation.inspection.utils import normalize, sphere_intersect, is_illuminated, evaluate_rgb
 from scipy.spatial.transform import Rotation
 
 
@@ -77,6 +77,45 @@ class Camera(PhysicalEntity):
         if self._lock_to_parent:
             return self.parent.build_initial_state()
         return super().build_initial_state()
+
+    def check_point_illumination(
+        self, point: Point, light: PhysicalEntity, viewed_object: Entity, radius: float, binary_ray: bool = False
+    ) -> bool:
+        """Check if point is illuminated
+
+        Parameters
+        ----------
+        point: Point
+            point to check for illumination
+        camera: Camera
+            camera entity inspecting the points
+        light: PhysicalEntity
+            light entity
+        viewed_object: Entity
+            object on which the point is located
+        radius: float
+            radius of the viewed object in meters
+        binary_ray: bool, optional
+            whether to use binary ray tracing for illumination, by default False
+
+        Returns
+        -------
+        bool
+            point illumination status, True if illuminated, False if not
+        """
+        if binary_ray:
+            illuminated = is_illuminated(
+                point=point, light=light, radius=radius
+            )
+        else:
+            rgb = self.capture_point(
+                point=point,
+                light=light,
+                viewed_object=viewed_object,
+                radius=radius,
+            )
+            illuminated = evaluate_rgb(rgb)
+        return illuminated
 
     def capture_point(
         self,
