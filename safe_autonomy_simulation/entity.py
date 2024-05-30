@@ -156,7 +156,7 @@ class ControlQueue:
 
         Returns
         -------
-        Union[np.ndarray, dict]
+        Union[np.ndarray, jnp.ndarray]
             Next control in the control queue or default control.
         """
         if self.empty():
