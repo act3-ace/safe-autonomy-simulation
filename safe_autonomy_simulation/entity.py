@@ -220,6 +220,7 @@ class ControlQueue:
 
 class DefaultControlQueue(ControlQueue):
     """A control queue with an empty default control vector."""
+
     def __init__(self):
         super().__init__(default_control=np.empty(0))
 
@@ -403,8 +404,8 @@ class Entity(abc.ABC):
             Child entity to be added
         """
         assert child is not self, "Entity cannot be its own child"
-        assert (
-            not self._is_ancestor(child)
+        assert not self._is_ancestor(
+            child
         ), f"New child {child} cannot be an ancestor of self {self}"
         if child.parent is not None:
             child.parent.remove_child(child)
@@ -524,7 +525,7 @@ class Entity(abc.ABC):
     @property
     def state_dot(self) -> np.ndarray:
         """Time derivative of the entity state vector
-        
+
         Returns
         -------
         np.ndarray
@@ -618,13 +619,7 @@ class PhysicalEntity(Entity):
         if isinstance(other, type(self)):
             eq = (self.velocity == other.velocity).all()
             eq = eq and (self.position == other.position).all()
-            eq = (
-                eq
-                and (
-                    self.orientation.as_euler("ZYX")
-                    == other.orientation.as_euler("ZYX")
-                ).all()
-            )
+            eq = eq and (self.orientation == other.orientation).all()
             eq = eq and (self.angular_velocity == other.angular_velocity).all()
             return eq
         return False
@@ -659,7 +654,7 @@ class PhysicalEntity(Entity):
         pint.Quantity
             X position with units
         """
-        return self._ureg.Quantity(self.x, self.base_units.length)
+        return self._ureg.Quantity(self.x, self.base_units.distance)
 
     @property
     def y(self) -> float:
@@ -681,7 +676,7 @@ class PhysicalEntity(Entity):
         pint.Quantity
             Y position with units
         """
-        return self._ureg.Quantity(self.y, self.base_units.length)
+        return self._ureg.Quantity(self.y, self.base_units.distance)
 
     @property
     def z(self) -> float:
@@ -703,7 +698,7 @@ class PhysicalEntity(Entity):
         pint.Quantity
             Z position with units
         """
-        return self._ureg.Quantity(self.z, self.base_units.length)
+        return self._ureg.Quantity(self.z, self.base_units.distance)
 
     @property
     def position(self) -> np.ndarray:
@@ -725,7 +720,7 @@ class PhysicalEntity(Entity):
         pint.Quantity
             3D position vector with units
         """
-        return self._ureg.Quantity(self.position, self.base_units.length)
+        return self._ureg.Quantity(self.position, self.base_units.distance)
 
     @property
     def x_dot(self) -> float:
@@ -816,16 +811,15 @@ class PhysicalEntity(Entity):
         return self._ureg.Quantity(self.velocity, self.base_units.velocity)
 
     @property
-    def orientation(self) -> Rotation:
-        """Entity orientation vector
+    def orientation(self) -> np.ndarray:
+        """Entity orientation quaternion
 
         Returns
         -------
-        scipy.spatial.transform.Rotation
-            Rotation transformation of the entity's local reference frame basis vectors in the global reference frame.
-            i.e. applying this rotation to [1, 0, 0] yields the entity's local x-axis in the global frame.
+        np.ndarray
+            Orientation quaternion
         """
-        return Rotation.from_quat(self.quaternion)
+        return self._state[6:10]
 
     @property
     def q1(self) -> float:
@@ -836,7 +830,7 @@ class PhysicalEntity(Entity):
         float
             First element of orientation quaternion
         """
-        return self.quaternion[0]
+        return self.orientation[0]
 
     @property
     def q2(self) -> float:
@@ -847,7 +841,7 @@ class PhysicalEntity(Entity):
         float
             Second element of orientation quaternion
         """
-        return self.quaternion[1]
+        return self.orientation[1]
 
     @property
     def q3(self) -> float:
@@ -858,7 +852,7 @@ class PhysicalEntity(Entity):
         float
             Third element of orientation quaternion
         """
-        return self.quaternion[2]
+        return self.orientation[2]
 
     @property
     def q4(self) -> float:
@@ -869,18 +863,7 @@ class PhysicalEntity(Entity):
         float
             Fourth element of orientation quaternion
         """
-        return self.quaternion[3]
-
-    @property
-    def quaternion(self) -> np.ndarray:
-        """Entity orientation quaternion
-
-        Returns
-        -------
-        np.ndarray
-            Orientation quaternion
-        """
-        return self._state[6:10]
+        return self.orientation[3]
 
     @property
     def wx(self) -> float:
