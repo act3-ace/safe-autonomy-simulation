@@ -59,15 +59,14 @@ class InspectionSimulator(Simulator):
         entities = inspectors + targets
         if sun is not None:
             entities.append(sun)
-        super().__init__(frame_rate=frame_rate, entities={e.name: e for e in entities})
+        super().__init__(frame_rate=frame_rate, entities=entities)
 
     def reset(self):
         super().reset()
         # update inspection points statuses after all entities have been reset
         self._update_inspected()
 
-    def step(self):
-        super().step()
+    def _post_step(self):
         # update inspection points statuses after all entities have been stepped
         self._update_inspected()
 

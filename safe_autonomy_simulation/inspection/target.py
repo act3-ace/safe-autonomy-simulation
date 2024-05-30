@@ -16,7 +16,7 @@ from safe_autonomy_simulation.spacecraft.utils import (
 )
 from safe_autonomy_simulation.spacecraft.point_model import CWHSpacecraft
 from safe_autonomy_simulation.spacecraft.sixdof_model import SixDOFSpacecraft
-from safe_autonomy_simulation.inspection.inspection_points import InspectionPoints
+from safe_autonomy_simulation.inspection.inspection_points import InspectionPointSet
 from safe_autonomy_simulation.material import Material
 
 
@@ -51,7 +51,7 @@ class Target(CWHSpacecraft):
     def __init__(
         self,
         name: str,
-        inspection_points: InspectionPoints,
+        inspection_points: InspectionPointSet,
         position: np.ndarray = np.zeros(3),
         velocity: np.ndarray = np.zeros(3),
         m: float = M_DEFAULT,
@@ -78,7 +78,7 @@ class Target(CWHSpacecraft):
         self.add_child(self._inspection_points)
 
     @property
-    def inspection_points(self) -> InspectionPoints:
+    def inspection_points(self) -> InspectionPointSet:
         """Inspection points of the target.
         
         Returns
@@ -140,7 +140,7 @@ class SixDOFTarget(SixDOFSpacecraft):
     def __init__(
         self,
         name: str,
-        inspection_points: InspectionPoints,
+        inspection_points: InspectionPointSet,
         position: np.ndarray = np.zeros(3),
         velocity: np.ndarray = np.zeros(3),
         orientation: np.ndarray = np.array([0, 0, 0, 1]),
@@ -187,7 +187,7 @@ class SixDOFTarget(SixDOFSpacecraft):
         self.add_child(self._inspection_points)
 
     @property
-    def inspection_points(self) -> InspectionPoints:
+    def inspection_points(self) -> InspectionPointSet:
         """Inspection points of the target.
         
         Returns
