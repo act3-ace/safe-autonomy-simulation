@@ -35,11 +35,13 @@ class Simulator:
     frame_rate : float
         simulation frame rate in hertz (Hz)
     entities : list
-        list of simulation entities
+        list of top-level simulation entities (no child entities)
     """
 
     def __init__(self, frame_rate: float, entities: list[Entity]):
         assert frame_rate > 0, "Frame rate must be greater than 0"
+        for entity in entities:
+            assert entity.parent is None, "Entities must be top-level entities with no parent"
         self._frame_rate = frame_rate
         self._sim_time = 0
         self._entities = {entity.name: entity for entity in entities}
@@ -121,11 +123,11 @@ class Simulator:
 
     @property
     def entities(self) -> typing.Dict[str, Entity]:
-        """Set of simulator entities
+        """Set of top-level simulator entities
 
         Returns
         -------
         dict
-            simulation entities dict of the form {entity_name: entity}
+            top-level simulation entities dict of the form {entity_name: entity}
         """
         return self._entities
