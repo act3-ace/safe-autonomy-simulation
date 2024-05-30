@@ -81,7 +81,7 @@ class SunEntity(Point):
         np.ndarray
             state vector of form [theta]
         """
-        return self._state[-1]
+        return np.array(self._state[-1])
 
     @property
     def theta(self) -> float:
@@ -95,7 +95,7 @@ class SunEntity(Point):
         return self.state[0]
 
     @property
-    def n(self):
+    def n(self) -> float:
         """Sun mean motion
         
         Returns
