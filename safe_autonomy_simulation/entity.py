@@ -272,8 +272,12 @@ class Entity(abc.ABC):
         self._state_dot = np.zeros_like(self.state)
 
         # Register parent and children
-        self._parent = parent
-        self._children = children
+        if parent is not None:
+            parent.add_child(self)
+        else:
+            self._parent = None
+        for child in children:
+            self.add_child(child)
 
         # Set material
         self._material = material
