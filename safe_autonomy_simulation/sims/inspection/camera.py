@@ -10,8 +10,6 @@ import safe_autonomy_simulation.sims.inspection.utils as utils
 class Camera(e.PhysicalEntity):
     """Camera entity that can capture images of objects in the environment
 
-    If camera is locked to parent, the camera will inherit the state of the parent entity
-
     Parameters
     ----------
     name: str
@@ -38,8 +36,6 @@ class Camera(e.PhysicalEntity):
         parent entity, by default None
     children: list[Entity], optional
         list of children entities, by default []
-    lock_to_parent: bool, optional
-        whether to lock the camera to the parent entity, by default False
     """
 
     def __init__(
@@ -58,7 +54,6 @@ class Camera(e.PhysicalEntity):
         dynamics: d.Dynamics = d.PassThroughDynamics(),
         parent: e.PhysicalEntity = None,
         children: list[e.Entity] = [],
-        lock_to_parent: bool = False,
     ):
         super().__init__(
             name=name,
@@ -74,12 +69,6 @@ class Camera(e.PhysicalEntity):
         self._resolution = resolution
         self._focal_length = focal_length
         self._pixel_pitch = pixel_pitch
-        self._lock_to_parent = lock_to_parent
-
-    def build_initial_state(self) -> np.ndarray:
-        if self._lock_to_parent:
-            return self.parent.build_initial_state()
-        return super().build_initial_state()
 
     def check_point_illumination(
         self,
@@ -334,21 +323,15 @@ class Camera(e.PhysicalEntity):
     def state(self) -> np.ndarray:
         """Camera state vector
 
-        If camera is locked to parent, state vector is inherited from parent entity.
-        Otherwise, state vector is [position, velocity, orientation, angular_velocity].
-
         Returns
         -------
         np.ndarray
             state vector of the camera
         """
-        if self._lock_to_parent:
-            return self.parent.state
         return self._state
 
     @state.setter
     def state(self, state: np.ndarray):
-        assert not self._lock_to_parent, "Cannot set state of camera locked to parent"
         assert (
             state.shape == self.state.shape
         ), f"State shape must be {self.state.shape}, got {state.shape}"
