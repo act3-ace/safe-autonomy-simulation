@@ -1,28 +1,16 @@
 import numpy as np
 from typing import Union
 
-from safe_autonomy_simulation.entity import PhysicalEntity
-from safe_autonomy_simulation.spacecraft.utils import (
-    M_DEFAULT,
-    N_DEFAULT,
-    INERTIA_MATRIX_DEFAULT,
-    INERTIA_WHEEL_DEFAULT,
-    ANG_ACC_LIMIT_DEFAULT,
-    ANG_VEL_LIMIT_DEFAULT,
-    ACC_LIMIT_WHEEL_DEFAULT,
-    VEL_LIMIT_WHEEL_DEFAULT,
-    THRUST_CONTROL_LIMIT_DEFAULT,
-    CWH_MATERIAL,
-)
-from safe_autonomy_simulation.spacecraft.point_model import CWHSpacecraft
-from safe_autonomy_simulation.spacecraft.sixdof_model import SixDOFSpacecraft
-from safe_autonomy_simulation.inspection.inspection_points import InspectionPointSet
-from safe_autonomy_simulation.material import Material
+import safe_autonomy_simulation.entities as e
+import safe_autonomy_simulation.sims.spacecraft.defaults as defaults
+import safe_autonomy_simulation.sims.spacecraft as spacecraft
+import safe_autonomy_simulation.sims.inspection.inspection_points as p
+import safe_autonomy_simulation.materials as mat
 
 
-class Target(CWHSpacecraft):
+class Target(spacecraft.CWHSpacecraft):
     """Inspection target spacecraft with inspection points.
-    
+
     Parameters
     ----------
     name : str
@@ -48,19 +36,20 @@ class Target(CWHSpacecraft):
     children : set[PhysicalEntity], optional
         Set of children entities of spacecraft, by default {}
     """
+
     def __init__(
         self,
         name: str,
-        inspection_points: InspectionPointSet,
+        inspection_points: p.InspectionPointSet,
         position: np.ndarray = np.zeros(3),
         velocity: np.ndarray = np.zeros(3),
-        m: float = M_DEFAULT,
-        n: float = N_DEFAULT,
+        m: float = defaults.M_DEFAULT,
+        n: float = defaults.N_DEFAULT,
         trajectory_samples: int = 0,
         integration_method: str = "RK45",
-        material: Material = CWH_MATERIAL, 
-        parent: Union[PhysicalEntity, None] = None,
-        children: set[PhysicalEntity] = {},
+        material: mat.Material = defaults.CWH_MATERIAL,
+        parent: Union[e.PhysicalEntity, None] = None,
+        children: set[e.PhysicalEntity] = {},
     ):
         super().__init__(
             name=name,
@@ -78,9 +67,9 @@ class Target(CWHSpacecraft):
         self.add_child(self._inspection_points)
 
     @property
-    def inspection_points(self) -> InspectionPointSet:
+    def inspection_points(self) -> p.InspectionPointSet:
         """Inspection points of the target.
-        
+
         Returns
         -------
         InspectionPoints
@@ -89,9 +78,9 @@ class Target(CWHSpacecraft):
         return self._inspection_points
 
 
-class SixDOFTarget(SixDOFSpacecraft):
+class SixDOFTarget(spacecraft.SixDOFSpacecraft):
     """SixDOF Inspection target spacecraft with inspection points.
-    
+
     Parameters
     ----------
     name : str
@@ -137,29 +126,30 @@ class SixDOFTarget(SixDOFSpacecraft):
     children : set[PhysicalEntity], optional
         Set of children entities of spacecraft, by default {}
     """
+
     def __init__(
         self,
         name: str,
-        inspection_points: InspectionPointSet,
+        inspection_points: p.InspectionPointSet,
         position: np.ndarray = np.zeros(3),
         velocity: np.ndarray = np.zeros(3),
         orientation: np.ndarray = np.array([0, 0, 0, 1]),
         angular_velocity: np.ndarray = np.zeros(3),
-        m: float = M_DEFAULT,
-        n: float = N_DEFAULT,
-        inertia_matrix: np.matrix = INERTIA_MATRIX_DEFAULT,
-        ang_acc_limit: float = ANG_ACC_LIMIT_DEFAULT,
-        ang_vel_limit: float = ANG_VEL_LIMIT_DEFAULT,
-        inertia_wheel: float = INERTIA_WHEEL_DEFAULT,
-        acc_limit_wheel: float = ACC_LIMIT_WHEEL_DEFAULT,
-        vel_limit_wheel: float = VEL_LIMIT_WHEEL_DEFAULT,
-        thrust_control_limit: float = THRUST_CONTROL_LIMIT_DEFAULT,
+        m: float = defaults.M_DEFAULT,
+        n: float = defaults.N_DEFAULT,
+        inertia_matrix: np.matrix = defaults.INERTIA_MATRIX_DEFAULT,
+        ang_acc_limit: float = defaults.ANG_ACC_LIMIT_DEFAULT,
+        ang_vel_limit: float = defaults.ANG_VEL_LIMIT_DEFAULT,
+        inertia_wheel: float = defaults.INERTIA_WHEEL_DEFAULT,
+        acc_limit_wheel: float = defaults.ACC_LIMIT_WHEEL_DEFAULT,
+        vel_limit_wheel: float = defaults.VEL_LIMIT_WHEEL_DEFAULT,
+        thrust_control_limit: float = defaults.THRUST_CONTROL_LIMIT_DEFAULT,
         body_frame_thrust: bool = True,
         trajectory_samples: int = 0,
         integration_method: str = "RK45",
-        material: Material = CWH_MATERIAL,
-        parent: Union[PhysicalEntity, None] = None,
-        children: set[PhysicalEntity] = {},
+        material: mat.Material = defaults.CWH_MATERIAL,
+        parent: Union[e.PhysicalEntity, None] = None,
+        children: set[e.PhysicalEntity] = {},
     ):
         super().__init__(
             name=name,
@@ -187,9 +177,9 @@ class SixDOFTarget(SixDOFSpacecraft):
         self.add_child(self._inspection_points)
 
     @property
-    def inspection_points(self) -> InspectionPointSet:
+    def inspection_points(self) -> p.InspectionPointSet:
         """Inspection points of the target.
-        
+
         Returns
         -------
         InspectionPoints

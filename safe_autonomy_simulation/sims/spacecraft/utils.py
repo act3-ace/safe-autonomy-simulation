@@ -15,7 +15,7 @@ This module contains utility functions and constants for spacecraft models.
 from typing import Tuple
 
 import numpy as np
-from safe_autonomy_simulation.material import Material
+import safe_autonomy_simulation.materials as mat
 
 
 # CWH constants
@@ -38,7 +38,7 @@ THRUST_CONTROL_LIMIT_DEFAULT = 1.0
 
 
 # Spacecraft material
-CWH_MATERIAL = Material(
+CWH_MATERIAL = mat.Material(
     specular=np.array([1.0, 1.0, 1.0]),
     diffuse=np.array([0.7, 0, 0]),
     ambient=np.array([0.1, 0, 0]),

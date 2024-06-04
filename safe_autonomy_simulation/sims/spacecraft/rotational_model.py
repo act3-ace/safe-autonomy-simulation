@@ -18,27 +18,17 @@ from typing import Union
 
 import numpy as np
 import pint
-from scipy.spatial.transform import Rotation
+import scipy.spatial.transform as transform
 
-from safe_autonomy_simulation.spacecraft.utils import (
-    M_DEFAULT,
-    N_DEFAULT,
-    generate_cwh_matrices,
-    INERTIA_DEFAULT,
-    INERTIA_WHEEL_DEFAULT,
-    ANG_ACC_LIMIT_DEFAULT,
-    ANG_VEL_LIMIT_DEFAULT,
-    ACC_LIMIT_WHEEL_DEFAULT,
-    VEL_LIMIT_WHEEL_DEFAULT,
-    CWH_MATERIAL,
-)
-
-from safe_autonomy_simulation.entity import PhysicalEntity, ControlQueue
-from safe_autonomy_simulation.dynamics import ControlAffineODESolverDynamics
-from safe_autonomy_simulation.material import Material
+import safe_autonomy_simulation.entities as e
+import safe_autonomy_simulation.dynamics as d
+import safe_autonomy_simulation.materials as mat
+import safe_autonomy_simulation.controls as c
+import safe_autonomy_simulation.sims.spacecraft.defaults as defaults
+import safe_autonomy_simulation.sims.spacecraft.utils as utils
 
 
-class CWHRotation2dSpacecraft(PhysicalEntity):  # pylint: disable=too-many-public-methods
+class CWHRotation2dSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-public-methods
     """
     Spacecraft with 2D translational Clohessy-Wiltshire dynamics in Hill's reference frame.
     In-plane motion (x,y) using +/- x thruster rotated to desired direction
@@ -114,20 +104,20 @@ class CWHRotation2dSpacecraft(PhysicalEntity):  # pylint: disable=too-many-publi
         velocity: np.ndarray = np.zeros(2),
         theta: Union[float, pint.Quantity] = 0,
         wz: Union[float, pint.Quantity] = 0,
-        m=M_DEFAULT,
-        inertia=INERTIA_DEFAULT,
-        ang_acc_limit=ANG_ACC_LIMIT_DEFAULT,
-        ang_vel_limit=ANG_VEL_LIMIT_DEFAULT,
-        inertia_wheel=INERTIA_WHEEL_DEFAULT,
-        acc_limit_wheel=ACC_LIMIT_WHEEL_DEFAULT,
-        vel_limit_wheel=VEL_LIMIT_WHEEL_DEFAULT,
-        n=N_DEFAULT,
+        m=defaults.M_DEFAULT,
+        inertia=defaults.INERTIA_DEFAULT,
+        ang_acc_limit=defaults.ANG_ACC_LIMIT_DEFAULT,
+        ang_vel_limit=defaults.ANG_VEL_LIMIT_DEFAULT,
+        inertia_wheel=defaults.INERTIA_WHEEL_DEFAULT,
+        acc_limit_wheel=defaults.ACC_LIMIT_WHEEL_DEFAULT,
+        vel_limit_wheel=defaults.VEL_LIMIT_WHEEL_DEFAULT,
+        n=defaults.N_DEFAULT,
         trajectory_samples=0,
         integration_method="RK45",
         use_jax: bool = False,
-        material: Material = CWH_MATERIAL,
-        parent: Union[PhysicalEntity, None] = None,
-        children: set[PhysicalEntity] = {},
+        material: mat.Material = defaults.CWH_MATERIAL,
+        parent: Union[e.PhysicalEntity, None] = None,
+        children: set[e.PhysicalEntity] = {},
     ):
         assert position.shape == (2,), f"Position must be 2D. Instead got {position}"
         assert velocity.shape == (2,), f"Velocity must be 2D. Instead got {velocity}"
@@ -149,7 +139,7 @@ class CWHRotation2dSpacecraft(PhysicalEntity):  # pylint: disable=too-many-publi
             self.ang_vel_limit, self.inertia_wheel * self.vel_limit_wheel / self.inertia
         )
 
-        control_queue = ControlQueue(
+        control_queue = c.ControlQueue(
             default_control=np.zeros(3),
             control_map={"thrust_x": 0, "thrust_y": 1, "moment_z": 2},
             control_min=np.array([-1, -1, -ang_acc_limit * self.inertia]),
@@ -172,7 +162,7 @@ class CWHRotation2dSpacecraft(PhysicalEntity):  # pylint: disable=too-many-publi
             dynamics=dynamics,
             position=np.concatenate([position, np.array([0])]),  # z=0
             velocity=np.concatenate([velocity, np.array([0])]),  # z_dot=0
-            orientation=Rotation.from_euler("ZYX", [theta, 0, 0]).as_quat(),
+            orientation=transform.Rotation.from_euler("ZYX", [theta, 0, 0]).as_quat(),
             angular_velocity=np.array([0, 0, wz]),
             control_queue=control_queue,
             material=material,
@@ -228,11 +218,11 @@ class CWHRotation2dSpacecraft(PhysicalEntity):  # pylint: disable=too-many-publi
         # Internal state is [x, y, z, x_dot, y_dot, z_dot, q0, q1, q2, q3, wx, wy, wz]
         self._state[0:2] = state[0:2]
         self._state[3:4] = state[2:4]
-        self._state[6:10] = Rotation.from_euler("ZYX", [state[4], 0, 0]).as_quat()
+        self._state[6:10] = transform.Rotation.from_euler("ZYX", [state[4], 0, 0]).as_quat()
         self._state[12] = state[5]
 
 
-class CWHRotation2dDynamics(ControlAffineODESolverDynamics):
+class CWHRotation2dDynamics(d.ControlAffineODEDynamics):
     """
     State transition implementation of a Clohessy-Wiltshire dynamics model
     with 2D translational motion and 1D rotational motion.
@@ -269,11 +259,11 @@ class CWHRotation2dDynamics(ControlAffineODESolverDynamics):
 
     def __init__(
         self,
-        m: float = M_DEFAULT,
-        inertia: float = INERTIA_DEFAULT,
-        ang_acc_limit: float = ANG_ACC_LIMIT_DEFAULT,
-        ang_vel_limit: float = ANG_VEL_LIMIT_DEFAULT,
-        n: float = N_DEFAULT,
+        m: float = defaults.M_DEFAULT,
+        inertia: float = defaults.INERTIA_DEFAULT,
+        ang_acc_limit: float = defaults.ANG_ACC_LIMIT_DEFAULT,
+        ang_vel_limit: float = defaults.ANG_VEL_LIMIT_DEFAULT,
+        n: float = defaults.N_DEFAULT,
         trajectory_samples: int = 0,
         state_min: Union[float, np.ndarray, None] = None,
         state_max: Union[float, np.ndarray, None] = None,
@@ -330,7 +320,7 @@ class CWHRotation2dDynamics(ControlAffineODESolverDynamics):
             use_jax=use_jax,
         )
 
-        A, B = generate_cwh_matrices(self.m, self.n, "2d")
+        A, B = utils.generate_cwh_matrices(self.m, self.n, "2d")
 
         assert (
             len(A.shape) == 2

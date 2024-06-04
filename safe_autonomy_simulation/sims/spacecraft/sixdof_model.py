@@ -17,26 +17,16 @@ from typing import Union
 
 import numpy as np
 
-from safe_autonomy_simulation.spacecraft.utils import (
-    generate_cwh_matrices,
-    M_DEFAULT,
-    N_DEFAULT,
-    INERTIA_MATRIX_DEFAULT,
-    INERTIA_WHEEL_DEFAULT,
-    ANG_ACC_LIMIT_DEFAULT,
-    ANG_VEL_LIMIT_DEFAULT,
-    ACC_LIMIT_WHEEL_DEFAULT,
-    VEL_LIMIT_WHEEL_DEFAULT,
-    THRUST_CONTROL_LIMIT_DEFAULT,
-    CWH_MATERIAL,
-)
 from safe_autonomy_simulation.utils import number_list_to_np
-from safe_autonomy_simulation.entity import Entity, PhysicalEntity, ControlQueue
-from safe_autonomy_simulation.dynamics import ControlAffineODESolverDynamics
-from safe_autonomy_simulation.material import Material
+import safe_autonomy_simulation.entities as e
+import safe_autonomy_simulation.dynamics as d
+import safe_autonomy_simulation.materials as mat
+import safe_autonomy_simulation.controls as c
+import safe_autonomy_simulation.sims.spacecraft.utils as utils
+import safe_autonomy_simulation.sims.spacecraft.defaults as defaults
 
 
-class SixDOFSpacecraft(PhysicalEntity):  # pylint: disable=too-many-public-methods
+class SixDOFSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-public-methods
     """
     Spacecraft with 3D Clohessy-Wiltshire translational dynamics, in Hill's frame and 3D rotational dynamics
 
@@ -112,21 +102,21 @@ class SixDOFSpacecraft(PhysicalEntity):  # pylint: disable=too-many-public-metho
         velocity: np.ndarray = np.zeros(3),
         orientation: np.ndarray = np.array([0, 0, 0, 1]),
         angular_velocity: np.ndarray = np.zeros(3),
-        m=M_DEFAULT,
-        inertia_matrix=INERTIA_MATRIX_DEFAULT,
-        ang_acc_limit=ANG_ACC_LIMIT_DEFAULT,
-        ang_vel_limit=ANG_VEL_LIMIT_DEFAULT,
-        inertia_wheel=INERTIA_WHEEL_DEFAULT,
-        acc_limit_wheel=ACC_LIMIT_WHEEL_DEFAULT,
-        vel_limit_wheel=VEL_LIMIT_WHEEL_DEFAULT,
-        thrust_control_limit=THRUST_CONTROL_LIMIT_DEFAULT,
+        m=defaults.M_DEFAULT,
+        inertia_matrix=defaults.INERTIA_MATRIX_DEFAULT,
+        ang_acc_limit=defaults.ANG_ACC_LIMIT_DEFAULT,
+        ang_vel_limit=defaults.ANG_VEL_LIMIT_DEFAULT,
+        inertia_wheel=defaults.INERTIA_WHEEL_DEFAULT,
+        acc_limit_wheel=defaults.ACC_LIMIT_WHEEL_DEFAULT,
+        vel_limit_wheel=defaults.VEL_LIMIT_WHEEL_DEFAULT,
+        thrust_control_limit=defaults.THRUST_CONTROL_LIMIT_DEFAULT,
         body_frame_thrust=True,
-        n=N_DEFAULT,
+        n=defaults.N_DEFAULT,
         trajectory_samples=0,
         integration_method="RK45",
-        material: Material = CWH_MATERIAL,
-        parent: Union[PhysicalEntity, None] = None,
-        children: set[PhysicalEntity] = {},
+        material: mat.Material = defaults.CWH_MATERIAL,
+        parent: Union[e.PhysicalEntity, None] = None,
+        children: set[e.PhysicalEntity] = {},
     ):
         # Define limits for angular acceleration, angular velocity, and control inputs
         ang_acc_limit = number_list_to_np(ang_acc_limit, shape=(3,))  # rad/s^2
@@ -145,7 +135,7 @@ class SixDOFSpacecraft(PhysicalEntity):  # pylint: disable=too-many-public-metho
             control_limit[i] = thrust_control_limit
             control_limit[i + 3] = acc_limit_combined[i] * inertia_matrix[i, i]
 
-        control_queue = ControlQueue(
+        control_queue = c.ControlQueue(
             default_control=np.zeros(6),
             control_map={
                 "thrust_x": 0,
@@ -184,7 +174,7 @@ class SixDOFSpacecraft(PhysicalEntity):  # pylint: disable=too-many-public-metho
             children=children,
         )
 
-    def register_lead(self, lead: Entity):
+    def register_lead(self, lead: e.Entity):
         """
         Register another entity as this entity's lead. Defines line of communication between entities.
 
@@ -226,7 +216,7 @@ class SixDOFSpacecraft(PhysicalEntity):  # pylint: disable=too-many-public-metho
         self._state = state
 
 
-class SixDOFDynamics(ControlAffineODESolverDynamics):
+class SixDOFDynamics(d.ControlAffineODEDynamics):
     """
     State transition implementation of 3D Clohessy-Wiltshire dynamics model and 3D rotational dynamics model.
 
@@ -267,11 +257,11 @@ class SixDOFDynamics(ControlAffineODESolverDynamics):
 
     def __init__(
         self,
-        m=M_DEFAULT,
-        inertia_matrix=INERTIA_MATRIX_DEFAULT,
-        ang_acc_limit=ANG_ACC_LIMIT_DEFAULT,
-        ang_vel_limit=ANG_VEL_LIMIT_DEFAULT,
-        n=N_DEFAULT,
+        m=defaults.M_DEFAULT,
+        inertia_matrix=defaults.INERTIA_MATRIX_DEFAULT,
+        ang_acc_limit=defaults.ANG_ACC_LIMIT_DEFAULT,
+        ang_vel_limit=defaults.ANG_VEL_LIMIT_DEFAULT,
+        n=defaults.N_DEFAULT,
         body_frame_thrust=True,
         trajectory_samples: int = 0,
         state_max: Union[float, np.ndarray] = None,
@@ -293,7 +283,7 @@ class SixDOFDynamics(ControlAffineODESolverDynamics):
         ang_acc_limit = number_list_to_np(ang_acc_limit, shape=(3,))  # rad/s^2
         ang_vel_limit = number_list_to_np(ang_vel_limit, shape=(3,))  # rad/s
 
-        A, B = generate_cwh_matrices(self.m, self.n, "3d")
+        A, B = utils.generate_cwh_matrices(self.m, self.n, "3d")
 
         assert (
             len(A.shape) == 2

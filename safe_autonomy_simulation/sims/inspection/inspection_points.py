@@ -4,21 +4,14 @@ import typing
 import numpy as np
 from sklearn.cluster import KMeans
 
-from safe_autonomy_simulation.spacecraft import CWHSpacecraft
-from safe_autonomy_simulation.entity import Entity, PhysicalEntity, Point
-from safe_autonomy_simulation.inspection.camera import Camera
-from safe_autonomy_simulation.inspection.sun import SunEntity
-from safe_autonomy_simulation.inspection.utils import (
-    points_on_sphere_cmu,
-    points_on_sphere_fibonacci,
-    AVG_EARTH_TO_SUN_DIST,
-    is_illuminated,
-    evaluate_rgb,
-)
-from safe_autonomy_simulation.dynamics import Dynamics
+import safe_autonomy_simulation.entities as e
+import safe_autonomy_simulation.dynamics as d
+import safe_autonomy_simulation.sims.inspection.camera as cam
+import safe_autonomy_simulation.sims.inspection.sun as sun
+import safe_autonomy_simulation.sims.inspection.utils as utils
 
 
-class InspectionPointDynamics(Dynamics):
+class InspectionPointDynamics(d.Dynamics):
     """Dynamics for an inspection point entity
 
     Update the position of the point from its default position based on the parent entity's position and orientation.
@@ -31,7 +24,7 @@ class InspectionPointDynamics(Dynamics):
         parent entity of the point which the point is anchored to
     """
 
-    def __init__(self, default_position: np.ndarray, parent: PhysicalEntity):
+    def __init__(self, default_position: np.ndarray, parent: e.PhysicalEntity):
         super().__init__()
         self._parent = parent
         self._default_position = default_position
@@ -46,7 +39,7 @@ class InspectionPointDynamics(Dynamics):
         return next_state, control
 
 
-class InspectionPoint(Point):
+class InspectionPoint(e.Point):
     """A weighted inspection point entity
 
     Parameters
@@ -71,7 +64,7 @@ class InspectionPoint(Point):
         inspected: bool,
         inspector: str,
         weight: float,
-        parent: Entity,
+        parent: e.Entity,
         name: str = "point",
     ):
         super().__init__(
@@ -182,7 +175,7 @@ class InspectionPoint(Point):
         self._state[-2] = weight
 
 
-class InspectionPointSet(Entity):
+class InspectionPointSet(e.Entity):
     """
     Inspection points entity containing a sphere of inspection points.
 
@@ -190,7 +183,7 @@ class InspectionPointSet(Entity):
     ----------
     name: str
         name of the inspection points entity
-    parent: CWHSpacecraft
+    parent: Entity
         parent entity of the inspection points which the points are anchored to
     num_points: int
         number of inspection points
@@ -205,7 +198,7 @@ class InspectionPointSet(Entity):
     def __init__(
         self,
         name: str,
-        parent: CWHSpacecraft,
+        parent: e.Entity,
         num_points: int,
         radius: float,
         priority_vector: np.ndarray,
@@ -249,9 +242,9 @@ class InspectionPointSet(Entity):
         ), f"Invalid points algorithm {points_algorithm}. Must be one of 'cmu' or 'fibonacci'"
 
         if points_algorithm == "cmu":
-            points_alg = points_on_sphere_cmu
+            points_alg = utils.points_on_sphere_cmu
         else:
-            points_alg = points_on_sphere_fibonacci
+            points_alg = utils.points_on_sphere_fibonacci
 
         # generate point positions
         point_positions = points_alg(
@@ -285,8 +278,8 @@ class InspectionPointSet(Entity):
 
     def update_points_inspection_status(
         self,
-        camera: Camera,
-        sun: typing.Union[SunEntity, None] = None,
+        camera: cam.Camera,
+        sun: typing.Union[sun.Sun, None] = None,
         binary_ray: bool = True,
     ):
         """
@@ -298,7 +291,7 @@ class InspectionPointSet(Entity):
         ----------
         camera: Camera
             camera entity inspecting the points
-        sun: Union[SunEntity, None], optional
+        sun: Union[Sun, None], optional
             sun entity, by default None
         binary_ray: bool, optional
             whether to use binary ray tracing for illumination, by default True
@@ -347,8 +340,8 @@ class InspectionPointSet(Entity):
 
     def kmeans_find_nearest_cluster(
         self,
-        camera: Camera,
-        sun: typing.Union[SunEntity, None] = None,
+        camera: cam.Camera,
+        sun: typing.Union[sun.Sun, None] = None,
         binary_ray: bool = True,
     ) -> np.ndarray:
         """Finds nearest cluster of uninspected points using kmeans clustering
@@ -359,7 +352,7 @@ class InspectionPointSet(Entity):
         ----------
         camera: Camera
             camera entity inspecting the points
-        sun: Union[SunEntity, None], optional
+        sun: Union[Sun, None], optional
             sun entity, by default None
         binary_ray: bool, optional
             whether to use binary ray tracing for illumination, by default True
@@ -414,7 +407,7 @@ class InspectionPointSet(Entity):
             out = out / np.linalg.norm(out)
         return out
 
-    def get_num_points_inspected(self, inspector_entity: Entity = None) -> int:
+    def get_num_points_inspected(self, inspector_entity: e.Entity = None) -> int:
         """Get total number of points inspected by an entity.
 
         If no entity is provided, return total number of points inspected.
@@ -439,7 +432,7 @@ class InspectionPointSet(Entity):
         return num_points
 
     def get_percentage_of_points_inspected(
-        self, inspector_entity: Entity = None
+        self, inspector_entity: e.Entity = None
     ) -> float:
         """Get the percentage of points inspected by an entity.
 
@@ -459,7 +452,7 @@ class InspectionPointSet(Entity):
         percent = self.get_num_points_inspected(inspector_entity) / total_num_points
         return percent
 
-    def get_total_weight_inspected(self, inspector_entity: Entity = None) -> float:
+    def get_total_weight_inspected(self, inspector_entity: e.Entity = None) -> float:
         """Get total weight of points inspected by an entity.
 
         If no entity is provided, return total weight of points inspected.

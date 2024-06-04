@@ -1,29 +1,17 @@
-"""
---------------------------------------------------------------------------
-Air Force Research Laboratory (AFRL) Autonomous Capabilities Team (ACT3)
-Safe Autonomy Dynamics.
-
-This is a US Government Work not subject to copyright protection in the US.
-
-The use, dissemination or disclosure of data in this file is subject to
-limitation or restriction. See accompanying README and LICENSE for details.
----------------------------------------------------------------------------
-
-This module implements 1d, 2d, and 3d point mass integrators.
-"""
+"""1D, 2D, and 3D point mass integrator entities"""
 
 from typing import Tuple, Union
 
 import numpy as np
 
-from safe_autonomy_simulation.entity import PhysicalEntity
-from safe_autonomy_simulation.dynamics import LinearODESolverDynamics
+import safe_autonomy_simulation.entities as e
+import safe_autonomy_simulation.dynamics as d
 
 M_DEFAULT = 1  # default mass in kg
 DAMPING_DEFAULT = 0  # default damping coefficient
 
 
-class PointMassIntegrator1d(PhysicalEntity):
+class PointMassIntegrator1d(e.PhysicalEntity):
     """
     1d point mass integrator simulation entity
 
@@ -118,7 +106,7 @@ class PointMassIntegrator1d(PhysicalEntity):
         self._state[3] = state[1]
 
 
-class PointMassIntegrator2d(PhysicalEntity):
+class PointMassIntegrator2d(e.PhysicalEntity):
     """
     2d point mass integrator simulation entity
 
@@ -220,7 +208,7 @@ class PointMassIntegrator2d(PhysicalEntity):
         self._state[4] = state[3]
 
 
-class PointMassIntegrator3d(PhysicalEntity):
+class PointMassIntegrator3d(e.PhysicalEntity):
     """
     3d point mass integrator simulation entity
 
@@ -329,7 +317,7 @@ class PointMassIntegrator3d(PhysicalEntity):
         self._state[5] = state[5]
 
 
-class PointMassIntegratorDynamics(LinearODESolverDynamics):
+class PointMassIntegratorDynamics(d.LinearODEDynamics):
     """
     State transition implementation of 3D integrator dynamics model.
 

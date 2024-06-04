@@ -1,29 +1,16 @@
-"""
---------------------------------------------------------------------------
-Air Force Research Laboratory (AFRL) Autonomous Capabilities Team (ACT3)
-Safe Autonomy Simulation.
-
-This is a US Government Work not subject to copyright protection in the US.
-
-The use, dissemination or disclosure of data in this file is subject to
-limitation or restriction. See accompanying README and LICENSE for details.
----------------------------------------------------------------------------
-
-This module implements a simulator for a spacecraft inspection environment
-using a 6DOF or point mass spacecraft model with or without illumination.
-"""
+"""This module implements a simulator for an inspection environment with or without illumination."""
 
 import typing
 
-from safe_autonomy_simulation.inspection.sun import SunEntity
-from safe_autonomy_simulation.simulator import Simulator
-from safe_autonomy_simulation.inspection.inspector import Inspector, SixDOFInspector
-from safe_autonomy_simulation.inspection.target import Target, SixDOFTarget
+import safe_autonomy_simulation.sims.inspection.sun as sun
+import safe_autonomy_simulation.simulator as sim
+import safe_autonomy_simulation.sims.inspection.inspector as i
+import safe_autonomy_simulation.sims.inspection.target as t
 
 
-class InspectionSimulator(Simulator):
+class InspectionSimulator(sim.Simulator):
     """
-    Inspection simulator for a spacecraft inspection environment.
+    Simulator for an inspection environment made up of inspectors and inspection targets.
 
     If a sun entity is provided, the simulator assumes illumination of the inspection targets.
     Illumination is calculated using binary ray tracing if binary_ray is True. Otherwise, the
@@ -37,7 +24,7 @@ class InspectionSimulator(Simulator):
         list of inspectors
     targets : Union[List[Target], List[SixDOFTarget]]
         list of inspection targets
-    sun : Union[SunEntity, None], optional
+    sun : Union[Sun, None], optional
         sun entity, by default None
     binary_ray : bool, optional
         binary ray tracing, by default False
@@ -46,9 +33,9 @@ class InspectionSimulator(Simulator):
     def __init__(
         self,
         frame_rate: float,
-        inspectors: typing.Union[typing.List[Inspector], typing.List[SixDOFInspector]],
-        targets: typing.Union[typing.List[Target], typing.List[SixDOFTarget]],
-        sun: typing.Union[SunEntity, None] = None,
+        inspectors: typing.Union[typing.List[i.Inspector], typing.List[i.SixDOFInspector]],
+        targets: typing.Union[typing.List[t.Target], typing.List[t.SixDOFTarget]],
+        sun: typing.Union[sun.Sun, None] = None,
         binary_ray: bool = False,
     ):
         self._inspectors = inspectors
@@ -81,7 +68,7 @@ class InspectionSimulator(Simulator):
     @property
     def inspectors(
         self,
-    ) -> typing.Union[typing.List[Inspector], typing.List[SixDOFInspector]]:
+    ) -> typing.Union[typing.List[i.Inspector], typing.List[i.SixDOFInspector]]:
         """List of inspectors
 
         Returns
@@ -92,7 +79,7 @@ class InspectionSimulator(Simulator):
         return self._inspectors
 
     @property
-    def targets(self) -> typing.Union[typing.List[Target], typing.List[SixDOFTarget]]:
+    def targets(self) -> typing.Union[typing.List[t.Target], typing.List[t.SixDOFTarget]]:
         """List of inspection targets
 
         Returns
@@ -103,12 +90,12 @@ class InspectionSimulator(Simulator):
         return self._targets
 
     @property
-    def sun(self) -> typing.Union[SunEntity, None]:
+    def sun(self) -> typing.Union[sun.Sun, None]:
         """Sun entity
 
         Returns
         -------
-        typing.Union[SunEntity, None]
+        typing.Union[Sun, None]
             sun entity or None if no sun entity is present
         """
         return self._sun

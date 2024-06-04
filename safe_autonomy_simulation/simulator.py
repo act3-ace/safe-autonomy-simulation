@@ -1,21 +1,8 @@
-"""
---------------------------------------------------------------------------
-Air Force Research Laboratory (AFRL) Autonomous Capabilities Team (ACT3)
-Safe Autonomy Simulation.
-
-This is a US Government Work not subject to copyright protection in the US.
-
-The use, dissemination or disclosure of data in this file is subject to
-limitation or restriction. See accompanying README and LICENSE for details.
----------------------------------------------------------------------------
-
-This module contains a base simulator class for building new simulations.
-"""
+"""Simulator base class for building simulations"""
 
 import typing
 import numpy as np
-
-from safe_autonomy_simulation.entity import Entity
+import safe_autonomy_simulation.entities as e
 
 
 class Simulator:
@@ -38,7 +25,7 @@ class Simulator:
         list of top-level simulation entities (no child entities)
     """
 
-    def __init__(self, frame_rate: float, entities: list[Entity]):
+    def __init__(self, frame_rate: float, entities: list[e.Entity]):
         assert frame_rate > 0, "Frame rate must be greater than 0"
         for entity in entities:
             assert entity.parent is None, "Entities must be top-level entities with no parent"
@@ -122,7 +109,7 @@ class Simulator:
         return self._sim_time
 
     @property
-    def entities(self) -> typing.Dict[str, Entity]:
+    def entities(self) -> typing.Dict[str, e.Entity]:
         """Set of top-level simulator entities
 
         Returns

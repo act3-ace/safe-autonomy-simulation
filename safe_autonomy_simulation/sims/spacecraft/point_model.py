@@ -17,19 +17,16 @@ from typing import Union
 
 import numpy as np
 
-from safe_autonomy_simulation.spacecraft.utils import (
-    generate_cwh_matrices,
-    M_DEFAULT,
-    N_DEFAULT,
-    CWH_MATERIAL,
-)
+import safe_autonomy_simulation.sims.spacecraft.defaults as defaults
+import safe_autonomy_simulation.sims.spacecraft.utils as utils
 
-from safe_autonomy_simulation.entity import PhysicalEntity, ControlQueue
-from safe_autonomy_simulation.dynamics import LinearODESolverDynamics
-from safe_autonomy_simulation.material import Material
+import safe_autonomy_simulation.entities as e
+import safe_autonomy_simulation.dynamics as d
+import safe_autonomy_simulation.materials as mat
+import safe_autonomy_simulation.controls as c
 
 
-class CWHSpacecraft(PhysicalEntity):
+class CWHSpacecraft(e.PhysicalEntity):
     """
     3D point mass spacecraft with +/- xyz thrusters and Clohessy-Wiltshire dynamics in Hill's reference frame.
 
@@ -76,13 +73,13 @@ class CWHSpacecraft(PhysicalEntity):
         name: str,
         position: np.ndarray = np.zeros(3),
         velocity: np.ndarray = np.zeros(3),
-        m=M_DEFAULT,
-        n=N_DEFAULT,
+        m=defaults.M_DEFAULT,
+        n=defaults.N_DEFAULT,
         trajectory_samples=0,
         integration_method="RK45",
-        material: Material = CWH_MATERIAL,
-        parent: Union[PhysicalEntity, None] = None,
-        children: set[PhysicalEntity] = {},
+        material: mat.Material = defaults.CWH_MATERIAL,
+        parent: Union[e.PhysicalEntity, None] = None,
+        children: set[e.PhysicalEntity] = {},
     ):
         dynamics = CWHDynamics(
             m=m,
@@ -91,7 +88,7 @@ class CWHSpacecraft(PhysicalEntity):
             integration_method=integration_method,
         )
 
-        control_queue = ControlQueue(
+        control_queue = c.ControlQueue(
             default_control=np.zeros(3),
             control_map={"thrust_x": 0, "thrust_y": 1, "thrust_z": 2},
             control_min=-1,
@@ -139,7 +136,7 @@ class CWHSpacecraft(PhysicalEntity):
         self._state[3:6] = state[3:6]
 
 
-class CWHDynamics(LinearODESolverDynamics):
+class CWHDynamics(d.LinearODEDynamics):
     """
     State transition implementation of 3D Clohessy-Wiltshire dynamics model.
 
@@ -190,8 +187,8 @@ class CWHDynamics(LinearODESolverDynamics):
 
     def __init__(
         self,
-        m=M_DEFAULT,
-        n=N_DEFAULT,
+        m=defaults.M_DEFAULT,
+        n=defaults.N_DEFAULT,
         trajectory_samples: int = 0,
         state_min: Union[float, np.ndarray] = -np.inf,
         state_max: Union[float, np.ndarray] = np.inf,
@@ -204,7 +201,7 @@ class CWHDynamics(LinearODESolverDynamics):
         self.m = m  # kg
         self.n = n  # rads/s
 
-        A, B = generate_cwh_matrices(self.m, self.n, "3d")
+        A, B = utils.generate_cwh_matrices(self.m, self.n, "3d")
 
         super().__init__(
             A=A,

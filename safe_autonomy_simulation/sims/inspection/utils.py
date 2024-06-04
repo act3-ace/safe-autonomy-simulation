@@ -5,8 +5,7 @@ General utility functions for the inspection module
 import math
 import numpy as np
 from typing import Union, Tuple
-from safe_autonomy_simulation.inspection.inspection_points import Point
-from safe_autonomy_simulation.entity import PhysicalEntity
+import safe_autonomy_simulation.entities as e
 
 
 AVG_EARTH_TO_SUN_DIST = 150000000000  # meters
@@ -184,7 +183,7 @@ def sphere_intersect(
     return None
 
 
-def is_illuminated(point: Point, light: PhysicalEntity, radius: float) -> bool:
+def is_illuminated(point: e.Point, light: e.PhysicalEntity, radius: float) -> bool:
     """
     Check illumination status of a point on a spacecraft situated at the origin (CWH dynamics)
 

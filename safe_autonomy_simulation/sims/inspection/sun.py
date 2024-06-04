@@ -17,13 +17,13 @@ from typing import Union
 import numpy as np
 import pint
 
-from safe_autonomy_simulation.spacecraft.point_model import N_DEFAULT
-from safe_autonomy_simulation.entity import Point
-from safe_autonomy_simulation.dynamics import ODESolverDynamics
-from safe_autonomy_simulation.material import Material, LIGHT
+import safe_autonomy_simulation.sims.spacecraft.utils as utils
+import safe_autonomy_simulation.entities as e
+import safe_autonomy_simulation.dynamics as d
+import safe_autonomy_simulation.materials as mat
 
 
-class SunEntity(Point):
+class Sun(e.Point):
     """
     Sun in Hill's reference frame.
     Assumed to rotate in x-y plane with angular velocity "n"
@@ -48,10 +48,10 @@ class SunEntity(Point):
         self,
         name: str = "sun",
         theta: Union[float, pint.Quantity] = 0,
-        n: float = N_DEFAULT,
+        n: float = utils.N_DEFAULT,
         integration_method: str = "RK45",
         use_jax: bool = False,
-        material: Material = LIGHT,
+        material: mat.Material = mat.LIGHT,
     ):
         self._initial_theta = theta
         self._n = n  # rads/s
@@ -61,7 +61,7 @@ class SunEntity(Point):
         super().__init__(name=name, dynamics=dynamics, position=np.zeros(3), material=material)
 
     def __eq__(self, other):
-        if isinstance(other, SunEntity):
+        if isinstance(other, Sun):
             return True
         return False
 
@@ -106,7 +106,7 @@ class SunEntity(Point):
         return self._n
 
 
-class SunDynamics(ODESolverDynamics):
+class SunDynamics(d.ODEDynamics):
     """Dynamics for the sun. Assumed to rotate in x-y plane
     
     Parameters
@@ -119,7 +119,7 @@ class SunDynamics(ODESolverDynamics):
         whether to use jax for dynamics, by default False
     """
 
-    def __init__(self, n=N_DEFAULT, integration_method="RK45", use_jax=False):
+    def __init__(self, n=utils.N_DEFAULT, integration_method="RK45", use_jax=False):
         self.n = n  # rads/s
         super().__init__(integration_method=integration_method, use_jax=use_jax)
 

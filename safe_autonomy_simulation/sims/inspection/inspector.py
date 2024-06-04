@@ -1,26 +1,14 @@
 import numpy as np
 from typing import Union
 
-from safe_autonomy_simulation.entity import PhysicalEntity
-from safe_autonomy_simulation.inspection.camera import Camera
-from safe_autonomy_simulation.spacecraft.utils import (
-    M_DEFAULT,
-    N_DEFAULT,
-    INERTIA_MATRIX_DEFAULT,
-    INERTIA_WHEEL_DEFAULT,
-    ANG_ACC_LIMIT_DEFAULT,
-    ANG_VEL_LIMIT_DEFAULT,
-    ACC_LIMIT_WHEEL_DEFAULT,
-    VEL_LIMIT_WHEEL_DEFAULT,
-    THRUST_CONTROL_LIMIT_DEFAULT,
-    CWH_MATERIAL,
-)
-from safe_autonomy_simulation.spacecraft.point_model import CWHSpacecraft
-from safe_autonomy_simulation.spacecraft.sixdof_model import SixDOFSpacecraft
-from safe_autonomy_simulation.material import Material
+import safe_autonomy_simulation.entities as e
+import safe_autonomy_simulation.materials as mat
+import safe_autonomy_simulation.sims.inspection.camera as cam
+import safe_autonomy_simulation.sims.spacecraft.utils as utils
+import safe_autonomy_simulation.sims.spacecraft as spacecraft
 
 
-class Inspector(CWHSpacecraft):
+class Inspector(spacecraft.CWHSpacecraft):
     """Inspector spacecraft with a camera.
 
     Parameters
@@ -52,16 +40,16 @@ class Inspector(CWHSpacecraft):
     def __init__(
         self,
         name: str,
-        camera: Camera,
+        camera: cam.Camera,
         position: np.ndarray = np.zeros(3),
         velocity: np.ndarray = np.zeros(3),
-        m: float = M_DEFAULT,
-        n: float = N_DEFAULT,
+        m: float = utils.M_DEFAULT,
+        n: float = utils.N_DEFAULT,
         trajectory_samples: int = 0,
         integration_method: str = "RK45",
-        material: Material = CWH_MATERIAL,
-        parent: Union[PhysicalEntity, None] = None,
-        children: set[PhysicalEntity] = {},
+        material: mat.Material = utils.CWH_MATERIAL,
+        parent: Union[e.PhysicalEntity, None] = None,
+        children: set[e.PhysicalEntity] = {},
     ):
         super().__init__(
             name=name,
@@ -79,7 +67,7 @@ class Inspector(CWHSpacecraft):
         self.add_child(camera)
 
     @property
-    def camera(self) -> Camera:
+    def camera(self) -> cam.Camera:
         """Inspector camera sensor
 
         Returns
@@ -90,7 +78,7 @@ class Inspector(CWHSpacecraft):
         return self._camera
 
 
-class SixDOFInspector(SixDOFSpacecraft):
+class SixDOFInspector(spacecraft.SixDOFSpacecraft):
     """SixDOF Inspector spacecraft with a camera.
 
     Parameters
@@ -142,26 +130,26 @@ class SixDOFInspector(SixDOFSpacecraft):
     def __init__(
         self,
         name: str,
-        camera: Camera,
+        camera: cam.Camera,
         position: np.ndarray = np.zeros(3),
         velocity: np.ndarray = np.zeros(3),
         orientation: np.ndarray = np.array([0, 0, 0, 1]),
         angular_velocity: np.ndarray = np.zeros(3),
-        m: float = M_DEFAULT,
-        n: float = N_DEFAULT,
-        inertia_matrix: np.matrix = INERTIA_MATRIX_DEFAULT,
-        ang_acc_limit: float = ANG_ACC_LIMIT_DEFAULT,
-        ang_vel_limit: float = ANG_VEL_LIMIT_DEFAULT,
-        inertia_wheel: float = INERTIA_WHEEL_DEFAULT,
-        acc_limit_wheel: float = ACC_LIMIT_WHEEL_DEFAULT,
-        vel_limit_wheel: float = VEL_LIMIT_WHEEL_DEFAULT,
-        thrust_control_limit: float = THRUST_CONTROL_LIMIT_DEFAULT,
+        m: float = utils.M_DEFAULT,
+        n: float = utils.N_DEFAULT,
+        inertia_matrix: np.matrix = utils.INERTIA_MATRIX_DEFAULT,
+        ang_acc_limit: float = utils.ANG_ACC_LIMIT_DEFAULT,
+        ang_vel_limit: float = utils.ANG_VEL_LIMIT_DEFAULT,
+        inertia_wheel: float = utils.INERTIA_WHEEL_DEFAULT,
+        acc_limit_wheel: float = utils.ACC_LIMIT_WHEEL_DEFAULT,
+        vel_limit_wheel: float = utils.VEL_LIMIT_WHEEL_DEFAULT,
+        thrust_control_limit: float = utils.THRUST_CONTROL_LIMIT_DEFAULT,
         body_frame_thrust: bool = True,
         trajectory_samples: int = 0,
         integration_method: str = "RK45",
-        material: Material = CWH_MATERIAL,
-        parent: Union[PhysicalEntity, None] = None,
-        children: set[PhysicalEntity] = {},
+        material: mat.Material = utils.CWH_MATERIAL,
+        parent: Union[e.PhysicalEntity, None] = None,
+        children: set[e.PhysicalEntity] = {},
     ):
         super().__init__(
             name=name,
@@ -189,7 +177,7 @@ class SixDOFInspector(SixDOFSpacecraft):
         self.add_child(camera)
 
     @property
-    def camera(self) -> Camera:
+    def camera(self) -> cam.Camera:
         """Inspector camera sensor
 
         Returns
