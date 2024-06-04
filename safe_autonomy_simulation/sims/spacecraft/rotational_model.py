@@ -141,7 +141,6 @@ class CWHRotation2dSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-pub
 
         control_queue = c.ControlQueue(
             default_control=np.zeros(3),
-            control_map={"thrust_x": 0, "thrust_y": 1, "moment_z": 2},
             control_min=np.array([-1, -1, -ang_acc_limit * self.inertia]),
             control_max=np.array([1, 1, ang_acc_limit * self.inertia]),
         )

@@ -137,14 +137,6 @@ class SixDOFSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-public-met
 
         control_queue = c.ControlQueue(
             default_control=np.zeros(6),
-            control_map={
-                "thrust_x": 0,
-                "thrust_y": 1,
-                "thrust_z": 2,
-                "moment_x": 3,
-                "moment_y": 4,
-                "moment_z": 5,
-            },
             control_min=-control_limit,
             control_max=control_limit,
         )

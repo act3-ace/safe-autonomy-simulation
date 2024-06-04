@@ -90,7 +90,6 @@ class CWHSpacecraft(e.PhysicalEntity):
 
         control_queue = c.ControlQueue(
             default_control=np.zeros(3),
-            control_map={"thrust_x": 0, "thrust_y": 1, "thrust_z": 2},
             control_min=-1,
             control_max=1,
         )

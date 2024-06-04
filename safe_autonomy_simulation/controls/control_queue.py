@@ -26,9 +26,6 @@ class ControlQueue:
         Optional minimum allowable control vector values. Control vectors that exceed this limit are clipped. By default None.
     control_max : Union[float, None], optional
         Optional maximum allowable control vector values. Control vectors that exceed this limit are clipped. By default None.
-    control_map : Union[dict, None], optional
-        Optional mapping for actuator names to their indices in the state vector.
-        Allows dictionary action inputs in add_control(). By default None.
 
     Attributes
     ----------
@@ -40,9 +37,6 @@ class ControlQueue:
         Minimum allowable control vector values. Control vectors that exceed this limit are clipped. By default None.
     control_max : Union[np.ndarray, None], optional
         Maximum allowable control vector values. Control vectors that exceed this limit are clipped. By default None.
-    control_map : Union[dict, None], optional
-        Mapping for actuator names to their indices in the state vector.
-        Required for dictionary action inputs in add_control(). By default None.
     """
 
     def __init__(
@@ -50,13 +44,11 @@ class ControlQueue:
         default_control: np.ndarray,
         control_min: typing.Union[float, None] = None,
         control_max: typing.Union[float, None] = None,
-        control_map: typing.Union[dict, None] = None,
     ):
         self.controls = queue.SimpleQueue()
         self.default_control = default_control
         self.control_min = control_min
         self.control_max = control_max
-        self.control_map = control_map
 
     def reset(self):
         """Clears the control queue"""
@@ -91,34 +83,16 @@ class ControlQueue:
 
         return control
 
-    def _vectorize_control(self, control: dict) -> np.ndarray:
-        control_vector = np.zeros(len(self.default_control))
-        for k, v in control.items():
-            if k not in self.control_map:
-                raise KeyError(
-                    f"action '{k}' not found in entity's control_map, "
-                    f"please use one of: {self.control_map.keys()}"
-                )
-
-            control_vector[self.control_map[k]] = v
-        if jnp is not None:
-            control_vector = jnp.array(control_vector)
-        return control_vector
-
-    def add_control(self, control: typing.Union[np.ndarray, dict, list, jnp.ndarray]):
+    def add_control(self, control: typing.Union[np.ndarray, list, jnp.ndarray]):
         """Adds a control to the end of the control queue.
 
         Parameters
         ----------
-        control : Union[np.ndarray, dict, list, jnp.ndarray]
+        control : Union[np.ndarray, list, jnp.ndarray]
             Control vector to be added to the control queue.
         """
-        if isinstance(control, dict):
-            assert (
-                self.control_map is not None
-            ), "Cannot use dict-type action without a control_map "
-            control = self._vectorize_control(control)
-        elif isinstance(control, list):
+
+        if isinstance(control, list):
             control = np.array(control, dtype=np.float32)
         elif isinstance(control, np.ndarray):
             control = control.copy()
@@ -128,7 +102,7 @@ class ControlQueue:
             control = control.copy()
         else:
             raise ValueError(
-                "action must be type dict, list, np.ndarray or jnp.ndarray"
+                "action must be type list, np.ndarray or jnp.ndarray"
             )
 
         # enforce control bounds (if any)
