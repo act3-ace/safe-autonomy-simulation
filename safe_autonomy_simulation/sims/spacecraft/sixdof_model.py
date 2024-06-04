@@ -55,13 +55,13 @@ class SixDOFSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-public-met
     name: str
         Name of the entity
     position: np.ndarray, optional
-        Initial position of spacecraft in meters, by default np.zeros(3)
+        Initial absolute position of spacecraft in meters, by default np.zeros(3)
     velocity: np.ndarray, optional
-        Initial velocity of spacecraft in meters/second, by default np.zeros(3)
+        Initial absolute velocity of spacecraft in meters/second, by default np.zeros(3)
     orientation: np.ndarray, optional
-        Initial orientation of spacecraft as quaternion, by default np.array([0, 0, 0, 1])
+        Initial absolute orientation of spacecraft as quaternion, by default np.array([0, 0, 0, 1])
     angular_velocity: np.ndarray, optional
-        Initial angular velocity of spacecraft in rad/s, by default np.zeros(3)
+        Initial absolute angular velocity of spacecraft in rad/s, by default np.zeros(3)
     m: float, optional
         Mass of spacecraft in kilograms, by default 12
     inertia_matrix: float, optional

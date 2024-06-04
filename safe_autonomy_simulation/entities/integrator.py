@@ -28,9 +28,9 @@ class PointMassIntegrator1d(e.PhysicalEntity):
     name: str
         name of entity
     position: np.ndarray, optional
-        initial position, by default np.array([0])
+        initial absolute position relative to origin, by default np.array([0])
     velocity: np.ndarray, optional
-        initial velocity, by default np.array([0])
+        initial absolute velocity, by default np.array([0])
     m: float, optional
         Mass of integrator in kg, by default 1.
     trajectory_samples : int, optional
@@ -60,10 +60,6 @@ class PointMassIntegrator1d(e.PhysicalEntity):
             integration_method=integration_method,
         )
 
-        control_map = {
-            "thrust_x": 0,
-        }
-
         super().__init__(
             name=name,
             dynamics=dynamics,
@@ -72,7 +68,6 @@ class PointMassIntegrator1d(e.PhysicalEntity):
             control_default=np.zeros((1,)),
             control_min=-1,
             control_max=1,
-            control_map=control_map,
         )
 
     @property
@@ -127,9 +122,9 @@ class PointMassIntegrator2d(e.PhysicalEntity):
     name: str
         name of entity
     position: np.ndarray, optional
-        initial 2d position, by default np.array([0, 0])
+        initial absolute 2d position relative to origin, by default np.array([0, 0])
     velocity: np.ndarray, optional
-        initial 2d velocity, by default np.array([0, 0])
+        initial absolute 2d velocity, by default np.array([0, 0])
     m: float, optional
         Mass of integrator in kg, by default 1.
     trajectory_samples : int, optional
@@ -159,11 +154,6 @@ class PointMassIntegrator2d(e.PhysicalEntity):
             integration_method=integration_method,
         )
 
-        control_map = {
-            "thrust_x": 0,
-            "thrust_y": 0,
-        }
-
         super().__init__(
             name=name,
             position=np.concatenate([position, np.array([0])]),
@@ -172,7 +162,6 @@ class PointMassIntegrator2d(e.PhysicalEntity):
             control_default=np.zeros((2,)),
             control_min=-1,
             control_max=1,
-            control_map=control_map,
         )
 
     @property
@@ -233,9 +222,9 @@ class PointMassIntegrator3d(e.PhysicalEntity):
     name: str
         name of entity
     position: np.ndarray, optional
-        initial 3d position, by default np.array([0, 0, 0])
+        initial absolute 3d position relative to origin, by default np.array([0, 0, 0])
     velocity: np.ndarray, optional
-        initial 3d velocity, by default np.array([0, 0, 0])
+        initial absolute 3d velocity, by default np.array([0, 0, 0])
     m: float
         Mass of integrator in kg, by default 1.
     trajectory_samples : int
@@ -265,12 +254,6 @@ class PointMassIntegrator3d(e.PhysicalEntity):
             integration_method=integration_method,
         )
 
-        control_map = {
-            "thrust_x": 0,
-            "thrust_y": 0,
-            "thrust_z": 0,
-        }
-
         super().__init__(
             name=name,
             position=position,
@@ -279,7 +262,6 @@ class PointMassIntegrator3d(e.PhysicalEntity):
             control_default=np.zeros((3,)),
             control_min=-1,
             control_max=1,
-            control_map=control_map,
         )
 
     @property

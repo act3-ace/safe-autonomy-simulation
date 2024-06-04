@@ -15,9 +15,9 @@ class Point(e.PhysicalEntity):
     name : str
         Name of the entity
     position : np.ndarray
-        Initial position of the entity.
+        Initial absolute position of the entity.
     velocity : np.ndarray, optional
-        Initial velocity of the entity. By default [0, 0, 0]
+        Initial absolute velocity of the entity. By default [0, 0, 0]
     dynamics : Dynamics, optional
         Dynamics object for computing state transitions. By default PassThroughDynamics()
     control_queue : ControlQueue, optional

@@ -23,13 +23,13 @@ class Camera(e.PhysicalEntity):
     pixel_pitch: float
         pixel pitch of the camera
     position: np.ndarray, optional
-        initial position of the entity, by default [0, 0, 0]
+        initial absolute position of the entity, by default [0, 0, 0]
     velocity: np.ndarray, optional
-        initial velocity of the entity, by default [0, 0, 0]
+        initial absolute velocity of the entity, by default [0, 0, 0]
     orientation: Rotation, optional
-        initial orientation of the entity, by default Rotation.from_euler("ZYX", [0, 0, 0])
+        initial absolute orientation of the entity, by default Rotation.from_euler("ZYX", [0, 0, 0])
     angular_velocity: np.ndarray, optional
-        initial angular velocity of the entity, by default [0, 0, 0]
+        initial absolute angular velocity of the entity, by default [0, 0, 0]
     dynamics: Dynamics, optional
         dynamics of the entity, by default PassThroughDynamics()
     parent: PhysicalEntity, optional

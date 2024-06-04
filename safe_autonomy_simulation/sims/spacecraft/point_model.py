@@ -49,9 +49,9 @@ class CWHSpacecraft(e.PhysicalEntity):
     Parameters
     ----------
     position: np.ndarray, optional
-        Initial position of spacecraft in meters, by default np.zeros(3)
+        Initial absolute position of spacecraft in meters, by default np.zeros(3)
     velocity: np.ndarray, optional
-        Initial velocity of spacecraft in meters/second, by default np.zeros(3)
+        Initial absolute velocity of spacecraft in meters/second, by default np.zeros(3)
     m: float, optional
         Mass of spacecraft in kilograms, by default 12.
     n: float, optional

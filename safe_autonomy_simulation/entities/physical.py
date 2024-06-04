@@ -76,13 +76,13 @@ class PhysicalEntity(e.Entity):
     name : str
         Name of the entity
     position : np.ndarray
-        Initial position of the entity
+        Initial absolute position of the entity
     velocity : np.ndarray
-        Initial velocity of the entity
+        Initial absolute velocity of the entity
     orientation : np.ndarray
-        Initial orientation quaternion of the entity
+        Initial absolute orientation quaternion of the entity
     angular_velocity : np.ndarray
-        Initial angular velocity of the entity
+        Initial absolute angular velocity of the entity
     control_queue : ControlQueue
         Queue of control vectors to be applied to the entity
     dynamics : Dynamics
@@ -158,238 +158,194 @@ class PhysicalEntity(e.Entity):
 
     @property
     def x(self) -> float:
-        """X position of entity
+        """absolute X position of entity
 
         Returns
         -------
         float
-            X position
+            absolute X position
         """
         return self.position[0]
 
     @property
     def x_with_units(self) -> pint.Quantity:
-        """X position of entity with units
+        """absolute X position of entity with units
 
         Returns
         -------
         pint.Quantity
-            X position with units
+            absolute X position with units
         """
         return self._ureg.Quantity(self.x, self.base_units.distance)
 
     @property
     def y(self) -> float:
-        """Y position of entity
+        """absolute Y position of entity
 
         Returns
         -------
         float
-            Y position
+            absolute Y position
         """
         return self.position[1]
 
     @property
     def y_with_units(self) -> pint.Quantity:
-        """Y position of entity with units
+        """absolute Y position of entity with units
 
         Returns
         -------
         pint.Quantity
-            Y position with units
+            absolute Y position with units
         """
         return self._ureg.Quantity(self.y, self.base_units.distance)
 
     @property
     def z(self) -> float:
-        """Z position of entity
+        """absolute Z position of entity
 
         Returns
         -------
         float
-            Z position
+            absolute Z position
         """
         return self.position[2]
 
     @property
     def z_with_units(self) -> pint.Quantity:
-        """Z position of entity with units
+        """absolute Z position of entity with units
 
         Returns
         -------
         pint.Quantity
-            Z position with units
+            absolute Z position with units
         """
         return self._ureg.Quantity(self.z, self.base_units.distance)
 
     @property
     def position(self) -> np.ndarray:
-        """Entity position vector
+        """Entity absolute position vector
 
         Returns
         -------
         np.ndarray
-            3D position vector
+            3D absolute position vector
         """
         return self._state[:3]
 
     @property
     def position_with_units(self) -> pint.Quantity[np.ndarray]:
-        """Entity position vector with units
+        """Entity absolute position vector with units
 
         Returns
         -------
         pint.Quantity
-            3D position vector with units
+            3D absolute position vector with units
         """
         return self._ureg.Quantity(self.position, self.base_units.distance)
 
     @property
     def x_dot(self) -> float:
-        """X velocity component
+        """absolute X velocity component
 
         Returns
         -------
         float
-            X velocity component
+            absolute X velocity component
         """
         return self.velocity[0]
 
     @property
     def x_dot_with_units(self) -> pint.Quantity:
-        """X velocity component with units
+        """absolute X velocity component with units
 
         Returns
         -------
         pint.Quantity
-            X velocity component with units
+            absolute X velocity component with units
         """
         return self._ureg.Quantity(self.x_dot, self.base_units.velocity)
 
     @property
     def y_dot(self) -> float:
-        """Y velocity component
+        """absolute Y velocity component
 
         Returns
         -------
         float
-            Y velocity component
+            absolute Y velocity component
         """
         return self.velocity[1]
 
     @property
     def y_dot_with_units(self) -> pint.Quantity:
-        """Y velocity component with units
+        """absolute Y velocity component with units
 
         Returns
         -------
         pint.Quantity
-            Y velocity component with units
+            absolute Y velocity component with units
         """
         return self._ureg.Quantity(self.y_dot, self.base_units.velocity)
 
     @property
     def z_dot(self) -> float:
-        """Z velocity component
+        """absolute Z velocity component
 
         Returns
         -------
         float
-            Z velocity component
+            absolute Z velocity component
         """
         return self.velocity[2]
 
     @property
     def z_dot_with_units(self) -> pint.Quantity:
-        """Z velocity component with units
+        """absolute Z velocity component with units
 
         Returns
         -------
         pint.Quantity
-            Z velocity component with units
+            absolute Z velocity component with units
         """
         return self._ureg.Quantity(self.z_dot, self.base_units.velocity)
 
     @property
     def velocity(self) -> np.ndarray:
-        """Entity velocity vector
+        """Entity absolute velocity vector
 
         Returns
         -------
         np.ndarray
-            3D velocity vector
+            absolute 3D velocity vector
         """
         return self._state[3:6]
 
     @property
     def velocity_with_units(self) -> pint.Quantity[np.ndarray]:
-        """Entity velocity vector with units
+        """Entity absolute velocity vector with units
 
         Returns
         -------
         pint.Quantity
-            3D velocity vector with units
+            absolute 3D velocity vector with units
         """
         return self._ureg.Quantity(self.velocity, self.base_units.velocity)
 
     @property
     def orientation(self) -> np.ndarray:
-        """Entity orientation quaternion
+        """Entity absolute orientation quaternion
 
         Returns
         -------
         np.ndarray
-            Orientation quaternion
+            absolute orientation quaternion
         """
         return self._state[6:10]
 
     @property
-    def q1(self) -> float:
-        """First element of entity's orientation quaternion
-
-        Returns
-        -------
-        float
-            First element of orientation quaternion
-        """
-        return self.orientation[0]
-
-    @property
-    def q2(self) -> float:
-        """Second element of entity's orientation quaternion
-
-        Returns
-        -------
-        float
-            Second element of orientation quaternion
-        """
-        return self.orientation[1]
-
-    @property
-    def q3(self) -> float:
-        """Third element of entity's orientation quaternion
-
-        Returns
-        -------
-        float
-            Third element of orientation quaternion
-        """
-        return self.orientation[2]
-
-    @property
-    def q4(self) -> float:
-        """Fourth element of entity's orientation quaternion
-
-        Returns
-        -------
-        float
-            Fourth element of orientation quaternion
-        """
-        return self.orientation[3]
-
-    @property
     def wx(self) -> float:
-        """Wx, the angular velocity component about the local body frame x axis
+        """Wx, the absolute angular velocity component about the local body frame x axis
 
         Returns
         -------
@@ -400,7 +356,7 @@ class PhysicalEntity(e.Entity):
 
     @property
     def wx_with_unit(self) -> pint.Quantity:
-        """Wx, the angular velocity component about the local body frame x axis with units
+        """Wx, the absolute angular velocity component about the local body frame x axis with units
 
         Returns
         -------
@@ -411,7 +367,7 @@ class PhysicalEntity(e.Entity):
 
     @property
     def wy(self) -> float:
-        """Wy, the angular velocity component about the local body frame y axis
+        """Wy, the absolute angular velocity component about the local body frame y axis
 
         Returns
         -------
@@ -422,7 +378,7 @@ class PhysicalEntity(e.Entity):
 
     @property
     def wy_with_unit(self) -> pint.Quantity:
-        """Wy, the angular velocity component about the local body frame y axis with units
+        """Wy, the absolute angular velocity component about the local body frame y axis with units
 
         Returns
         -------
@@ -433,7 +389,7 @@ class PhysicalEntity(e.Entity):
 
     @property
     def wz(self) -> float:
-        """Wz, the angular velocity component about the local body frame z axis
+        """Wz, the absolute angular velocity component about the local body frame z axis
 
         Returns
         -------
@@ -444,7 +400,7 @@ class PhysicalEntity(e.Entity):
 
     @property
     def wz_with_unit(self) -> pint.Quantity:
-        """Wz, the angular velocity component about the local body frame z axis with units
+        """Wz, the absolute angular velocity component about the local body frame z axis with units
 
         Returns
         -------
@@ -455,7 +411,7 @@ class PhysicalEntity(e.Entity):
 
     @property
     def angular_velocity(self) -> np.ndarray:
-        """Entity angular velocity vector
+        """Entity absolute angular velocity vector
 
         Returns
         -------
@@ -466,7 +422,7 @@ class PhysicalEntity(e.Entity):
 
     @property
     def angular_velocity_with_units(self) -> pint.Quantity[np.ndarray]:
-        """Entity angular velocity vector with units
+        """Entity absolute angular velocity vector with units
 
         Returns
         -------

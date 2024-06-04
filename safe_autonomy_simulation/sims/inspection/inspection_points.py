@@ -19,7 +19,7 @@ class InspectionPointDynamics(d.Dynamics):
     Parameters
     ----------
     default_position: np.ndarray
-        default position of the point
+        default absolute position of the point
     parent: PhysicalEntity
         parent entity of the point which the point is anchored to
     """
@@ -45,7 +45,7 @@ class InspectionPoint(e.Point):
     Parameters
     ----------
     position: np.ndarray
-        position of the point
+        absolute position of the point
     inspected: bool
         whether the point has been inspected
     inspector: str
