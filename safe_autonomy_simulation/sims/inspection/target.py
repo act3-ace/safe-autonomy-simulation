@@ -15,7 +15,7 @@ class Target(spacecraft.CWHSpacecraft):
     ----------
     name : str
         name of the entity
-    inspection_points : InspectionPoints
+    inspection_points : InspectionPointSet
         Inspection points of the target
     position : np.ndarray, optional
         Initial absolute position of spacecraft in meters, by default np.zeros(3)
@@ -33,8 +33,6 @@ class Target(spacecraft.CWHSpacecraft):
         Material properties of the spacecraft, by default CWH_MATERIAL
     parent : Union[PhysicalEntity, None], optional
         Parent entity of spacecraft, by default None
-    children : set[PhysicalEntity], optional
-        Set of children entities of spacecraft, by default {}
     """
 
     def __init__(
@@ -49,7 +47,6 @@ class Target(spacecraft.CWHSpacecraft):
         integration_method: str = "RK45",
         material: mat.Material = defaults.CWH_MATERIAL,
         parent: Union[e.PhysicalEntity, None] = None,
-        children: set[e.PhysicalEntity] = {},
     ):
         super().__init__(
             name=name,
@@ -61,7 +58,6 @@ class Target(spacecraft.CWHSpacecraft):
             integration_method=integration_method,
             material=material,
             parent=parent,
-            children=children,
         )
         self._inspection_points = inspection_points
         self.add_child(self._inspection_points)

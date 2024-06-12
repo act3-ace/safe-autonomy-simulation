@@ -33,8 +33,6 @@ class Inspector(spacecraft.CWHSpacecraft):
         Material properties of the spacecraft, by default CWH_MATERIAL
     parent : Union[PhysicalEntity, None], optional
         Parent entity of spacecraft, by default None
-    children : set[PhysicalEntity], optional
-        Set of children entities of spacecraft, by default {}
     """
 
     def __init__(
@@ -49,7 +47,6 @@ class Inspector(spacecraft.CWHSpacecraft):
         integration_method: str = "RK45",
         material: mat.Material = utils.CWH_MATERIAL,
         parent: Union[e.PhysicalEntity, None] = None,
-        children: set[e.PhysicalEntity] = {},
     ):
         super().__init__(
             name=name,
@@ -61,7 +58,6 @@ class Inspector(spacecraft.CWHSpacecraft):
             integration_method=integration_method,
             material=material,
             parent=parent,
-            children=children,
         )
         self._camera = camera
         self.add_child(camera)
@@ -123,8 +119,6 @@ class SixDOFInspector(spacecraft.SixDOFSpacecraft):
         Material properties of the spacecraft, by default CWH_MATERIAL
     parent : Union[PhysicalEntity, None], optional
         Parent entity of spacecraft, by default None
-    children : set[PhysicalEntity], optional
-        Set of children entities of spacecraft, by default {}
     """
 
     def __init__(
@@ -149,7 +143,6 @@ class SixDOFInspector(spacecraft.SixDOFSpacecraft):
         integration_method: str = "RK45",
         material: mat.Material = utils.CWH_MATERIAL,
         parent: Union[e.PhysicalEntity, None] = None,
-        children: set[e.PhysicalEntity] = {},
     ):
         super().__init__(
             name=name,
@@ -171,7 +164,6 @@ class SixDOFInspector(spacecraft.SixDOFSpacecraft):
             integration_method=integration_method,
             material=material,
             parent=parent,
-            children=children,
         )
         self._camera = camera
         self.add_child(camera)
