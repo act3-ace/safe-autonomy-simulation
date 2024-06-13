@@ -3,6 +3,7 @@ import typing
 
 import numpy as np
 from sklearn.cluster import KMeans
+from scipy.spatial.transform import Rotation
 
 import safe_autonomy_simulation.entities as e
 import safe_autonomy_simulation.dynamics as d
@@ -32,7 +33,7 @@ class InspectionPointDynamics(d.Dynamics):
     def _step(
         self, step_size: float, state: np.ndarray, control: np.ndarray
     ) -> typing.Tuple[np.ndarray, np.ndarray]:
-        new_position = self._parent.orientation.apply(self._default_position)
+        new_position = Rotation.from_quat(self._parent.orientation).apply(self._default_position)
         # translate from parent position
         new_position = new_position + self._parent.position
         next_state = np.concatenate((new_position, state[3:]))
@@ -564,3 +565,25 @@ class InspectionPointSet(e.Entity):
         for i, point in self.points.items():
             point.state = state[i]
         self._state = state
+
+    @property
+    def position(self) -> np.ndarray:
+        """Position of inspection point set entity
+
+        Returns
+        -------
+        np.ndarray
+            position of inspection point set entity
+        """
+        return self.parent.position
+    
+    @property
+    def orientation(self) -> np.ndarray:
+        """Orientation of inspection point set entity
+
+        Returns
+        -------
+        np.ndarray
+            orientation of inspection point set entity
+        """
+        return self.parent.orientation
