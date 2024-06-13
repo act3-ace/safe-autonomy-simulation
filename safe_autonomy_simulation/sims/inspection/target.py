@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Union
+import typing
 
 import safe_autonomy_simulation.entities as e
 import safe_autonomy_simulation.sims.spacecraft.defaults as defaults
@@ -46,7 +46,7 @@ class Target(spacecraft.CWHSpacecraft):
         trajectory_samples: int = 0,
         integration_method: str = "RK45",
         material: mat.Material = defaults.CWH_MATERIAL,
-        parent: Union[e.PhysicalEntity, None] = None,
+        parent: typing.Union[e.PhysicalEntity, None] = None,
     ):
         super().__init__(
             name=name,
@@ -144,7 +144,7 @@ class SixDOFTarget(spacecraft.SixDOFSpacecraft):
         trajectory_samples: int = 0,
         integration_method: str = "RK45",
         material: mat.Material = defaults.CWH_MATERIAL,
-        parent: Union[e.PhysicalEntity, None] = None,
+        parent: typing.Union[e.PhysicalEntity, None] = None,
         children: set[e.PhysicalEntity] = {},
     ):
         super().__init__(

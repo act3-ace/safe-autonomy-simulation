@@ -1,10 +1,12 @@
-""" Camera entity for capturing images of objects in the environment """
+"""Camera entity for capturing images of objects in the environment"""
 
 import numpy as np
 import scipy.spatial.transform as transform
 import safe_autonomy_simulation.entities as e
 import safe_autonomy_simulation.dynamics as d
-import safe_autonomy_simulation.sims.inspection.utils as utils
+import safe_autonomy_simulation.sims.inspection.utils.illumination as illum
+import safe_autonomy_simulation.sims.inspection.utils.vector as vector
+import safe_autonomy_simulation.sims.inspection.utils.sphere as sphere
 
 
 class Camera(e.PhysicalEntity):
@@ -27,7 +29,7 @@ class Camera(e.PhysicalEntity):
     velocity: np.ndarray, optional
         initial absolute velocity of the entity, by default [0, 0, 0]
     orientation: Rotation, optional
-        initial absolute orientation of the entity, by default Rotation.from_euler("ZYX", [0, 0, 0])
+        initial absolute orientation quaternion of the entity, by default [0, 0, 0, 1]
     angular_velocity: np.ndarray, optional
         initial absolute angular velocity of the entity, by default [0, 0, 0]
     dynamics: Dynamics, optional
@@ -101,7 +103,7 @@ class Camera(e.PhysicalEntity):
             point illumination status, True if illuminated, False if not
         """
         if binary_ray:
-            illuminated = utils.is_illuminated(point=point, light=light, radius=radius)
+            illuminated = illum.is_illuminated(point=point, light=light, radius=radius)
         else:
             rgb = self.capture_point(
                 point=point,
@@ -109,7 +111,7 @@ class Camera(e.PhysicalEntity):
                 viewed_object=viewed_object,
                 radius=radius,
             )
-            illuminated = utils.evaluate_rgb(rgb)
+            illuminated = illum.is_illuminated_rgb(rgb)
         return illuminated
 
     def capture_point(
@@ -140,11 +142,11 @@ class Camera(e.PhysicalEntity):
         # Chief position is origin [cwh dynamics]
         # TODO: don't assume origin
         center = [0, 0, 0]
-        normal_to_surface = utils.normalize(point.position)
+        normal_to_surface = vector.normalize(point.position)
         # Get a point slightly off the surface of the sphere so don't detect surface as an intersection
         shifted_point = point.position + 1e-5 * normal_to_surface
-        intersection_to_light = utils.normalize(light.position - shifted_point)
-        intersect_var = utils.sphere_intersect(
+        intersection_to_light = vector.normalize(light.position - shifted_point)
+        intersect_var = sphere.sphere_intersect(
             center, radius, shifted_point, intersection_to_light
         )
 
@@ -162,8 +164,8 @@ class Camera(e.PhysicalEntity):
                 * np.array(light.material.diffuse)
                 * np.dot(intersection_to_light, normal_to_surface)
             )
-            intersection_to_camera = utils.normalize(self.position - point)
-            H = utils.normalize(intersection_to_light + intersection_to_camera)
+            intersection_to_camera = vector.normalize(self.position - point)
+            H = vector.normalize(intersection_to_light + intersection_to_camera)
             illumination += (
                 np.array(viewed_object.material.specular)
                 * np.array(light.material.specular)
@@ -195,7 +197,7 @@ class Camera(e.PhysicalEntity):
         # For now, assuming deputy sensor always pointed at chief (which is origin)
         # TODO: don't assume origin
         chief_position = [0, 0, 0]
-        sensor_dir = utils.normalize(chief_position - self.position)
+        sensor_dir = vector.normalize(chief_position - self.position)
         image_plane_position = self.position + sensor_dir * self.focal_length
         # There are an infinite number of vectors normal to sensor_dir -- choose one
         x = -1
@@ -204,7 +206,7 @@ class Camera(e.PhysicalEntity):
             -(image_plane_position[0] * x + image_plane_position[1] * y)
             / image_plane_position[2]
         )
-        norm1 = utils.normalize([x, y, z])
+        norm1 = vector.normalize([x, y, z])
 
         # np.cross bug work-around https://github.com/microsoft/pylance-release/issues/3277
         def cross2(a: np.ndarray, b: np.ndarray) -> np.ndarray:
@@ -231,8 +233,8 @@ class Camera(e.PhysicalEntity):
                     + ((norm2_range / 2) - (i * step_norm2)) * (norm2)
                     + (-(norm1_range / 2) + (j * step_norm1)) * (norm1)
                 )
-                ray_direction = utils.normalize(pixel_location - self.position)
-                dist_2_intersect = utils.sphere_intersect(
+                ray_direction = vector.normalize(pixel_location - self.position)
+                dist_2_intersect = sphere.sphere_intersect(
                     chief_position, radius, self.position, ray_direction
                 )
                 # Light ray hits sphere, so we continue - else get next pixel
@@ -240,10 +242,14 @@ class Camera(e.PhysicalEntity):
                     intersection_point = (
                         self.position + dist_2_intersect * ray_direction
                     )
-                    normal_to_surface = utils.normalize(intersection_point - chief_position)
+                    normal_to_surface = vector.normalize(
+                        intersection_point - chief_position
+                    )
                     shifted_point = intersection_point + 1e-5 * normal_to_surface
-                    intersection_to_light = utils.normalize(light.position - shifted_point)
-                    intersect_var = utils.sphere_intersect(
+                    intersection_to_light = vector.normalize(
+                        light.position - shifted_point
+                    )
+                    intersect_var = sphere.sphere_intersect(
                         chief_position, radius, shifted_point, intersection_to_light
                     )
                     # If the shifted point doesn't intersect with the chief on the way to the light, it is unobstructed
@@ -259,10 +265,12 @@ class Camera(e.PhysicalEntity):
                             * np.array(light.material.diffuse)
                             * np.dot(intersection_to_light, normal_to_surface)
                         )
-                        intersection_to_camera = utils.normalize(
+                        intersection_to_camera = vector.normalize(
                             self.position - intersection_point
                         )
-                        H = utils.normalize(intersection_to_light + intersection_to_camera)
+                        H = vector.normalize(
+                            intersection_to_light + intersection_to_camera
+                        )
                         illumination += (
                             np.array(viewed_object.material.specular)
                             * np.array(light.material.specular)

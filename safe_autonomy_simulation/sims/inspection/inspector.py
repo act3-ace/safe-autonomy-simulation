@@ -1,11 +1,11 @@
 import numpy as np
-from typing import Union
+import typing
 
 import safe_autonomy_simulation.entities as e
 import safe_autonomy_simulation.materials as mat
 import safe_autonomy_simulation.sims.inspection.camera as cam
-import safe_autonomy_simulation.sims.spacecraft.utils as utils
 import safe_autonomy_simulation.sims.spacecraft as spacecraft
+import safe_autonomy_simulation.sims.spacecraft.defaults as defaults
 
 
 class Inspector(spacecraft.CWHSpacecraft):
@@ -41,12 +41,12 @@ class Inspector(spacecraft.CWHSpacecraft):
         camera: cam.Camera,
         position: np.ndarray = np.zeros(3),
         velocity: np.ndarray = np.zeros(3),
-        m: float = utils.M_DEFAULT,
-        n: float = utils.N_DEFAULT,
+        m: float = defaults.M_DEFAULT,
+        n: float = defaults.N_DEFAULT,
         trajectory_samples: int = 0,
         integration_method: str = "RK45",
-        material: mat.Material = utils.CWH_MATERIAL,
-        parent: Union[e.PhysicalEntity, None] = None,
+        material: mat.Material = defaults.CWH_MATERIAL,
+        parent: typing.Union[e.PhysicalEntity, None] = None,
     ):
         super().__init__(
             name=name,
@@ -129,20 +129,20 @@ class SixDOFInspector(spacecraft.SixDOFSpacecraft):
         velocity: np.ndarray = np.zeros(3),
         orientation: np.ndarray = np.array([0, 0, 0, 1]),
         angular_velocity: np.ndarray = np.zeros(3),
-        m: float = utils.M_DEFAULT,
-        n: float = utils.N_DEFAULT,
-        inertia_matrix: np.matrix = utils.INERTIA_MATRIX_DEFAULT,
-        ang_acc_limit: float = utils.ANG_ACC_LIMIT_DEFAULT,
-        ang_vel_limit: float = utils.ANG_VEL_LIMIT_DEFAULT,
-        inertia_wheel: float = utils.INERTIA_WHEEL_DEFAULT,
-        acc_limit_wheel: float = utils.ACC_LIMIT_WHEEL_DEFAULT,
-        vel_limit_wheel: float = utils.VEL_LIMIT_WHEEL_DEFAULT,
-        thrust_control_limit: float = utils.THRUST_CONTROL_LIMIT_DEFAULT,
+        m: float = defaults.M_DEFAULT,
+        n: float = defaults.N_DEFAULT,
+        inertia_matrix: np.matrix = defaults.INERTIA_MATRIX_DEFAULT,
+        ang_acc_limit: float = defaults.ANG_ACC_LIMIT_DEFAULT,
+        ang_vel_limit: float = defaults.ANG_VEL_LIMIT_DEFAULT,
+        inertia_wheel: float = defaults.INERTIA_WHEEL_DEFAULT,
+        acc_limit_wheel: float = defaults.ACC_LIMIT_WHEEL_DEFAULT,
+        vel_limit_wheel: float = defaults.VEL_LIMIT_WHEEL_DEFAULT,
+        thrust_control_limit: float = defaults.THRUST_CONTROL_LIMIT_DEFAULT,
         body_frame_thrust: bool = True,
         trajectory_samples: int = 0,
         integration_method: str = "RK45",
-        material: mat.Material = utils.CWH_MATERIAL,
-        parent: Union[e.PhysicalEntity, None] = None,
+        material: mat.Material = defaults.CWH_MATERIAL,
+        parent: typing.Union[e.PhysicalEntity, None] = None,
     ):
         super().__init__(
             name=name,

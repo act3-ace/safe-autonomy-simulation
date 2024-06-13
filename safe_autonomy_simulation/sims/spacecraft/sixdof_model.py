@@ -13,17 +13,57 @@ This module implements a spacecraft with 3D Clohessy-Wilshire physics dynamics i
 Hill's reference frame along with 3D rotational dynamics using quaternions for attitude representation.
 """
 
-from typing import Union
+import typing
 
 import numpy as np
 
-from safe_autonomy_simulation.utils import number_list_to_np
 import safe_autonomy_simulation.entities as e
 import safe_autonomy_simulation.dynamics as d
 import safe_autonomy_simulation.materials as mat
 import safe_autonomy_simulation.controls as c
-import safe_autonomy_simulation.sims.spacecraft.utils as utils
 import safe_autonomy_simulation.sims.spacecraft.defaults as defaults
+
+
+def number_list_to_np(
+    input_val: typing.Union[float, int, list, np.ndarray], shape: typing.Tuple[int], dtype=np.float64
+) -> np.ndarray:
+    """
+    Converts dynamic number, list or np.ndarray to a np.ndarray of a particular shape a dtype
+    If np.ndarray is passed, performs shape and dtype checking
+
+    Parameters
+    ----------
+    input : float, int, list, np.ndarray
+        input to be converted to standardized np.ndarray
+    shape : Tuple[int]
+        shape of desired np.ndarray
+    dtype : data-type, optional
+        dtype of desired np.ndarray, by default np.float64
+
+    Returns
+    -------
+    np.ndarray
+        converted np.ndarray from input
+    """
+    if isinstance(input_val, np.ndarray):
+        output = input_val
+    elif isinstance(input_val, list):
+        output = np.ndarray(input_val, dtype=dtype)
+    elif isinstance(input_val, (float, int)):
+        output = float(input_val) * np.ones(shape, dtype=dtype)
+    else:
+        raise TypeError(
+            f"input_val is type {type(input_val)}, must be Number, list, or np.ndarray"
+        )
+
+    assert (
+        output.shape == shape
+    ), f"input_val is of shape {output.shape} instead of {shape}"
+    assert (
+        output.dtype == dtype
+    ), f"input_val dtype of type {output.dtype} instead of {dtype}"
+
+    return output
 
 
 class SixDOFSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-public-methods
@@ -115,7 +155,7 @@ class SixDOFSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-public-met
         trajectory_samples=0,
         integration_method="RK45",
         material: mat.Material = defaults.CWH_MATERIAL,
-        parent: Union[e.PhysicalEntity, None] = None,
+        parent: typing.Union[e.PhysicalEntity, None] = None,
         children: set[e.PhysicalEntity] = {},
     ):
         # Define limits for angular acceleration, angular velocity, and control inputs
@@ -256,10 +296,10 @@ class SixDOFDynamics(d.ControlAffineODEDynamics):
         n=defaults.N_DEFAULT,
         body_frame_thrust=True,
         trajectory_samples: int = 0,
-        state_max: Union[float, np.ndarray] = None,
-        state_min: Union[float, np.ndarray] = None,
-        state_dot_max: Union[float, np.ndarray] = None,
-        state_dot_min: Union[float, np.ndarray] = None,
+        state_max: typing.Union[float, np.ndarray] = None,
+        state_min: typing.Union[float, np.ndarray] = None,
+        state_dot_max: typing.Union[float, np.ndarray] = None,
+        state_dot_min: typing.Union[float, np.ndarray] = None,
         angle_wrap_centers: np.ndarray = None,
         integration_method="RK45",
         use_jax=False,
@@ -275,24 +315,29 @@ class SixDOFDynamics(d.ControlAffineODEDynamics):
         ang_acc_limit = number_list_to_np(ang_acc_limit, shape=(3,))  # rad/s^2
         ang_vel_limit = number_list_to_np(ang_vel_limit, shape=(3,))  # rad/s
 
-        A, B = utils.generate_cwh_matrices(self.m, self.n, "3d")
-
-        assert (
-            len(A.shape) == 2
-        ), f"A must be square matrix. Instead got shape {A.shape}"
-        assert (
-            len(B.shape) == 2
-        ), f"A must be square matrix. Instead got shape {B.shape}"
-        assert (
-            A.shape[0] == A.shape[1]
-        ), f"A must be a square matrix, not dimension {A.shape}"
-        assert A.shape[1] == B.shape[0], (
-            "number of columns in A must match the number of rows in B."
-            + f" However, got shapes {A.shape} for A and {B.shape} for B"
+        self.A = np.array(
+            [
+                [0, 0, 0, 1, 0, 0],
+                [0, 0, 0, 0, 1, 0],
+                [0, 0, 0, 0, 0, 1],
+                [3 * n**2, 0, 0, 0, 2 * n, 0],
+                [0, 0, 0, -2 * n, 0, 0],
+                [0, 0, -(n**2), 0, 0, 0],
+            ],
+            dtype=np.float64,
         )
 
-        self.A = np.copy(A)
-        self.B = np.copy(B)
+        self.B = np.array(
+            [
+                [0, 0, 0],
+                [0, 0, 0],
+                [0, 0, 0],
+                [1 / m, 0, 0],
+                [0, 1 / m, 0],
+                [0, 0, 1 / m],
+            ],
+            dtype=np.float64,
+        )
 
         if state_min is None:
             state_min = np.array(

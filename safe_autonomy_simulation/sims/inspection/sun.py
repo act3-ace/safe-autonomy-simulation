@@ -12,15 +12,14 @@ limitation or restriction. See accompanying README and LICENSE for details.
 This module implements a sun model in non-inertial orbital Hill's reference frame.
 """
 
-from typing import Union
-
+import typing
 import numpy as np
 import pint
 
-import safe_autonomy_simulation.sims.spacecraft.utils as utils
 import safe_autonomy_simulation.entities as e
 import safe_autonomy_simulation.dynamics as d
 import safe_autonomy_simulation.materials as mat
+import safe_autonomy_simulation.sims.spacecraft.defaults as defaults
 
 
 class Sun(e.Point):
@@ -47,8 +46,8 @@ class Sun(e.Point):
     def __init__(
         self,
         name: str = "sun",
-        theta: Union[float, pint.Quantity] = 0,
-        n: float = utils.N_DEFAULT,
+        theta: typing.Union[float, pint.Quantity] = 0,
+        n: float = defaults.N_DEFAULT,
         integration_method: str = "RK45",
         use_jax: bool = False,
         material: mat.Material = mat.LIGHT,
@@ -119,7 +118,7 @@ class SunDynamics(d.ODEDynamics):
         whether to use jax for dynamics, by default False
     """
 
-    def __init__(self, n=utils.N_DEFAULT, integration_method="RK45", use_jax=False):
+    def __init__(self, n=defaults.N_DEFAULT, integration_method="RK45", use_jax=False):
         self.n = n  # rads/s
         super().__init__(integration_method=integration_method, use_jax=use_jax)
 

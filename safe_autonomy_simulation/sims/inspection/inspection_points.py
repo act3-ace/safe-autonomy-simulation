@@ -2,14 +2,14 @@ import math
 import typing
 
 import numpy as np
-from sklearn.cluster import KMeans
-from scipy.spatial.transform import Rotation
+import sklearn.cluster as cluster
+import scipy.spatial.transform as transform
 
 import safe_autonomy_simulation.entities as e
 import safe_autonomy_simulation.dynamics as d
 import safe_autonomy_simulation.sims.inspection.camera as cam
 import safe_autonomy_simulation.sims.inspection.sun as sun
-import safe_autonomy_simulation.sims.inspection.utils as utils
+import safe_autonomy_simulation.sims.inspection.utils.sphere as sphere
 
 
 class InspectionPointDynamics(d.Dynamics):
@@ -33,7 +33,9 @@ class InspectionPointDynamics(d.Dynamics):
     def _step(
         self, step_size: float, state: np.ndarray, control: np.ndarray
     ) -> typing.Tuple[np.ndarray, np.ndarray]:
-        new_position = Rotation.from_quat(self._parent.orientation).apply(self._default_position)
+        new_position = transform.Rotation.from_quat(self._parent.orientation).apply(
+            self._default_position
+        )
         # translate from parent position
         new_position = new_position + self._parent.position
         next_state = np.concatenate((new_position, state[3:]))
@@ -243,9 +245,9 @@ class InspectionPointSet(e.Entity):
         ), f"Invalid points algorithm {points_algorithm}. Must be one of 'cmu' or 'fibonacci'"
 
         if points_algorithm == "cmu":
-            points_alg = utils.points_on_sphere_cmu
+            points_alg = sphere.points_on_sphere_cmu
         else:
-            points_alg = utils.points_on_sphere_fibonacci
+            points_alg = sphere.points_on_sphere_fibonacci
 
         # generate point positions
         point_positions = points_alg(
@@ -393,7 +395,7 @@ class InspectionPointSet(e.Entity):
                     init = np.vstack((self.clusters, new))
                 else:
                     init = self.clusters[0:n, :]
-            kmeans = KMeans(
+            kmeans = cluster.KMeans(
                 init=init,
                 n_clusters=n,
                 n_init=10,
@@ -576,7 +578,7 @@ class InspectionPointSet(e.Entity):
             position of inspection point set entity
         """
         return self.parent.position
-    
+
     @property
     def orientation(self) -> np.ndarray:
         """Orientation of inspection point set entity

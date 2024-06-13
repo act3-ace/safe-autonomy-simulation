@@ -13,12 +13,11 @@ This module implements a 3D point mass spacecraft with Clohessy-Wilshire physics
 Hill's reference frame.
 """
 
-from typing import Union
+import typing
 
 import numpy as np
 
 import safe_autonomy_simulation.sims.spacecraft.defaults as defaults
-import safe_autonomy_simulation.sims.spacecraft.utils as utils
 
 import safe_autonomy_simulation.entities as e
 import safe_autonomy_simulation.dynamics as d
@@ -78,7 +77,7 @@ class CWHSpacecraft(e.PhysicalEntity):
         trajectory_samples=0,
         integration_method="RK45",
         material: mat.Material = defaults.CWH_MATERIAL,
-        parent: Union[e.PhysicalEntity, None] = None,
+        parent: typing.Union[e.PhysicalEntity, None] = None,
         children: set[e.PhysicalEntity] = {},
     ):
         dynamics = CWHDynamics(
@@ -189,18 +188,40 @@ class CWHDynamics(d.LinearODEDynamics):
         m=defaults.M_DEFAULT,
         n=defaults.N_DEFAULT,
         trajectory_samples: int = 0,
-        state_min: Union[float, np.ndarray] = -np.inf,
-        state_max: Union[float, np.ndarray] = np.inf,
-        state_dot_min: Union[float, np.ndarray] = -np.inf,
-        state_dot_max: Union[float, np.ndarray] = np.inf,
-        angle_wrap_centers: Union[np.ndarray, None] = None,
+        state_min: typing.Union[float, np.ndarray] = -np.inf,
+        state_max: typing.Union[float, np.ndarray] = np.inf,
+        state_dot_min: typing.Union[float, np.ndarray] = -np.inf,
+        state_dot_max: typing.Union[float, np.ndarray] = np.inf,
+        angle_wrap_centers: typing.Union[np.ndarray, None] = None,
         integration_method: str = "RK45",
         use_jax: bool = False,
     ):
         self.m = m  # kg
         self.n = n  # rads/s
 
-        A, B = utils.generate_cwh_matrices(self.m, self.n, "3d")
+        A = np.array(
+            [
+                [0, 0, 0, 1, 0, 0],
+                [0, 0, 0, 0, 1, 0],
+                [0, 0, 0, 0, 0, 1],
+                [3 * n**2, 0, 0, 0, 2 * n, 0],
+                [0, 0, 0, -2 * n, 0, 0],
+                [0, 0, -(n**2), 0, 0, 0],
+            ],
+            dtype=np.float64,
+        )
+
+        B = np.array(
+            [
+                [0, 0, 0],
+                [0, 0, 0],
+                [0, 0, 0],
+                [1 / m, 0, 0],
+                [0, 1 / m, 0],
+                [0, 0, 1 / m],
+            ],
+            dtype=np.float64,
+        )
 
         super().__init__(
             A=A,

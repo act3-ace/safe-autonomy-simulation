@@ -14,7 +14,7 @@ Hill's reference frame along with rotational dynamics. 2D scenario models in-pla
 motion and rotation about the z axis. 3D scenario is pending.
 """
 
-from typing import Union
+import typing
 
 import numpy as np
 import pint
@@ -25,7 +25,6 @@ import safe_autonomy_simulation.dynamics as d
 import safe_autonomy_simulation.materials as mat
 import safe_autonomy_simulation.controls as c
 import safe_autonomy_simulation.sims.spacecraft.defaults as defaults
-import safe_autonomy_simulation.sims.spacecraft.utils as utils
 
 
 class CWHRotation2dSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-public-methods
@@ -102,8 +101,8 @@ class CWHRotation2dSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-pub
         name: str,
         position: np.ndarray = np.zeros(2),
         velocity: np.ndarray = np.zeros(2),
-        theta: Union[float, pint.Quantity] = 0,
-        wz: Union[float, pint.Quantity] = 0,
+        theta: typing.Union[float, pint.Quantity] = 0,
+        wz: typing.Union[float, pint.Quantity] = 0,
         m=defaults.M_DEFAULT,
         inertia=defaults.INERTIA_DEFAULT,
         ang_acc_limit=defaults.ANG_ACC_LIMIT_DEFAULT,
@@ -116,7 +115,7 @@ class CWHRotation2dSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-pub
         integration_method="RK45",
         use_jax: bool = False,
         material: mat.Material = defaults.CWH_MATERIAL,
-        parent: Union[e.PhysicalEntity, None] = None,
+        parent: typing.Union[e.PhysicalEntity, None] = None,
         children: set[e.PhysicalEntity] = {},
     ):
         assert position.shape == (2,), f"Position must be 2D. Instead got {position}"
@@ -264,11 +263,11 @@ class CWHRotation2dDynamics(d.ControlAffineODEDynamics):
         ang_vel_limit: float = defaults.ANG_VEL_LIMIT_DEFAULT,
         n: float = defaults.N_DEFAULT,
         trajectory_samples: int = 0,
-        state_min: Union[float, np.ndarray, None] = None,
-        state_max: Union[float, np.ndarray, None] = None,
-        state_dot_min: Union[float, np.ndarray, None] = None,
-        state_dot_max: Union[float, np.ndarray, None] = None,
-        angle_wrap_centers: Union[np.ndarray, None] = None,
+        state_min: typing.Union[float, np.ndarray, None] = None,
+        state_max: typing.Union[float, np.ndarray, None] = None,
+        state_dot_min: typing.Union[float, np.ndarray, None] = None,
+        state_dot_max: typing.Union[float, np.ndarray, None] = None,
+        angle_wrap_centers: typing.Union[np.ndarray, None] = None,
         integration_method: str = "RK45",
         use_jax: bool = False,
     ):
@@ -319,20 +318,24 @@ class CWHRotation2dDynamics(d.ControlAffineODEDynamics):
             use_jax=use_jax,
         )
 
-        A, B = utils.generate_cwh_matrices(self.m, self.n, "2d")
+        A = np.array(
+            [
+                [0, 0, 1, 0],
+                [0, 0, 0, 1],
+                [3 * n**2, 0, 0, 2 * n],
+                [0, 0, -2 * n, 0],
+            ],
+            dtype=np.float64,
+        )
 
-        assert (
-            len(A.shape) == 2
-        ), f"A must be square matrix. Instead got shape {A.shape}"
-        assert (
-            len(B.shape) == 2
-        ), f"A must be square matrix. Instead got shape {B.shape}"
-        assert (
-            A.shape[0] == A.shape[1]
-        ), f"A must be a square matrix, not dimension {A.shape}"
-        assert A.shape[1] == B.shape[0], (
-            "number of columns in A must match the number of rows in B."
-            + f" However, got shapes {A.shape} for A and {B.shape} for B"
+        B = np.array(
+            [
+                [0, 0],
+                [0, 0],
+                [1 / m, 0],
+                [0, 1 / m],
+            ],
+            dtype=np.float64,
         )
 
         self.A = self.np.copy(A)
