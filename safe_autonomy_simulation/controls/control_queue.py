@@ -102,7 +102,7 @@ class ControlQueue:
             control = control.copy()
         else:
             raise ValueError(
-                "action must be type list, np.ndarray or jnp.ndarray"
+                "control must be type list, np.ndarray or jnp.ndarray"
             )
 
         # enforce control bounds (if any)
