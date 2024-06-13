@@ -168,7 +168,7 @@ class PhysicalEntity(e.Entity):
         return self.position[0]
 
     @property
-    def x_with_units(self) -> pint.Quantity:
+    def x_with_units(self) -> typing.Annotated[pint.Quantity, float]:
         """absolute X position of entity with units
 
         Returns
@@ -190,7 +190,7 @@ class PhysicalEntity(e.Entity):
         return self.position[1]
 
     @property
-    def y_with_units(self) -> pint.Quantity:
+    def y_with_units(self) -> typing.Annotated[pint.Quantity, float]:
         """absolute Y position of entity with units
 
         Returns
@@ -212,7 +212,7 @@ class PhysicalEntity(e.Entity):
         return self.position[2]
 
     @property
-    def z_with_units(self) -> pint.Quantity:
+    def z_with_units(self) -> typing.Annotated[pint.Quantity, float]:
         """absolute Z position of entity with units
 
         Returns
@@ -234,7 +234,7 @@ class PhysicalEntity(e.Entity):
         return self._state[:3]
 
     @property
-    def position_with_units(self) -> pint.Quantity[np.ndarray]:
+    def position_with_units(self) -> typing.Annotated[pint.Quantity, np.ndarray[float]]:
         """Entity absolute position vector with units
 
         Returns
@@ -256,7 +256,7 @@ class PhysicalEntity(e.Entity):
         return self.velocity[0]
 
     @property
-    def x_dot_with_units(self) -> pint.Quantity:
+    def x_dot_with_units(self) -> typing.Annotated[pint.Quantity, float]:
         """absolute X velocity component with units
 
         Returns
@@ -278,7 +278,7 @@ class PhysicalEntity(e.Entity):
         return self.velocity[1]
 
     @property
-    def y_dot_with_units(self) -> pint.Quantity:
+    def y_dot_with_units(self) -> typing.Annotated[pint.Quantity, float]:
         """absolute Y velocity component with units
 
         Returns
@@ -300,7 +300,7 @@ class PhysicalEntity(e.Entity):
         return self.velocity[2]
 
     @property
-    def z_dot_with_units(self) -> pint.Quantity:
+    def z_dot_with_units(self) -> typing.Annotated[pint.Quantity, float]:
         """absolute Z velocity component with units
 
         Returns
@@ -322,7 +322,7 @@ class PhysicalEntity(e.Entity):
         return self._state[3:6]
 
     @property
-    def velocity_with_units(self) -> pint.Quantity[np.ndarray]:
+    def velocity_with_units(self) -> typing.Annotated[pint.Quantity, np.ndarray[float]]:
         """Entity absolute velocity vector with units
 
         Returns
@@ -355,7 +355,7 @@ class PhysicalEntity(e.Entity):
         return self.angular_velocity[0]
 
     @property
-    def wx_with_unit(self) -> pint.Quantity:
+    def wx_with_unit(self) -> typing.Annotated[pint.Quantity, float]:
         """Wx, the absolute angular velocity component about the local body frame x axis with units
 
         Returns
@@ -377,7 +377,7 @@ class PhysicalEntity(e.Entity):
         return self.angular_velocity[1]
 
     @property
-    def wy_with_unit(self) -> pint.Quantity:
+    def wy_with_unit(self) -> typing.Annotated[pint.Quantity, float]:
         """Wy, the absolute angular velocity component about the local body frame y axis with units
 
         Returns
@@ -399,7 +399,7 @@ class PhysicalEntity(e.Entity):
         return self.angular_velocity[2]
 
     @property
-    def wz_with_unit(self) -> pint.Quantity:
+    def wz_with_unit(self) -> typing.Annotated[pint.Quantity, float]:
         """Wz, the absolute angular velocity component about the local body frame z axis with units
 
         Returns
@@ -421,7 +421,9 @@ class PhysicalEntity(e.Entity):
         self._state[9:12]
 
     @property
-    def angular_velocity_with_units(self) -> pint.Quantity[np.ndarray]:
+    def angular_velocity_with_units(
+        self,
+    ) -> typing.Annotated[pint.Quantity, np.ndarray[float]]:
         """Entity absolute angular velocity vector with units
 
         Returns

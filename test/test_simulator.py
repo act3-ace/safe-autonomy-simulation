@@ -1,63 +1,90 @@
-"""Unit tests for simulator.py"""
-
+from typing import Tuple
+from numpy import ndarray
 import pytest
+import safe_autonomy_simulation
 import numpy as np
-from safe_autonomy_simulation.simulator import (
-    ContinuousSimulator,
-    ControlledContinuousSimulator,
+
+
+class TestDynamics(safe_autonomy_simulation.Dynamics):
+    def _step(
+        self, step_size: float, state: ndarray, control: ndarray
+    ) -> Tuple[ndarray, ndarray]:
+        return state + step_size * control, control
+
+
+TEST_CONTROL_QUEUE = safe_autonomy_simulation.ControlQueue(
+    default_control=np.array([1.0])
 )
-from safe_autonomy_simulation.entity import Point
 
 
-class TestContinuousSimulator:
-    @pytest.fixture
-    def entity(self):
-        return Point(name="test_entity", position=np.zeros(3))
-    
-    @pytest.fixture
-    def sim(self, entity):
-        return ContinuousSimulator(
-            frame_rate=1, entities={"test_entity": entity}
+TEST_MATERIAL = safe_autonomy_simulation.Material(
+    specular=np.array([0.0, 0.0, 0.0]),
+    diffuse=np.array([0.0, 0.0, 0.0]),
+    ambient=np.array([0.0, 0.0, 0.0]),
+    shininess=0.0,
+    reflection=0.0,
+)
+
+
+class TestEntity(safe_autonomy_simulation.Entity):
+    def __init__(self, name):
+        super().__init__(
+            name,
+            dynamics=TestDynamics(),
+            control_queue=TEST_CONTROL_QUEUE,
+            material=TEST_MATERIAL,
         )
+        self.state = 0
 
-    def test_init(self, sim, entity):
-        assert sim.frame_rate == 1
-        assert sim.sim_time == 0
-        assert sim.entities == {"test_entity": entity}
+    def build_initial_state(self) -> ndarray:
+        return np.array([0.0])
 
-    def test_reset(self, sim):
-        sim.reset()
-        assert sim.sim_time == 0
-        assert sim.entities["test_entity"].state == sim.entities["test_entity"].build_initial_state()
+    @property
+    def state(self):
+        return self._state
 
-    def test_step(self, sim):
-        sim.step()
-        compare_point = Point(name="test_entity", position=np.zeros(3))
-        compare_point.step()
-        assert sim.sim_time == 1
-        assert sim.entities["test_entity"].state == compare_point.state
-
-    def test_info(self, sim):
-        assert sim.info == {"test_entity": sim.entities["test_entity"].state}
-
-    def test_frame_rate_prop(self, sim):
-        assert sim.frame_rate == 1
-
-    def test_sim_time_prop(self, sim):
-        assert sim.sim_time == 0
-
-    def test_entities_prop(self, sim, entity):
-        assert sim.entities == {"test_entity": entity}
+    @state.setter
+    def state(self, value):
+        self._state = value
 
 
-class TestControlledContinuousSimulator:
-    @pytest.fixture
-    def sim(self, entity):
-        return ControlledContinuousSimulator(
-            frame_rate=1, entities={"test_entity": entity}
-        )
-    
-    def test_add_controls(self, sim):
-        control = np.zeros(3)
-        sim.add_controls({"test_entity": control})
-        assert sim.entities["test_entity"].control_queue.get() == control
+@pytest.fixture
+def entities():
+    return [TestEntity(name=i) for i in range(3)]
+
+
+@pytest.fixture
+def simulator(entities):
+    return safe_autonomy_simulation.Simulator(frame_rate=1.0, entities=entities)
+
+
+def test_simulator_init(simulator, entities):
+    assert simulator.frame_rate == 1.0
+    assert simulator.sim_time == 0.0
+    assert simulator.entities == {entity.name: entity for entity in entities}
+
+
+def test_simulator_reset(simulator):
+    for _ in range(10):
+        simulator.step()
+    simulator.reset()
+    assert simulator.sim_time == 0
+    for entity in simulator.entities.values():
+        assert entity.state == [0]
+
+
+def test_simulator_step(simulator):
+    for _ in range(10):
+        simulator.step()
+    assert simulator.sim_time == 10
+    for entity in simulator.entities.values():
+        assert entity.state == [10]
+
+
+def test_simulator_add_control(simulator):
+    control_dict = {
+        entity.name: np.array([10.0]) for entity in simulator.entities.values()
+    }
+    simulator.add_controls(control_dict)
+    for entity in simulator.entities.values():
+        assert entity.control_queue.next_control() == np.array([10.0])
