@@ -7,9 +7,9 @@ defines the interface for all control queues in the simulation.
 """
 
 from safe_autonomy_simulation.controls.control_queue import ControlQueue
-from safe_autonomy_simulation.controls.default_control import DefaultControlQueue
+from safe_autonomy_simulation.controls.no_control import NoControl
 
 __all__ = [
     "ControlQueue",  # base control queue
-    "DefaultControlQueue", # control queue with an empty default control vector
+    "NoControl", # control queue with an empty default control vector
 ]

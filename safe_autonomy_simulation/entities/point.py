@@ -21,7 +21,7 @@ class Point(e.PhysicalEntity):
     dynamics : Dynamics, optional
         Dynamics object for computing state transitions. By default PassThroughDynamics()
     control_queue : ControlQueue, optional
-        Queue of control vectors to be applied to the entity. By default DefaultControlQueue()
+        Queue of control vectors to be applied to the entity. By default NoControl()
     parent : Union[Entity, None], optional
         Optional parent entity of the entity. By default None.
     children : set[Entity], optional
@@ -36,7 +36,7 @@ class Point(e.PhysicalEntity):
         position: np.ndarray,
         velocity: np.ndarray = np.array([0, 0, 0]),
         dynamics: d.Dynamics = d.PassThroughDynamics(),
-        control_queue: c.ControlQueue = c.DefaultControlQueue(),
+        control_queue: c.ControlQueue = c.NoControl(),
         parent: typing.Union[e.Entity, None] = None,
         children: set[e.Entity] = {},
         material: m.Material = m.BLACK,
