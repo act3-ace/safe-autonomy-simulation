@@ -1,10 +1,10 @@
 """Entity material properties"""
 
 import numpy as np
-from dataclasses import dataclass
+import dataclasses
 
 
-@dataclass(frozen=True)
+@dataclasses.dataclass(frozen=True)
 class Material:
     """Material properties of a simulation entity
 

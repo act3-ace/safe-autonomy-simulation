@@ -1,6 +1,6 @@
 """1D, 2D, and 3D point mass integrator entities"""
 
-from typing import Tuple, Union
+import typing
 
 import numpy as np
 
@@ -335,11 +335,11 @@ class PointMassIntegratorDynamics(d.LinearODEDynamics):
         damping=DAMPING_DEFAULT,
         mode="1d",
         trajectory_samples: int = 0,
-        state_min: Union[float, np.ndarray] = -np.inf,
-        state_max: Union[float, np.ndarray] = np.inf,
-        state_dot_min: Union[float, np.ndarray] = -np.inf,
-        state_dot_max: Union[float, np.ndarray] = np.inf,
-        angle_wrap_centers: Union[np.ndarray, None] = None,
+        state_min: typing.Union[float, np.ndarray] = -np.inf,
+        state_max: typing.Union[float, np.ndarray] = np.inf,
+        state_dot_min: typing.Union[float, np.ndarray] = -np.inf,
+        state_dot_max: typing.Union[float, np.ndarray] = np.inf,
+        angle_wrap_centers: typing.Union[np.ndarray, None] = None,
         integration_method: str = "RK45",
         use_jax: bool = False,
     ):
@@ -361,7 +361,7 @@ class PointMassIntegratorDynamics(d.LinearODEDynamics):
 
     def generate_dynamics_matrices(
         self, mode: str = "1d"
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> typing.Tuple[np.ndarray, np.ndarray]:
         """Generates A and B Matrices for linearized dynamics of dx/dt = Ax + Bu
 
         Parameters
