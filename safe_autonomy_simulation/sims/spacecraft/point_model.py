@@ -166,13 +166,6 @@ class CWHDynamics(d.LinearODEDynamics):
         When a float, represents single limit applied to entire state vector.
         When an ndarray, each element represents the limit to the corresponding state vector element.
         By default, +inf
-    angle_wrap_centers: np.ndarray, optional
-        Enables circular wrapping of angles. Defines the center of circular wrap such that angles are within
-        [center+pi, center-pi].
-        When None, no angle wrapping applied.
-        When ndarray, each element defines the angle wrap center of the corresponding state element.
-        Wrapping not applied when element is NaN.
-        By default, None.
     integration_method : string, optional
         Numerical integration method used by dynamics solver. One of ['RK45', 'RK45_JAX', 'Euler'].
         'RK45' is slow but very accurate.
@@ -192,7 +185,6 @@ class CWHDynamics(d.LinearODEDynamics):
         state_max: typing.Union[float, np.ndarray] = np.inf,
         state_dot_min: typing.Union[float, np.ndarray] = -np.inf,
         state_dot_max: typing.Union[float, np.ndarray] = np.inf,
-        angle_wrap_centers: typing.Union[np.ndarray, None] = None,
         integration_method: str = "RK45",
         use_jax: bool = False,
     ):
@@ -231,7 +223,6 @@ class CWHDynamics(d.LinearODEDynamics):
             state_max=state_max,
             state_dot_min=state_dot_min,
             state_dot_max=state_dot_max,
-            angle_wrap_centers=angle_wrap_centers,
             integration_method=integration_method,
             use_jax=use_jax,
         )

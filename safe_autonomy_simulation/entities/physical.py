@@ -157,6 +157,30 @@ class PhysicalEntity(e.Entity):
         )
 
     @property
+    def state(self) -> np.ndarray:
+        """State vector of the entity
+
+        Returns
+        -------
+        np.ndarray
+            state vector of the entity
+        """
+        return self._state
+    
+    @state.setter
+    def state(self, state: np.ndarray):
+        """Set state of the entity
+
+        Parameters
+        ----------
+        state : np.ndarray
+            state vector of the entity
+        """
+        assert state.shape == self.state.shape, f"State shape must match {self.state.shape}, got {state.shape}"
+        state[10:] = state[10:] % (2 * np.pi)  # wrap angles to [0, 2 * pi]
+        self._state = state
+
+    @property
     def x(self) -> float:
         """absolute X position of entity
 
@@ -418,7 +442,7 @@ class PhysicalEntity(e.Entity):
         np.ndarray
             3D angular velocity vector
         """
-        self._state[9:12]
+        self._state[10:13]
 
     @property
     def angular_velocity_with_units(

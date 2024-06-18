@@ -321,8 +321,6 @@ class PointMassIntegratorDynamics(d.LinearODEDynamics):
         minimum state derivative values, by default -np.inf
     state_dot_max : Union[float, np.ndarray], optional
         maximum state derivative values, by default np.inf
-    angle_wrap_centers : Union[np.ndarray, None], optional
-        centers for angle wrapping, by default None
     integration_method : str, optional
         Numerical integration method passed to dynamics model. See BaseODESolverDynamics. By default "RK45"
     use_jax : bool, optional
@@ -339,7 +337,6 @@ class PointMassIntegratorDynamics(d.LinearODEDynamics):
         state_max: typing.Union[float, np.ndarray] = np.inf,
         state_dot_min: typing.Union[float, np.ndarray] = -np.inf,
         state_dot_max: typing.Union[float, np.ndarray] = np.inf,
-        angle_wrap_centers: typing.Union[np.ndarray, None] = None,
         integration_method: str = "RK45",
         use_jax: bool = False,
     ):
@@ -354,7 +351,6 @@ class PointMassIntegratorDynamics(d.LinearODEDynamics):
             state_max=state_max,
             state_dot_min=state_dot_min,
             state_dot_max=state_dot_max,
-            angle_wrap_centers=angle_wrap_centers,
             integration_method=integration_method,
             use_jax=use_jax,
         )

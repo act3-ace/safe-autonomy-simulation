@@ -279,8 +279,6 @@ class SixDOFDynamics(d.ControlAffineODEDynamics):
         Maximum state derivative values, by default None
     state_dot_min : float or np.ndarray, optional
         Minimum state derivative values, by default None
-    angle_wrap_centers : np.ndarray, optional
-        Centers for angle wrapping, by default None
     integration_method: str, optional
         Numerical integration method passed to dynamics model. See BaseODESolverDynamics. By default "RK45"
     use_jax: bool, optional
@@ -300,7 +298,6 @@ class SixDOFDynamics(d.ControlAffineODEDynamics):
         state_min: typing.Union[float, np.ndarray] = None,
         state_dot_max: typing.Union[float, np.ndarray] = None,
         state_dot_min: typing.Union[float, np.ndarray] = None,
-        angle_wrap_centers: np.ndarray = None,
         integration_method="RK45",
         use_jax=False,
     ):
@@ -383,7 +380,6 @@ class SixDOFDynamics(d.ControlAffineODEDynamics):
             state_max=state_max,
             state_dot_min=state_dot_min,
             state_dot_max=state_dot_max,
-            angle_wrap_centers=angle_wrap_centers,
             integration_method=integration_method,
             use_jax=use_jax,
         )

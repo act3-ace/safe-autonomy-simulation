@@ -247,8 +247,6 @@ class CWHRotation2dDynamics(d.ControlAffineODEDynamics):
         Minimum state derivative values, by default None
     state_dot_max : float or np.ndarray, optional
         Maximum state derivative values, by default None
-    angle_wrap_centers: np.ndarray, optional
-        Angle wrap centers, by default None
     integration_method: str, optional
         Numerical integration method, by default "RK45"
     use_jax: bool, optional
@@ -267,7 +265,6 @@ class CWHRotation2dDynamics(d.ControlAffineODEDynamics):
         state_max: typing.Union[float, np.ndarray, None] = None,
         state_dot_min: typing.Union[float, np.ndarray, None] = None,
         state_dot_max: typing.Union[float, np.ndarray, None] = None,
-        angle_wrap_centers: typing.Union[np.ndarray, None] = None,
         integration_method: str = "RK45",
         use_jax: bool = False,
     ):
@@ -302,16 +299,10 @@ class CWHRotation2dDynamics(d.ControlAffineODEDynamics):
                 [np.inf, np.inf, self.ang_vel_limit, np.inf, np.inf, self.ang_acc_limit]
             )
 
-        if angle_wrap_centers is None:
-            angle_wrap_centers = np.array(
-                [None, None, 0, None, None, None], dtype=float
-            )
-
         super().__init__(
             trajectory_samples=trajectory_samples,
             state_min=state_min,
             state_max=state_max,
-            angle_wrap_centers=angle_wrap_centers,
             state_dot_min=state_dot_min,
             state_dot_max=state_dot_max,
             integration_method=integration_method,

@@ -34,13 +34,6 @@ class Dynamics:
         When a float, represents single limit applied to entire state vector.
         When an ndarray, each element represents the limit to the corresponding state vector element.
         By default, np.inf
-    angle_wrap_centers: np.ndarray, optional
-        Enables circular wrapping of angles. Defines the center of circular wrap such that angles are within
-        [center+pi, center-pi].
-        When None, no angle wrapping applied.
-        When ndarray, each element defines the angle wrap center of the corresponding state element.
-        Wrapping not applied when element is NaN.
-        By default, None.
     use_jax : bool, optional
         True if using jax version of numpy/scipy. By default, False
     """
@@ -49,12 +42,10 @@ class Dynamics:
         self,
         state_min: typing.Union[float, np.ndarray] = -np.inf,
         state_max: typing.Union[float, np.ndarray] = np.inf,
-        angle_wrap_centers: typing.Union[np.ndarray, None] = None,
         use_jax: bool = False,
     ):
         self.state_min = state_min
         self.state_max = state_max
-        self.angle_wrap_centers = angle_wrap_centers
         self.use_jax = use_jax
 
         self.np: types.ModuleType
@@ -89,34 +80,7 @@ class Dynamics:
         """
         next_state, state_dot = self._step(step_size, state, control)
         next_state = self.np.clip(next_state, self.state_min, self.state_max)
-        next_state = self._wrap_angles(next_state)
         return next_state, state_dot
-
-    def _wrap_angles(self, state: typing.Union[np.ndarray, jnp.ndarray]):
-        """Wraps angles in state to be within [0, 2 * pi] range
-
-        Parameters
-        ----------
-        state : Union[np.ndarray, jnp.ndarray]
-            State vector of the system.
-
-        Returns
-        -------
-        Union[np.ndarray, jnp.ndarray]
-            State vector with angles wrapped to be within [0, 2 * pi] range
-        """
-        if self.angle_wrap_centers is not None:
-            needs_wrap = self.np.logical_not(self.np.isnan(self.angle_wrap_centers))
-
-            wrapped_state = (
-                ((state + np.pi) % (2 * np.pi)) - np.pi + self.angle_wrap_centers
-            )
-
-            output_state = self.np.where(needs_wrap, wrapped_state, state)
-        else:
-            output_state = state
-
-        return output_state
 
     def _step(
         self, step_size: float, state: np.ndarray, control: np.ndarray
