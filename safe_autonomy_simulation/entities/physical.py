@@ -442,7 +442,7 @@ class PhysicalEntity(e.Entity):
         np.ndarray
             3D angular velocity vector
         """
-        self._state[10:13]
+        return self._state[10:13]
 
     @property
     def angular_velocity_with_units(

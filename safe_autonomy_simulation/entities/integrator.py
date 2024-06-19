@@ -6,6 +6,8 @@ import numpy as np
 
 import safe_autonomy_simulation.entities as e
 import safe_autonomy_simulation.dynamics as d
+import safe_autonomy_simulation.materials as materials
+import safe_autonomy_simulation.controls as c
 
 M_DEFAULT = 1  # default mass in kg
 DAMPING_DEFAULT = 0  # default damping coefficient
@@ -60,14 +62,19 @@ class PointMassIntegrator1d(e.PhysicalEntity):
             integration_method=integration_method,
         )
 
+        control_queue = c.ControlQueue(
+            default_control=np.zeros((1,)), control_min=-1, control_max=1
+        )
+
         super().__init__(
             name=name,
             dynamics=dynamics,
             position=np.concatenate([position, np.array([0, 0])]),
             velocity=np.concatenate([velocity, np.array([0, 0])]),
-            control_default=np.zeros((1,)),
-            control_min=-1,
-            control_max=1,
+            orientation=np.array([0, 0, 0, 1]),
+            angular_velocity=np.array([0, 0, 0]),
+            control_queue=control_queue,
+            material=materials.BLACK,
         )
 
     @property
@@ -154,14 +161,19 @@ class PointMassIntegrator2d(e.PhysicalEntity):
             integration_method=integration_method,
         )
 
+        control_queue = c.ControlQueue(
+            default_control=np.zeros((2,)), control_min=-1, control_max=1
+        )
+
         super().__init__(
             name=name,
             position=np.concatenate([position, np.array([0])]),
             velocity=np.concatenate([velocity, np.array([0])]),
+            orientation=np.array([0, 0, 0, 1]),
+            angular_velocity=np.array([0, 0, 0]),
             dynamics=dynamics,
-            control_default=np.zeros((2,)),
-            control_min=-1,
-            control_max=1,
+            control_queue=control_queue,
+            material=materials.BLACK,
         )
 
     @property
@@ -254,14 +266,19 @@ class PointMassIntegrator3d(e.PhysicalEntity):
             integration_method=integration_method,
         )
 
+        control_queue = c.ControlQueue(
+            default_control=np.zeros((3,)), control_min=-1, control_max=1
+        )
+
         super().__init__(
             name=name,
             position=position,
             velocity=velocity,
+            orientation=np.array([0, 0, 0, 1]),
+            angular_velocity=np.array([0, 0, 0]),
             dynamics=dynamics,
-            control_default=np.zeros((3,)),
-            control_min=-1,
-            control_max=1,
+            control_queue=control_queue,
+            material=materials.BLACK,
         )
 
     @property
