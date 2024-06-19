@@ -64,10 +64,9 @@ class Entity:
 
         # Register parent and children
         self._children = set()
+        self._parent = None
         if parent is not None:
             parent.add_child(self)
-        else:
-            self._parent = None
         for child in children:
             self.add_child(child)
 
@@ -162,27 +161,27 @@ class Entity:
         """
         self.control_queue.add_control(control)
 
-    def _is_ancestor(self, entity: typing.Self) -> bool:
+    def _is_descendant(self, entity: typing.Self) -> bool:
         """
-        Check if the entity is an ancestor of self
+        Check if descendant of entity
 
-        Returns True if the entity is an ancestor of self (including self), False otherwise
+        Returns True if self is a descendant of entity (including self), False otherwise
 
         Parameters
         ----------
         entity : Entity
-            Entity to check if it is an ancestor
+            Entity to check if descendant of
 
         Returns
         -------
         bool
-            True if the entity is an ancestor, False otherwise
+            True if descendant of entity, False otherwise
         """
         if self is entity:
             return True
         if self.parent is None:
             return False
-        return self.parent._is_ancestor(entity)
+        return self.parent._is_descendant(entity)
 
     def add_child(self, child: typing.Self):
         """
@@ -194,7 +193,7 @@ class Entity:
             Child entity to be added
         """
         assert child is not self, "Entity cannot be its own child"
-        assert not self._is_ancestor(
+        assert not self._is_descendant(
             child
         ), f"New child {child} cannot be an ancestor of self {self}"
         if child.parent is not None:
@@ -212,7 +211,7 @@ class Entity:
             Child entity to be removed
         """
         self._children.remove(child)
-        child.parent = None
+        child._parent = None
 
     @property
     def state(self) -> np.ndarray:
