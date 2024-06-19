@@ -24,8 +24,8 @@ class Point(e.PhysicalEntity):
         Queue of control vectors to be applied to the entity. By default NoControl()
     parent : Union[Entity, None], optional
         Optional parent entity of the entity. By default None.
-    children : set[Entity], optional
-        Optional set of child entities of the entity. By default {}.
+    children : list[Entity], optional
+        Optional list of child entities of the entity. By default [].
     material : Material, optional
         Material properties of the entity. By default BLACK.
     """
@@ -38,7 +38,7 @@ class Point(e.PhysicalEntity):
         dynamics: d.Dynamics = d.PassThroughDynamics(),
         control_queue: c.ControlQueue = c.NoControl(),
         parent: typing.Union[e.Entity, None] = None,
-        children: set[e.Entity] = {},
+        children: list[e.Entity] = [],
         material: m.Material = m.BLACK,
     ):
         self._initial_position = position

@@ -92,8 +92,8 @@ class CWHRotation2dSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-pub
         Material properties of the spacecraft, by default CWH_MATERIAL
     parent: Union[PhysicalEntity, None], optional
         Parent entity of spacecraft, by default None
-    children: set[PhysicalEntity], optional
-        Set of children entities of spacecraft, by default {}
+    children: list[PhysicalEntity], optional
+        List of children entities of spacecraft, by default []
     """
 
     def __init__(
@@ -116,7 +116,7 @@ class CWHRotation2dSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-pub
         use_jax: bool = False,
         material: mat.Material = defaults.CWH_MATERIAL,
         parent: typing.Union[e.PhysicalEntity, None] = None,
-        children: set[e.PhysicalEntity] = {},
+        children: list[e.PhysicalEntity] = []
     ):
         assert position.shape == (2,), f"Position must be 2D. Instead got {position}"
         assert velocity.shape == (2,), f"Velocity must be 2D. Instead got {velocity}"

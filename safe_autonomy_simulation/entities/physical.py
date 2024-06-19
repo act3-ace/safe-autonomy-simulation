@@ -91,8 +91,8 @@ class PhysicalEntity(e.Entity):
         Material properties of the entity
     parent : Union[Entity, None], optional
         Optional parent entity of the entity. By default None.
-    children : set[Entity], optional
-        Optional set of child entities of the entity. By default {}.
+    children : list[Entity], optional
+        Optional list of child entities of the entity. By default [].
     """
 
     base_units = BaseUnits("meters", "seconds", "radians")
@@ -108,7 +108,7 @@ class PhysicalEntity(e.Entity):
         dynamics: d.Dynamics,
         material: m.Material,
         parent: typing.Union[e.Entity, None] = None,
-        children: set[e.Entity] = {},
+        children: list[e.Entity] = [],
     ):
         assert position.shape == (
             3,
@@ -379,7 +379,7 @@ class PhysicalEntity(e.Entity):
         return self.angular_velocity[0]
 
     @property
-    def wx_with_unit(self) -> typing.Annotated[pint.Quantity, float]:
+    def wx_with_units(self) -> typing.Annotated[pint.Quantity, float]:
         """Wx, the absolute angular velocity component about the local body frame x axis with units
 
         Returns
@@ -401,7 +401,7 @@ class PhysicalEntity(e.Entity):
         return self.angular_velocity[1]
 
     @property
-    def wy_with_unit(self) -> typing.Annotated[pint.Quantity, float]:
+    def wy_with_units(self) -> typing.Annotated[pint.Quantity, float]:
         """Wy, the absolute angular velocity component about the local body frame y axis with units
 
         Returns
@@ -423,7 +423,7 @@ class PhysicalEntity(e.Entity):
         return self.angular_velocity[2]
 
     @property
-    def wz_with_unit(self) -> typing.Annotated[pint.Quantity, float]:
+    def wz_with_units(self) -> typing.Annotated[pint.Quantity, float]:
         """Wz, the absolute angular velocity component about the local body frame z axis with units
 
         Returns

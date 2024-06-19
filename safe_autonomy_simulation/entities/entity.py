@@ -5,6 +5,7 @@ import numpy as np
 import safe_autonomy_simulation.dynamics as dynamics
 import safe_autonomy_simulation.materials as materials
 import safe_autonomy_simulation.controls.control_queue as control_queue
+import safe_autonomy_simulation.utils.sets as sets
 
 if typing.TYPE_CHECKING:
     import jax.numpy as jnp
@@ -39,8 +40,8 @@ class Entity:
         Material properties of the entity
     parent : Union[Entity, None], optional
         Optional parent entity of the entity. By default None.
-    children : set[Entity], optional
-        Optional set of child entities of the entity. By default {}.
+    children : list[Entity], optional
+        Optional list of child entities of the entity. By default []
     """
 
     def __init__(
@@ -50,7 +51,7 @@ class Entity:
         control_queue: control_queue.ControlQueue,
         material: materials.Material,
         parent: typing.Union[typing.Self, None] = None,
-        children: set[typing.Self] = {},
+        children: sets.TypedSet[typing.Self] = sets.TypedSet(),
     ):
         self.name = name
 
@@ -63,7 +64,7 @@ class Entity:
         self._state_dot = np.zeros_like(self.state)
 
         # Register parent and children
-        self._children = set()
+        self._children = sets.TypedSet[Entity]()
         self._parent = None
         if parent is not None:
             parent.add_child(self)
@@ -210,6 +211,7 @@ class Entity:
         child : Entity
             Child entity to be removed
         """
+        assert child in self._children, f"Child {child} not found in children"
         self._children.remove(child)
         child._parent = None
 

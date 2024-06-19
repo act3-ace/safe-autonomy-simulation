@@ -131,8 +131,8 @@ class SixDOFSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-public-met
         Material properties of the spacecraft, by default CWH_MATERIAL
     parent: Union[PhysicalEntity, None], optional
         Parent entity of spacecraft, by default None
-    children: set[PhysicalEntity], optional
-        Set of children entities of spacecraft, by default {}
+    children: list[PhysicalEntity], optional
+        List of children entities of spacecraft, by default []
     """
 
     def __init__(
@@ -156,7 +156,7 @@ class SixDOFSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-public-met
         integration_method="RK45",
         material: mat.Material = defaults.CWH_MATERIAL,
         parent: typing.Union[e.PhysicalEntity, None] = None,
-        children: set[e.PhysicalEntity] = {},
+        children: list[e.PhysicalEntity] = []
     ):
         # Define limits for angular acceleration, angular velocity, and control inputs
         ang_acc_limit = number_list_to_np(ang_acc_limit, shape=(3,))  # rad/s^2
