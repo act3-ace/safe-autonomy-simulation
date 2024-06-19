@@ -74,13 +74,24 @@ class ODEDynamics(d.Dynamics):
             use_jax=use_jax,
         )
 
+        assert (
+            integration_method
+            in [
+                "RK45",
+                "RK45_JAX",
+                "Euler",
+            ]
+        ), f"invalid integration method {integration_method}, must be one of 'RK45', 'RK45_JAX', 'Euler'"
         self.integration_method = integration_method
         self.state_dot_min = state_dot_min
         self.state_dot_max = state_dot_max
 
         assert isinstance(
             trajectory_samples, int
-        ), "trajectory_samples must be an integer"
+        ), f"trajectory_samples must be an integer, got {trajectory_samples}"
+        assert (
+            trajectory_samples >= 0
+        ), f"trajectory_samples must be non-negative, got {trajectory_samples}"
         self.trajectory_samples = trajectory_samples
 
         self.trajectory = None
@@ -119,12 +130,12 @@ class ODEDynamics(d.Dynamics):
 
     def _clip_state_dot_direct(self, state_dot: np.ndarray):
         """Clips state derivative values to be within `self.state_dot_min` and `self.state_dot_max`
-        
+
         Parameters
         ----------
         state_dot : np.ndarray
             State derivative values
-            
+
         Returns
         -------
         np.ndarray
@@ -134,14 +145,20 @@ class ODEDynamics(d.Dynamics):
 
     def _clip_state_dot_by_state_limits(self, state: np.ndarray, state_dot: np.ndarray):
         """Clips state derivative values where the state is at its limits
-        
+
+        State derivative values are clipped such that they do not push the state
+        beyond the limits defined by `self.state_min` and `self.state_max`. This
+        is done by clipping the state derivative values to be non-negative when
+        the state is at its lower limit, and non-positive when the state is at
+        its upper limit.
+
         Parameters
         ----------
         state : np.ndarray
             Current state vector
         state_dot : np.ndarray
             State derivative values
-        
+
         Returns
         -------
         np.ndarray
@@ -208,9 +225,9 @@ class ODEDynamics(d.Dynamics):
 
         return next_state, state_dot
 
-    def compute_state_dot_jax(self, state: np.ndarray, t: float, control: np.ndarray):
+    def compute_state_dot_jax(self, t: float, state: np.ndarray, control: np.ndarray):
         """Compute state dot for jax odeint
-        
+
         Parameters
         ----------
         t : float
