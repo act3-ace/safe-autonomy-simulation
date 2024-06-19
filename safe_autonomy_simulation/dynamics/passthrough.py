@@ -26,17 +26,5 @@ class PassThroughDynamics(d.Dynamics):
         True if using jax version of numpy/scipy. By default, False
     """
 
-    def __init__(
-        self,
-        state_min: typing.Union[float, np.ndarray] = -np.inf,
-        state_max: typing.Union[float, np.ndarray] = np.inf,
-        use_jax: bool = False,
-    ):
-        super().__init__(
-            state_min=state_min,
-            state_max=state_max,
-            use_jax=use_jax,
-        )
-
     def _step(self, step_size: float, state: np.ndarray, control: np.ndarray):
         return state, control
