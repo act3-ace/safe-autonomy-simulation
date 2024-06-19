@@ -399,13 +399,13 @@ class LinearODEDynamics(ControlAffineODEDynamics):
 
         assert (
             len(A.shape) == 2
-        ), f"A must be square matrix. Instead got shape {A.shape}"
+        ), f"A must be a 2D matrix. Instead got shape {A.shape}"
         assert (
             len(B.shape) == 2
-        ), f"A must be square matrix. Instead got shape {B.shape}"
+        ), f"B must be a 2D matrix. Instead got shape {B.shape}"
         assert (
             A.shape[0] == A.shape[1]
-        ), f"A must be a square matrix, not dimension {A.shape}"
+        ), f"A must be a square matrix, not shape {A.shape}"
         assert A.shape[1] == B.shape[0], (
             "number of columns in A must match the number of rows in B."
             + f" However, got shapes {A.shape} for A and {B.shape} for B"
