@@ -1,6 +1,5 @@
 """Pass-through dynamics model"""
 
-import typing
 import numpy as np
 import safe_autonomy_simulation.dynamics.dynamics as d
 
