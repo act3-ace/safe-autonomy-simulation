@@ -15,7 +15,7 @@ class TestEntity(safe_autonomy_simulation.Entity):
         control_queue=safe_autonomy_simulation.ControlQueue(default_control=np.array([1])),
         material=safe_autonomy_simulation.materials.BLACK,
         parent=None,
-        children=set(),
+        children=[],
     ):
         super().__init__(name, dynamics, control_queue, material, parent, children)
 
@@ -39,7 +39,7 @@ def test_init():
     assert entity.control_queue.__class__.__name__ == "ControlQueue"
     assert entity.last_control is None
     assert np.all(entity.state_dot == np.zeros_like(entity.state))
-    assert entity.children == set()
+    assert len(entity.children) == 0
     assert entity.parent is None
     assert entity.material is safe_autonomy_simulation.materials.BLACK
 
@@ -161,4 +161,4 @@ def test_remove_child():
     parent.remove_child(child)
     assert child not in parent.children
     assert child.parent is None
-    assert parent.children == set()
+    assert len(parent.children) == 0
