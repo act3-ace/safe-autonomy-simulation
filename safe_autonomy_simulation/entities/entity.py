@@ -264,7 +264,7 @@ class Entity:
         return self._parent
 
     @property
-    def children(self) -> set[typing.Self]:
+    def children(self) -> sets.TypedSet[typing.Self]:
         """
         Set of child entities of the entity
 

@@ -126,7 +126,7 @@ class PhysicalEntity(e.Entity):
         self._initial_position = position
         self._initial_velocity = velocity
         self._initial_orientation = orientation
-        self._initial_angular_velocity = angular_velocity
+        self._initial_angular_velocity = angular_velocity % (2 * np.pi)  # wrap angles to [0, 2 * pi]
         super().__init__(
             name=name,
             dynamics=dynamics,
@@ -160,6 +160,8 @@ class PhysicalEntity(e.Entity):
     def state(self) -> np.ndarray:
         """State vector of the entity
 
+        state = [position, velocity, orientation, angular_velocity]
+
         Returns
         -------
         np.ndarray
@@ -177,6 +179,7 @@ class PhysicalEntity(e.Entity):
             state vector of the entity
         """
         assert state.shape == self.state.shape, f"State shape must match {self.state.shape}, got {state.shape}"
+        state = state.astype(self._state.dtype)
         state[10:] = state[10:] % (2 * np.pi)  # wrap angles to [0, 2 * pi]
         self._state = state
 
@@ -436,6 +439,8 @@ class PhysicalEntity(e.Entity):
     @property
     def angular_velocity(self) -> np.ndarray:
         """Entity absolute angular velocity vector
+
+        Angular velocity is wrapped to [0, 2 * pi]
 
         Returns
         -------
