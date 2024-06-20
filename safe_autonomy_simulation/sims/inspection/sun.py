@@ -57,7 +57,9 @@ class Sun(e.Point):
         dynamics = SunDynamics(
             n=n, integration_method=integration_method, use_jax=use_jax
         )
-        super().__init__(name=name, dynamics=dynamics, position=np.zeros(3), material=material)
+        super().__init__(
+            name=name, dynamics=dynamics, position=np.zeros(3), material=material
+        )
 
     def __eq__(self, other):
         if isinstance(other, Sun):
@@ -72,7 +74,7 @@ class Sun(e.Point):
     @property
     def state(self) -> np.ndarray:
         """Sun entity state vector
-        
+
         State vector is [theta]
 
         Returns
@@ -85,18 +87,18 @@ class Sun(e.Point):
     @property
     def theta(self) -> float:
         """Sun rotation angle
-        
+
         Returns
         -------
         float
             Sun rotation angle in radians
         """
-        return self.state[0]
+        return float(self.state)
 
     @property
     def n(self) -> float:
         """Sun mean motion
-        
+
         Returns
         -------
         float
@@ -107,7 +109,7 @@ class Sun(e.Point):
 
 class SunDynamics(d.ODEDynamics):
     """Dynamics for the sun. Assumed to rotate in x-y plane
-    
+
     Parameters
     ----------
     n: float, optional

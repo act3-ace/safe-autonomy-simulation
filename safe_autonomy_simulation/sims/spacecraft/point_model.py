@@ -98,7 +98,7 @@ class CWHSpacecraft(e.PhysicalEntity):
             dynamics=dynamics,
             position=position,
             velocity=velocity,
-            orientation=np.ndarray([0, 0, 0, 1]),  # no rotation
+            orientation=np.array([0, 0, 0, 1]),  # no rotation
             angular_velocity=np.zeros(3),  # no rotation
             control_queue=control_queue,
             material=material,
