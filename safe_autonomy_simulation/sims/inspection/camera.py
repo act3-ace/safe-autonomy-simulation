@@ -4,6 +4,8 @@ import numpy as np
 import scipy.spatial.transform as transform
 import safe_autonomy_simulation.entities as e
 import safe_autonomy_simulation.dynamics as d
+import safe_autonomy_simulation.controls as c
+import safe_autonomy_simulation.materials as m
 import safe_autonomy_simulation.sims.inspection.utils.illumination as illum
 import safe_autonomy_simulation.sims.inspection.utils.vector as vector
 import safe_autonomy_simulation.sims.inspection.utils.sphere as sphere
@@ -54,6 +56,8 @@ class Camera(e.PhysicalEntity):
         ).as_quat(),
         angular_velocity: np.ndarray = np.zeros(3),
         dynamics: d.Dynamics = d.PassThroughDynamics(),
+        control_queue: c.ControlQueue = c.NoControl(),
+        material: m.Material = m.BLACK,
         parent: e.PhysicalEntity = None,
         children: list[e.Entity] = [],
     ):
@@ -64,6 +68,8 @@ class Camera(e.PhysicalEntity):
             orientation=orientation,
             angular_velocity=angular_velocity,
             dynamics=dynamics,
+            control_queue=control_queue,
+            material=material,
             parent=parent,
             children=children,
         )
