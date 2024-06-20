@@ -51,7 +51,7 @@ class Entity:
         control_queue: control_queue.ControlQueue,
         material: materials.Material,
         parent: typing.Union[typing.Self, None] = None,
-        children: sets.TypedSet[typing.Self] = sets.TypedSet(),
+        children: list[typing.Self] = [],
     ):
         self.name = name
 
@@ -64,7 +64,7 @@ class Entity:
         self._state_dot = np.zeros_like(self.state)
 
         # Register parent and children
-        self._children = sets.TypedSet[Entity]()
+        self._children = sets.TypedSet[Entity](type=Entity)
         self._parent = None
         if parent is not None:
             parent.add_child(self)
