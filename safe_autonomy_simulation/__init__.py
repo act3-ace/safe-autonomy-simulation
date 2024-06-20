@@ -1,6 +1,6 @@
 """ Root __init__ file for safe_autonomy_simulation package """
 
-from safe_autonomy_simulation import dynamics, entities, materials, controls, sims
+from safe_autonomy_simulation import dynamics, entities, materials, controls, sims, utils
 from safe_autonomy_simulation.dynamics import Dynamics
 from safe_autonomy_simulation.entities import Entity
 from safe_autonomy_simulation.materials import Material
@@ -20,5 +20,6 @@ __all__ = [
     "entities",
     "materials",
     "controls",
-    "sims"
+    "sims",
+    "utils",
 ]

@@ -47,7 +47,7 @@ def is_illuminated(point: e.Point, light: e.PhysicalEntity, radius: float) -> bo
 def is_illuminated_rgb(
     rgb: np.ndarray,
     rgb_min: np.ndarray = np.array([0.8, 0.8, 0.8]),
-    rgb_max: np.ndarray = np.array([0.12, np.inf, np.inf]),
+    rgb_max: np.ndarray = np.array([0.9, np.inf, np.inf]),
 ) -> bool:
     """
     Determine if given RGB value is sufficient for illumination
@@ -60,7 +60,7 @@ def is_illuminated_rgb(
     rgb_min: np.ndarray, optional
         minimum RGB value for illumination, by default [0.8, 0.8, 0.8]
     rgb_max: np.ndarray, optional
-        maximum RGB value for illumination, by default [0.12, np.inf, np.inf]
+        maximum RGB value for illumination, by default [0.9, np.inf, np.inf]
 
     Returns
     -------

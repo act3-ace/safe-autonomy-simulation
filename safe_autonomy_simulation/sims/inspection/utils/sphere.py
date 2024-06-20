@@ -22,6 +22,7 @@ def points_on_sphere_fibonacci(num_points: int, radius: float) -> list:
     points: list
         Set of equidistant points on sphere in cartesian coordinates
     """
+    assert num_points > 1, "Number of points must be greater than 1"
     points = []
     phi = math.pi * (3.0 - math.sqrt(5.0))  # golden angle in radians
 
@@ -60,6 +61,7 @@ def points_on_sphere_cmu(num_points: int, radius: float) -> list:
     points: list
         Set of equidistant points on sphere in cartesian coordinates
     """
+    assert num_points > 1, "Number of points must be greater than 1"
     points = []
 
     a = 4.0 * math.pi * (1 / num_points)
