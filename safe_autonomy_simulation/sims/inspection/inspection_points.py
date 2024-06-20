@@ -7,6 +7,8 @@ import scipy.spatial.transform as transform
 
 import safe_autonomy_simulation.entities as e
 import safe_autonomy_simulation.dynamics as d
+import safe_autonomy_simulation.controls as c
+import safe_autonomy_simulation.materials as m
 import safe_autonomy_simulation.sims.inspection.camera as cam
 import safe_autonomy_simulation.sims.inspection.sun as sun
 import safe_autonomy_simulation.sims.inspection.utils.sphere as sphere
@@ -41,6 +43,28 @@ class InspectionPointDynamics(d.Dynamics):
         next_state = np.concatenate((new_position, state[3:]))
         return next_state, control
 
+    @property
+    def parent(self) -> e.PhysicalEntity:
+        """Parent entity of the point
+
+        Returns
+        -------
+        PhysicalEntity
+            parent entity of the point
+        """
+        return self._parent
+
+    @property
+    def default_position(self) -> np.ndarray:
+        """Default position of the point
+
+        Returns
+        -------
+        np.ndarray
+            default position of the point
+        """
+        return self._default_position
+
 
 class InspectionPoint(e.Point):
     """A weighted inspection point entity
@@ -70,21 +94,21 @@ class InspectionPoint(e.Point):
         parent: e.Entity,
         name: str = "point",
     ):
+        self._default_position = position
+        self._inspected = inspected
+        self._inspector = inspector
+        self._weight = weight
         super().__init__(
             name=name,
             position=position,
             parent=parent,
             dynamics=InspectionPointDynamics(position, parent),
         )
-        self._default_position = position
-        self._inspected = inspected
-        self._inspector = inspector
-        self._weight = weight
 
     def build_initial_state(self) -> np.ndarray:
         # Append weight and inspection status to internal state
         state = super().build_initial_state()
-        state = np.concatenate((state, self.weight, self.inspected))
+        state = np.concatenate((state[:6], [self.weight], [self.inspected]))
         return state
 
     @property
@@ -99,8 +123,7 @@ class InspectionPoint(e.Point):
             inspection point state vector
         """
         # Append weight and inspection status to parent state
-        state = super().state
-        state = np.concatenate((state, self.weight, self.inspected))
+        state = np.concatenate((self._state[0:6], [self.weight], [self.inspected]))
         return state
 
     @state.setter
@@ -115,7 +138,7 @@ class InspectionPoint(e.Point):
         assert (
             state.shape == self.state.shape
         ), f"State vector must be of shape {self.state.shape}, got {state.shape}"
-        super().state = state[0:6]
+        self._state[0:6] = state[0:6]
         self.weight = state[6]
         self.inspected = state[7]
 
@@ -144,7 +167,6 @@ class InspectionPoint(e.Point):
     @inspected.setter
     def inspected(self, inspected: bool):
         self._inspected = inspected
-        self._state[-1] = inspected
 
     @property
     def inspector(self) -> str:
@@ -175,7 +197,6 @@ class InspectionPoint(e.Point):
     @weight.setter
     def weight(self, weight: float):
         self._weight = weight
-        self._state[-2] = weight
 
 
 class InspectionPointSet(e.Entity):
@@ -206,15 +227,26 @@ class InspectionPointSet(e.Entity):
         radius: float,
         priority_vector: np.ndarray,
         points_algorithm: str = "cmu",
+        dynamics: d.Dynamics = d.PassThroughDynamics(),
+        control_queue: c.ControlQueue = c.NoControl(),
+        material: m.Material = m.BLACK,
     ):
-        self._num_points = num_points
+        self._points: typing.Dict[
+            int, InspectionPoint
+        ] = {}  # initialize points as empty for correct parent assignment
+        super().__init__(
+            name=name,
+            parent=parent,
+            dynamics=dynamics,
+            control_queue=control_queue,
+            material=material,
+        )
         self._radius = radius
         self._priority_vector = priority_vector
         self._clusters = None
-        self._points: typing.Dict[int, InspectionPoint] = self._generate_points(
-            points_alg=points_algorithm
+        self._points = self._generate_points(
+            num_points=num_points, points_algorithm=points_algorithm
         )
-        super().__init__(name=name, parent=parent)
 
     def build_initial_state(self) -> np.ndarray:
         state = np.array([p.state for p in self.points.values()])
@@ -226,12 +258,17 @@ class InspectionPointSet(e.Entity):
         self._state = np.array([p.state for p in self.points.values()])
 
     def _generate_points(
-        self, points_algorithm: str = "cmu"
+        self, num_points, points_algorithm: str = "cmu"
     ) -> typing.Dict[int, InspectionPoint]:
         """Generate a sphere of inspection points
 
+        Depending on which algorithm is chosen, generated points
+        on sphere may not equal `num_points`.
+
         Parameters
         ----------
+        num_points: int
+            number of inspection points to generate
         points_algorithm: str, optional
             algorithm to generate points on sphere, either "cmu" or "fibonacci", by default "cmu"
 
@@ -251,7 +288,7 @@ class InspectionPointSet(e.Entity):
 
         # generate point positions
         point_positions = points_alg(
-            self.num_points, self.radius
+            num_points, self.radius
         )  # TODO: HANDLE POSITION UNITS*
 
         points = {}
@@ -301,7 +338,7 @@ class InspectionPointSet(e.Entity):
         """
         # calculate h of the spherical cap (inspection zone)
         cam_position = camera.position
-        r_c = camera.orientation
+        r_c = transform.Rotation.from_quat(camera.orientation).as_euler("xyz")
         r_c = r_c / np.linalg.norm(r_c)  # inspector sensor unit vector
 
         r = self.radius
@@ -489,7 +526,7 @@ class InspectionPointSet(e.Entity):
         int
             number of inspection points
         """
-        return self._num_points
+        return len(self.points)
 
     @property
     def radius(self) -> float:
