@@ -177,7 +177,7 @@ class CWHRotation2dSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-pub
         float
             Rotation angle about z axis
         """
-        return self.orientation.as_euler("ZYX")[0]
+        return transform.Rotation.from_quat(self.orientation).as_euler("ZYX")[0]
 
     @property
     def theta_with_units(self) -> pint.Quantity:
@@ -199,7 +199,7 @@ class CWHRotation2dSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-pub
         np.ndarray
             state vector of form [x, y, x_dot, y_dot, theta, wz]
         """
-        return np.concatenate([self.position, self.velocity, self.theta, self.wz])
+        return np.concatenate([self.position[:2], self.velocity[:2], [self.theta], [self.wz]])
 
     @state.setter
     def state(self, state: np.ndarray):
@@ -333,7 +333,7 @@ class CWHRotation2dDynamics(d.ControlAffineODEDynamics):
         self.B = self.np.copy(B)
 
     def state_transition_system(self, state: np.ndarray) -> np.ndarray:
-        x, y, _, x_dot, y_dot, theta_dot = state
+        x, y, x_dot, y_dot, theta, wz = state
         # Form separate state vector for translational state
         pos_vel_state_vec = self.np.array([x, y, x_dot, y_dot], dtype=np.float32)
         # Compute derivatives
@@ -344,7 +344,7 @@ class CWHRotation2dDynamics(d.ControlAffineODEDynamics):
             [
                 pos_vel_derivative[0],
                 pos_vel_derivative[1],
-                theta_dot,
+                wz,
                 pos_vel_derivative[2],
                 pos_vel_derivative[3],
                 0,
@@ -355,7 +355,7 @@ class CWHRotation2dDynamics(d.ControlAffineODEDynamics):
         return state_derivative
 
     def state_transition_input(self, state: np.ndarray) -> np.ndarray:
-        theta = state[2]
+        theta = state[4]
 
         g = self.np.array(
             [

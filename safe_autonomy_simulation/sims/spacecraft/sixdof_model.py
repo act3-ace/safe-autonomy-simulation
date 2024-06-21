@@ -25,11 +25,15 @@ import safe_autonomy_simulation.sims.spacecraft.defaults as defaults
 
 
 def number_list_to_np(
-    input_val: typing.Union[float, int, list, np.ndarray], shape: typing.Tuple[int], dtype=np.float64
+    input_val: typing.Union[float, int, list, np.ndarray],
+    shape: typing.Tuple[int],
+    dtype=np.float64,
 ) -> np.ndarray:
     """
-    Converts dynamic number, list or np.ndarray to a np.ndarray of a particular shape a dtype
-    If np.ndarray is passed, performs shape and dtype checking
+    Convert input to standardized np.ndarray
+
+    If input is a sequence, the output ndarray will have the same
+    shape as the input sequence.
 
     Parameters
     ----------
@@ -48,7 +52,7 @@ def number_list_to_np(
     if isinstance(input_val, np.ndarray):
         output = input_val
     elif isinstance(input_val, list):
-        output = np.ndarray(input_val, dtype=dtype)
+        output = np.array(input_val, dtype=dtype)
     elif isinstance(input_val, (float, int)):
         output = float(input_val) * np.ones(shape, dtype=dtype)
     else:
@@ -143,20 +147,21 @@ class SixDOFSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-public-met
         orientation: np.ndarray = np.array([0, 0, 0, 1]),
         angular_velocity: np.ndarray = np.zeros(3),
         m=defaults.M_DEFAULT,
-        inertia_matrix=defaults.INERTIA_MATRIX_DEFAULT,
-        ang_acc_limit=defaults.ANG_ACC_LIMIT_DEFAULT,
-        ang_vel_limit=defaults.ANG_VEL_LIMIT_DEFAULT,
-        inertia_wheel=defaults.INERTIA_WHEEL_DEFAULT,
-        acc_limit_wheel=defaults.ACC_LIMIT_WHEEL_DEFAULT,
-        vel_limit_wheel=defaults.VEL_LIMIT_WHEEL_DEFAULT,
-        thrust_control_limit=defaults.THRUST_CONTROL_LIMIT_DEFAULT,
-        body_frame_thrust=True,
-        n=defaults.N_DEFAULT,
-        trajectory_samples=0,
-        integration_method="RK45",
+        inertia_matrix: np.ndarray = defaults.INERTIA_MATRIX_DEFAULT,
+        ang_acc_limit: float | np.ndarray = defaults.ANG_ACC_LIMIT_DEFAULT,
+        ang_vel_limit: float | np.ndarray = defaults.ANG_VEL_LIMIT_DEFAULT,
+        inertia_wheel: float | np.ndarray = defaults.INERTIA_WHEEL_DEFAULT,
+        acc_limit_wheel: float | np.ndarray = defaults.ACC_LIMIT_WHEEL_DEFAULT,
+        vel_limit_wheel: float | np.ndarray = defaults.VEL_LIMIT_WHEEL_DEFAULT,
+        thrust_control_limit: float
+        | np.ndarray = defaults.THRUST_CONTROL_LIMIT_DEFAULT,
+        body_frame_thrust: bool = True,
+        n: float = defaults.N_DEFAULT,
+        trajectory_samples: int = 0,
+        integration_method: str = "RK45",
         material: mat.Material = defaults.CWH_MATERIAL,
         parent: typing.Union[e.PhysicalEntity, None] = None,
-        children: list[e.PhysicalEntity] = []
+        children: list[e.PhysicalEntity] = [],
     ):
         # Define limits for angular acceleration, angular velocity, and control inputs
         ang_acc_limit = number_list_to_np(ang_acc_limit, shape=(3,))  # rad/s^2
@@ -191,7 +196,7 @@ class SixDOFSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-public-met
             trajectory_samples=trajectory_samples,
             integration_method=integration_method,
         )
-        self.lead = None
+        self._lead = None
 
         super().__init__(
             name=name,
@@ -206,46 +211,30 @@ class SixDOFSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-public-met
             children=children,
         )
 
-    def register_lead(self, lead: e.Entity):
+    @property
+    def lead(self) -> e.Entity:
+        """Lead entity of spacecraft
+
+        Returns
+        -------
+        Entity
+            Lead entity of spacecraft
         """
-        Register another entity as this entity's lead. Defines line of communication between entities.
+        return self._lead
+
+    @lead.setter
+    def lead(self, lead: e.Entity):
+        """
+        Register another entity as this entity's lead.
+
+        Defines line of communication between entities.
 
         Parameters
         ----------
         lead: Entity
             Entity with line of communication to this entity.
-
-        Returns
-        -------
-        None
         """
-        self.lead = lead
-
-    @property
-    def state(self) -> np.ndarray:
-        """State vector of spacecraft
-
-        Returns
-        -------
-        np.ndarray
-            state vector of form [x, y, z, x_dot, y_dot, z_dot, q1, q2, q3, q4, wx, wy, wz]
-        """
-        return self._state
-
-    @state.setter
-    def state(self, state: np.ndarray):
-        """Set state of spacecraft
-
-        Parameters
-        ----------
-        state : np.ndarray
-            state vector of form [x, y, z, x_dot, y_dot, z_dot, q1, q2, q3, q4, wx, wy, wz]
-        """
-        assert (
-            state.shape == self.state.shape
-        ), f"State shape must match {self.state.shape}, got {state.shape}"
-        # Internal state is [x, y, z, x_dot, y_dot, z_dot, q1, q2, q3, q4, wx, wy, wz]
-        self._state = state
+        self._lead = lead
 
 
 class SixDOFDynamics(d.ControlAffineODEDynamics):
@@ -385,7 +374,7 @@ class SixDOFDynamics(d.ControlAffineODEDynamics):
         )
 
     def state_transition_system(self, state: np.ndarray) -> np.ndarray:
-        x, y, z, q1, q2, q3, q4, x_dot, y_dot, z_dot, wx, wy, wz = state
+        x, y, z, x_dot, y_dot, z_dot, q1, q2, q3, q4, wx, wy, wz = state
 
         # Compute translational derivatives
         pos_vel_state_vec = np.array([x, y, z, x_dot, y_dot, z_dot], dtype=np.float64)
@@ -436,7 +425,7 @@ class SixDOFDynamics(d.ControlAffineODEDynamics):
         return state_derivative
 
     def state_transition_input(self, state: np.ndarray) -> np.ndarray:
-        quat = state[3:7]
+        quat = state[6:10]
 
         w_derivative = np.array(
             [
@@ -490,7 +479,23 @@ class SixDOFDynamics(d.ControlAffineODEDynamics):
         return rotated_x
 
     def hamilton_product(self, r, q):
-        """Hamilton product between 2 vectors"""
+        """
+        Hamilton product of two quaternions
+
+        Parameters
+        ----------
+        r : np.ndarray
+            quaternion vector of form [x, y, z, w]
+        q : np.ndarray
+            quaternion vector of form [x, y, z, w]
+        
+        Returns
+        -------
+        np.ndarray
+            quaternion vector of form [x, y, z, w]
+        """
+        assert r.shape == (4,), f"r must be of shape (4,) instead of {r.shape}"
+        assert q.shape == (4,), f"q must be of shape (4,) instead of {q.shape}"
         return np.array(
             [
                 r[0] * q[0] - r[1] * q[1] - r[2] * q[2] - r[3] * q[3],
