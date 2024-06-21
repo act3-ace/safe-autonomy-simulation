@@ -1,6 +1,6 @@
 ARG IMAGE_REPO_BASE
 ARG OCI_REGISTRY=reg.git.act3-ace.com
-ARG PYTHON_VERSION=3.10
+ARG PYTHON_VERSION=3.11
 ARG PIP_INDEX_URL
 # renovate: datasource=pypi depName=poetry
 ARG POETRY_VERSION=1.7.1
