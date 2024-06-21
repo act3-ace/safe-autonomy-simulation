@@ -216,8 +216,18 @@ def test__eq__(entity1, entity2, entity3):
     assert not entity1 == entity3
 
 
-@pytest.mark.parametrize("entity", utils.TEST_ENTITIES)
-def test_build_initial_state(entity):
+@pytest.mark.parametrize("initial_state", utils.TEST_STATES)
+def test_build_initial_state(initial_state):
+    entity = safe_autonomy_simulation.entities.PhysicalEntity(
+        name="test_entity",
+        position=initial_state[:3],
+        velocity=initial_state[3:6],
+        orientation=initial_state[6:10],
+        angular_velocity=initial_state[10:],
+        control_queue=safe_autonomy_simulation.controls.NoControl(),
+        dynamics=safe_autonomy_simulation.dynamics.PassThroughDynamics(),
+        material=safe_autonomy_simulation.materials.BLACK,
+    )
     assert np.all(
         entity.build_initial_state()
         == np.concatenate(
@@ -231,8 +241,27 @@ def test_build_initial_state(entity):
     )
 
 
-@pytest.mark.parametrize("entity", utils.TEST_ENTITIES)
-def test_state(entity):
+@pytest.mark.parametrize(
+    "initial_state, state",
+    [
+        (a, b)
+        for a, b in zip(
+            utils.TEST_STATES[: len(utils.TEST_STATES) // 2],
+            utils.TEST_STATES[len(utils.TEST_STATES) // 2 :],
+        )
+    ],
+)
+def test_state(initial_state, state):
+    entity = safe_autonomy_simulation.entities.PhysicalEntity(
+        name="test_entity",
+        position=initial_state[:3],
+        velocity=initial_state[3:6],
+        orientation=initial_state[6:10],
+        angular_velocity=initial_state[10:],
+        control_queue=safe_autonomy_simulation.controls.NoControl(),
+        dynamics=safe_autonomy_simulation.dynamics.PassThroughDynamics(),
+        material=safe_autonomy_simulation.materials.BLACK,
+    )
     assert np.all(
         entity.state
         == np.concatenate(
@@ -244,11 +273,11 @@ def test_state(entity):
             )
         )
     )
-    entity.state = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])
-    assert np.all(entity.position == np.array([1, 2, 3]))
-    assert np.all(entity.velocity == np.array([4, 5, 6]))
-    assert np.all(entity.orientation == np.array([7, 8, 9, 10]))
-    assert np.all(entity.angular_velocity == np.array([11, 12, 13]) % (2 * np.pi))
+    entity.state = state
+    assert np.all(entity.position == state[:3])
+    assert np.all(entity.velocity == state[3:6])
+    assert np.all(entity.orientation == state[6:10])
+    assert np.all(entity.angular_velocity == state[10:13] % (2 * np.pi))
 
 
 @pytest.mark.parametrize(

@@ -31,6 +31,19 @@ TEST_ANGULAR_VELOCITIES = [
     for w_y in test_values
     for w_z in test_values
 ]
+TEST_STATES = [
+    np.concatenate(
+        [
+            position,
+            velocity,
+            orientation,
+            angular_velocity,
+        ]
+    )
+    for position, velocity, orientation, angular_velocity in zip(
+        TEST_POSITIONS, TEST_VELOCITIES, TEST_ORIENTATIONS, TEST_ANGULAR_VELOCITIES
+    )
+]
 
 TEST_ENTITIES = [
     safe_autonomy_simulation.entities.PhysicalEntity(
@@ -47,5 +60,3 @@ TEST_ENTITIES = [
         TEST_POSITIONS, TEST_VELOCITIES, TEST_ORIENTATIONS, TEST_ANGULAR_VELOCITIES
     )
 ]
-
-print(len(TEST_ENTITIES))
