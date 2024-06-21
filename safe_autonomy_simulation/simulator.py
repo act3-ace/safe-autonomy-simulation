@@ -1,8 +1,7 @@
 """Simulator base class for building simulations"""
 
-import typing
-import numpy as np
 import safe_autonomy_simulation.entities as e
+import safe_autonomy_simulation.utils as utils
 
 
 class Simulator:
@@ -31,14 +30,14 @@ class Simulator:
             assert entity.parent is None, "Entities must be top-level entities with no parent"
         self._frame_rate = frame_rate
         self._sim_time = 0
-        self._entities = {entity.name: entity for entity in entities}
+        self._entities = utils.TypedSet(type=e.Entity, elements=entities)
 
     def reset(self):
         """
         Reset the simulation to an initial state
         """
         self._sim_time = 0
-        for _, entity in self.entities.items():
+        for entity in self.entities:
             entity.reset()
 
     def step(self):
@@ -54,7 +53,7 @@ class Simulator:
         """
         step_size = 1 / self.frame_rate
         self._sim_time += step_size
-        for _, entity in self.entities.items():
+        for entity in self.entities:
             entity.step(step_size=step_size)
         self.update()
 
@@ -70,19 +69,6 @@ class Simulator:
         but should **not** modify any entity state vectors.
         """
         pass
-
-    def add_controls(
-        self, control_dict: typing.Dict[str, typing.Union[np.ndarray, dict]]
-    ):
-        """Add controls to the control queues of the simulation entities
-
-        Parameters
-        ----------
-        control_dict : typing.Dict[str, np.ndarray]
-            dictionary of controls to be added to the control queues of the form {entity_name: control}
-        """
-        for e_name, e_control in control_dict.items():
-            self.entities[e_name].add_control(e_control)
 
     @property
     def frame_rate(self) -> float:
@@ -109,12 +95,12 @@ class Simulator:
         return self._sim_time
 
     @property
-    def entities(self) -> typing.Dict[str, e.Entity]:
+    def entities(self) -> utils.TypedSet[e.Entity]:
         """Set of top-level simulator entities
 
         Returns
         -------
-        dict
-            top-level simulation entities dict of the form {entity_name: entity}
+        set
+            top-level simulation entities set
         """
         return self._entities

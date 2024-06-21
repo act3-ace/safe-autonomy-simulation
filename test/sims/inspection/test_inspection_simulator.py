@@ -58,7 +58,10 @@ def test_init_default(
     assert inspection_sim.inspectors == inspectors
     assert inspection_sim.targets == targets
     assert inspection_sim.sim_time == 0
-    assert inspection_sim.entities == {e.name: e for e in inspectors + targets}
+    entities = inspectors + targets
+    assert len(inspection_sim.entities) == len(entities)
+    for e in entities:
+        assert e in inspection_sim.entities
     assert inspection_sim.sun is None
     assert not inspection_sim.binary_ray
 
@@ -119,7 +122,10 @@ def test_init_args(frame_rate, inspectors, targets, sun, binary_ray):
     assert inspection_sim.inspectors == inspectors
     assert inspection_sim.targets == targets
     assert inspection_sim.sim_time == 0
-    assert inspection_sim.entities == {e.name: e for e in inspectors + targets + [sun]}
+    entities = inspectors + targets + [sun]
+    assert len(inspection_sim.entities) == len(entities)
+    for e in entities:
+        assert e in inspection_sim.entities
     assert inspection_sim.sun == sun
     assert inspection_sim.binary_ray == binary_ray
 

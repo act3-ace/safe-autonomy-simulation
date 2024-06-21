@@ -61,7 +61,9 @@ def simulator(entities):
 def test_simulator_init(simulator, entities):
     assert simulator.frame_rate == 1.0
     assert simulator.sim_time == 0.0
-    assert simulator.entities == {entity.name: entity for entity in entities}
+    assert len(simulator.entities) == len(entities)
+    for entity in entities:
+        assert entity in simulator.entities
 
 
 def test_simulator_reset(simulator):
@@ -69,7 +71,7 @@ def test_simulator_reset(simulator):
         simulator.step()
     simulator.reset()
     assert simulator.sim_time == 0
-    for entity in simulator.entities.values():
+    for entity in simulator.entities:
         assert entity.state == [0]
 
 
@@ -77,14 +79,5 @@ def test_simulator_step(simulator):
     for _ in range(10):
         simulator.step()
     assert simulator.sim_time == 10
-    for entity in simulator.entities.values():
+    for entity in simulator.entities:
         assert entity.state == [10]
-
-
-def test_simulator_add_control(simulator):
-    control_dict = {
-        entity.name: np.array([10.0]) for entity in simulator.entities.values()
-    }
-    simulator.add_controls(control_dict)
-    for entity in simulator.entities.values():
-        assert entity.control_queue.next_control() == np.array([10.0])
