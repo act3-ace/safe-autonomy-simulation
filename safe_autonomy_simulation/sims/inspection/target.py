@@ -15,8 +15,12 @@ class Target(spacecraft.CWHSpacecraft):
     ----------
     name : str
         name of the entity
-    inspection_points : InspectionPointSet
-        Inspection points of the target
+    num_points : int
+        Number of inspection points
+    radius : float
+        Radius of inspection point cloud in meters
+    priority_vector : np.ndarray, optional
+        Priority vector of inspection points, by default np.zeros(3)
     position : np.ndarray, optional
         Initial absolute position of spacecraft in meters, by default np.zeros(3)
     velocity : np.ndarray, optional
@@ -38,7 +42,9 @@ class Target(spacecraft.CWHSpacecraft):
     def __init__(
         self,
         name: str,
-        inspection_points: p.InspectionPointSet,
+        num_points: int,
+        radius: float,
+        priority_vector: np.ndarray = np.zeros(3),
         position: np.ndarray = np.zeros(3),
         velocity: np.ndarray = np.zeros(3),
         m: float = defaults.M_DEFAULT,
@@ -59,8 +65,13 @@ class Target(spacecraft.CWHSpacecraft):
             material=material,
             parent=parent,
         )
-        self._inspection_points = inspection_points
-        self.add_child(self._inspection_points)
+        self._inspection_points = p.InspectionPointSet(
+            name="inspection_points",
+            parent=self,
+            num_points=num_points,
+            radius=radius,
+            priority_vector=priority_vector,
+        )
 
     @property
     def inspection_points(self) -> p.InspectionPointSet:
@@ -81,8 +92,12 @@ class SixDOFTarget(spacecraft.SixDOFSpacecraft):
     ----------
     name : str
         name of the entity
-    inspection_points : InspectionPoints
-        Inspection points of the target
+    num_points : int
+        Number of inspection points
+    radius : float
+        Radius of inspection point cloud in meters
+    priority_vector : np.ndarray, optional
+        Priority vector of inspection points, by default np.zeros(3)
     position : np.ndarray, optional
         Initial absolute position of spacecraft in meters, by default np.zeros(3)
     velocity : np.ndarray, optional
@@ -126,7 +141,9 @@ class SixDOFTarget(spacecraft.SixDOFSpacecraft):
     def __init__(
         self,
         name: str,
-        inspection_points: p.InspectionPointSet,
+        num_points: int,
+        radius: float,
+        priority_vector: np.ndarray = np.zeros(3),
         position: np.ndarray = np.zeros(3),
         velocity: np.ndarray = np.zeros(3),
         orientation: np.ndarray = np.array([0, 0, 0, 1]),
@@ -169,8 +186,13 @@ class SixDOFTarget(spacecraft.SixDOFSpacecraft):
             parent=parent,
             children=children,
         )
-        self._inspection_points = inspection_points
-        self.add_child(self._inspection_points)
+        self._inspection_points = p.InspectionPointSet(
+            name="inspection_points",
+            parent=self,
+            num_points=num_points,
+            radius=radius,
+            priority_vector=priority_vector,
+        )
 
     @property
     def inspection_points(self) -> p.InspectionPointSet:

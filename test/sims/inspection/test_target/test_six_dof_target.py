@@ -5,40 +5,32 @@ import safe_autonomy_simulation.sims.spacecraft.defaults
 
 
 @pytest.mark.parametrize(
-    "name, inspection_points",
+    "name, num_points, radius",
     [
-        (
-            "target",
-            safe_autonomy_simulation.sims.inspection.InspectionPointSet(
-                name="set",
-                parent=safe_autonomy_simulation.entities.Point(
-                    "parent", position=np.array([0, 0, 0])
-                ),
-                num_points=10,
-                radius=1,
-                priority_vector=np.array([1, 0, 0]),
-            ),
-        ),
+        ("target", 10, 1),
     ],
 )
-def test_init_default(name, inspection_points):
+def test_init_default(name, num_points, radius):
     target = safe_autonomy_simulation.sims.inspection.SixDOFTarget(
-        name=name, inspection_points=inspection_points
+        name=name, num_points=num_points, radius=radius
     )
     assert target.name == name
-    assert target.inspection_points == inspection_points
-    assert inspection_points in target.children
+    assert target.inspection_points.radius == radius
+    assert np.all(target.inspection_points.priority_vector == np.zeros(3))
+    assert len(target.children) == 1
+    for child in target.children:
+        assert isinstance(
+            child, safe_autonomy_simulation.sims.inspection.InspectionPointSet
+        )
     assert np.all(target.position == np.zeros(3))
     assert np.all(target.velocity == np.zeros(3))
     assert np.all(target.orientation == np.array([0, 0, 0, 1]))
     assert np.all(target.angular_velocity == np.zeros(3))
     assert (
-        target.dynamics.m
-        == safe_autonomy_simulation.sims.spacecraft.defaults.M_DEFAULT
+        target.dynamics.m == safe_autonomy_simulation.sims.spacecraft.defaults.M_DEFAULT
     )
     assert (
-        target.dynamics.n
-        == safe_autonomy_simulation.sims.spacecraft.defaults.N_DEFAULT
+        target.dynamics.n == safe_autonomy_simulation.sims.spacecraft.defaults.N_DEFAULT
     )
     assert target.dynamics.trajectory_samples == 0
     assert target.dynamics.integration_method == "RK45"
@@ -50,19 +42,13 @@ def test_init_default(name, inspection_points):
 
 
 @pytest.mark.parametrize(
-    "name, inspection_points, position, velocity, orientation, angular_velocity, m, n, inertia_matrix, ang_acc_limit, ang_vel_limit, inertia_wheel, acc_limit_wheel, vel_limit_wheel, thrust_control_limit, body_frame_thrust, trajectory_samples, integration_method, material, parent",
+    "name, num_points, radius, priority_vector, position, velocity, orientation, angular_velocity, m, n, inertia_matrix, ang_acc_limit, ang_vel_limit, inertia_wheel, acc_limit_wheel, vel_limit_wheel, thrust_control_limit, body_frame_thrust, trajectory_samples, integration_method, material, parent",
     [
         (
             "target",
-            safe_autonomy_simulation.sims.inspection.InspectionPointSet(
-                name="set",
-                parent=safe_autonomy_simulation.entities.Point(
-                    "parent", position=np.array([0, 0, 0])
-                ),
-                num_points=10,
-                radius=1,
-                priority_vector=np.array([1, 0, 0]),
-            ),
+            10,
+            1,
+            np.array([1, 0, 0]),
             np.array([1, 0, 0]),
             np.array([0, 0, 0]),
             np.array([0, 0, 0, 1]),
@@ -86,7 +72,9 @@ def test_init_default(name, inspection_points):
 )
 def test_init_args(
     name,
-    inspection_points,
+    num_points,
+    radius,
+    priority_vector,
     position,
     velocity,
     orientation,
@@ -108,7 +96,9 @@ def test_init_args(
 ):
     target = safe_autonomy_simulation.sims.inspection.SixDOFTarget(
         name=name,
-        inspection_points=inspection_points,
+        num_points=num_points,
+        radius=radius,
+        priority_vector=priority_vector,
         position=position,
         velocity=velocity,
         orientation=orientation,
@@ -129,8 +119,13 @@ def test_init_args(
         parent=parent,
     )
     assert target.name == name
-    assert target.inspection_points == inspection_points
-    assert inspection_points in target.children
+    assert target.inspection_points.radius == radius
+    assert np.all(target.inspection_points.priority_vector == priority_vector)
+    assert len(target.children) == 1
+    for child in target.children:
+        assert isinstance(
+            child, safe_autonomy_simulation.sims.inspection.InspectionPointSet
+        )
     assert np.all(target.position == position)
     assert np.all(target.velocity == velocity)
     assert np.all(target.orientation == orientation)

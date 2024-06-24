@@ -5,29 +5,24 @@ import safe_autonomy_simulation.sims.spacecraft.defaults
 
 
 @pytest.mark.parametrize(
-    "name, inspection_points",
+    "name, num_points, radius",
     [
         (
             "target",
-            safe_autonomy_simulation.sims.inspection.InspectionPointSet(
-                name="set",
-                parent=safe_autonomy_simulation.entities.Point(
-                    "parent", position=np.array([0, 0, 0])
-                ),
-                num_points=10,
-                radius=1,
-                priority_vector=np.array([1, 0, 0]),
-            ),
+            100,
+            1,
         ),
     ],
 )
-def test_init_default(name, inspection_points):
+def test_init_default(name, num_points, radius):
     target = safe_autonomy_simulation.sims.inspection.Target(
-        name=name, inspection_points=inspection_points
+        name=name, num_points=num_points, radius=radius
     )
     assert target.name == name
-    assert target.inspection_points == inspection_points
-    assert inspection_points in target.children
+    assert target.inspection_points.radius == radius
+    assert len(target.children) == 1
+    for child in target.children:
+        assert isinstance(child, safe_autonomy_simulation.sims.inspection.InspectionPointSet)
     assert np.all(target.position == np.zeros(3))
     assert np.all(target.velocity == np.zeros(3))
     assert (
@@ -48,19 +43,13 @@ def test_init_default(name, inspection_points):
 
 
 @pytest.mark.parametrize(
-    "name, inspection_points, position, velocity, m, n, trajectory_samples, integration_method, material, parent",
+    "name, num_points, radius, priority_vector, position, velocity, m, n, trajectory_samples, integration_method, material, parent",
     [
         (
             "target",
-            safe_autonomy_simulation.sims.inspection.InspectionPointSet(
-                name="set",
-                parent=safe_autonomy_simulation.entities.Point(
-                    "parent", position=np.array([0, 0, 0])
-                ),
-                num_points=10,
-                radius=1,
-                priority_vector=np.array([1, 0, 0]),
-            ),
+            10,
+            1,
+            np.array([1, 0, 0]),
             np.array([1, 0, 0]),
             np.array([0, 0, 0]),
             1,
@@ -74,7 +63,9 @@ def test_init_default(name, inspection_points):
 )
 def test_init_args(
     name,
-    inspection_points,
+    num_points,
+    radius,
+    priority_vector,
     position,
     velocity,
     m,
@@ -86,7 +77,9 @@ def test_init_args(
 ):
     target = safe_autonomy_simulation.sims.inspection.Target(
         name=name,
-        inspection_points=inspection_points,
+        num_points=num_points,
+        radius=radius,
+        priority_vector=priority_vector,
         position=position,
         velocity=velocity,
         m=m,
@@ -97,8 +90,10 @@ def test_init_args(
         parent=parent,
     )
     assert target.name == name
-    assert target.inspection_points == inspection_points
-    assert inspection_points in target.children
+    assert target.inspection_points.radius == radius
+    assert len(target.children) == 1
+    for child in target.children:
+        assert isinstance(child, safe_autonomy_simulation.sims.inspection.InspectionPointSet)
     assert np.all(target.position == position)
     assert np.all(target.velocity == velocity)
     assert target.dynamics.m == m
