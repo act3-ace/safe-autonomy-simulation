@@ -1,3 +1,17 @@
+# [2.0.0](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v1.3.0...v2.0.0) (2024-06-27)
+
+
+* refactor(api)!: generalize api for building continuous simulations ([a0c7066](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/commit/a0c70661d385b8eb09e4c0b24c44517f3bb129bf)), closes [#20](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/issues/20)
+
+
+### BREAKING CHANGES
+
+* api refactor such that simulators now constructed from a set of managed entity objects
+
+Merge branch '20-add-type-hinting' into 'main'
+
+Resolve "Add Type Hinting"
+
 # [1.3.0](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v1.2.0...v1.3.0) (2024-04-15)
 
 
