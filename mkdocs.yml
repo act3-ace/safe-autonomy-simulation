@@ -1,30 +1,90 @@
 site_name: safe-autonomy-simulation
 site_author: ACT3
 repo_url: https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation
+docs_dir: docs
 
 plugins:
   - search
-  - macros
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: numpy
+  - autorefs
+  - gen-files:
+      scripts:
+        - docs/gen_ref_nav.py  # or any other name or path
+  - section-index
 
-
-markdown_extensions:
-  - codehilite
-  - pymdownx.superfences:
-      custom_fences:
-        - name: mermaid
-          class: mermaid
-          format: !!python/name:pymdownx.superfences.fence_div_format
+theme:
+  name: material
+  icon:
+    logo: material/currency-sign
+  features:
+  - navigation.tabs
+  - navigation.top
+  palette:
+  - media: "(prefers-color-scheme: dark)"
+    scheme: slate
+    primary: black
+    accent: lime
+    toggle:
+      icon: material/weather-night
+      name: Switch to light mode
+  - media: "(prefers-color-scheme: light)"
+    scheme: default
+    primary: teal
+    accent: purple
+    toggle:
+      icon: material/weather-sunny
+      name: Switch to dark mode
 
 nav:
-  - "Getting Started": index.md
-  - "Safe Autonomy Simulation":
-    - safe_autonomy_simulation/base_models-py.md
-    - safe_autonomy_simulation/simulator-py.md
-    - safe_autonomy_simulation/docking/simulator-py.md
-    - safe_autonomy_simulation/docking/point_model-py.md
-
-theme: readthedocs
-
-# Macros info: https://github.com/fralau/mkdocs_macros_plugin#how-to-use-the-macros-plugin
-extra:
-  foo: bar
+  - index.md
+  - tutorials.md
+  - how-to-guides.md
+  - API:
+    - reference/safe_autonomy_simulation/index.md
+    - simulator: reference/safe_autonomy_simulation/simulator.md
+    - controls:
+      - reference/safe_autonomy_simulation/controls/index.md
+      - control_queue: reference/safe_autonomy_simulation/controls/control_queue.md
+      - no_control: reference/safe_autonomy_simulation/controls/no_control.md
+    - dynamics:
+      - reference/safe_autonomy_simulation/dynamics/index.md
+      - dynamics: reference/safe_autonomy_simulation/dynamics/dynamics.md
+      - ode: reference/safe_autonomy_simulation/dynamics/ode.md
+      - passthrough: reference/safe_autonomy_simulation/dynamics/passthrough.md
+    - entities:
+      - reference/safe_autonomy_simulation/entities/index.md
+      - entity: reference/safe_autonomy_simulation/entities/entity.md
+      - integrator: reference/safe_autonomy_simulation/entities/integrator.md
+      - physical: reference/safe_autonomy_simulation/entities/physical.md
+      - point: reference/safe_autonomy_simulation/entities/point.md
+    - materials:
+      - reference/safe_autonomy_simulation/materials/index.md
+      - material: reference/safe_autonomy_simulation/materials/material.md
+    - sims:
+      - inspection:
+        - reference/safe_autonomy_simulation/sims/inspection/index.md
+        - camera: reference/safe_autonomy_simulation/sims/inspection/camera.md
+        - inspection_points: reference/safe_autonomy_simulation/sims/inspection/inspection_points.md
+        - inspection_simulator: reference/safe_autonomy_simulation/sims/inspection/inspection_simulator.md
+        - inspector: reference/safe_autonomy_simulation/sims/inspection/inspector.md
+        - sun: reference/safe_autonomy_simulation/sims/inspection/sun.md
+        - target: reference/safe_autonomy_simulation/sims/inspection/target.md
+        - utils:
+          - reference/safe_autonomy_simulation/sims/inspection/utils/index.md 
+          - illumination: reference/safe_autonomy_simulation/sims/inspection/utils/illumination.md 
+          - polar: reference/safe_autonomy_simulation/sims/inspection/utils/polar.md 
+          - sphere: reference/safe_autonomy_simulation/sims/inspection/utils/sphere.md 
+          - vector: reference/safe_autonomy_simulation/sims/inspection/utils/vector.md 
+      - spacecraft:
+        - reference/safe_autonomy_simulation/sims/spacecraft/index.md
+        - point_model: reference/safe_autonomy_simulation/sims/spacecraft/point_model.md
+        - rotational_model: reference/safe_autonomy_simulation/sims/spacecraft/rotational_model.md
+        - sixdof_model: reference/safe_autonomy_simulation/sims/spacecraft/sixdof_model.md
+    - utils:
+      - reference/safe_autonomy_simulation/utils/index.md
+      - sets: reference/safe_autonomy_simulation/utils/sets.md
+  - explanation.md

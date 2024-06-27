@@ -1,6 +1,6 @@
 ARG IMAGE_REPO_BASE
 ARG OCI_REGISTRY=reg.git.act3-ace.com
-ARG PYTHON_VERSION=3.10
+ARG PYTHON_VERSION=3.11
 ARG PIP_INDEX_URL
 # renovate: datasource=pypi depName=poetry
 ARG POETRY_VERSION=1.7.1
@@ -89,7 +89,7 @@ COPY pyproject.toml poetry.lock ./
 
 RUN --mount=type=secret,id=ACT3_SECRETS_POETRY,required=true,dst=/root/.config/pypoetry/auth.toml \
   poetry config virtualenvs.create false && \
-  poetry install --with docs,test,pipeline --no-root --no-cache
+  poetry install --with docs,lint,test,pipeline --no-root --no-cache
 
 WORKDIR /opt
 
@@ -117,4 +117,4 @@ COPY pyproject.toml poetry.lock ./
 
 RUN --mount=type=secret,id=ACT3_SECRETS_POETRY,required=true,dst=/root/.config/pypoetry/auth.toml \
   poetry config virtualenvs.create false && \
-  poetry install --with test,pipeline --no-root --no-cache
+  poetry install --with test,lint,pipeline --no-root --no-cache
