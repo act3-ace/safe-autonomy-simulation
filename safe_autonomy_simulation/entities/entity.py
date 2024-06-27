@@ -1,6 +1,7 @@
 """A controllable entity with state transition dynamics"""
 
 import typing
+import typing_extensions
 import numpy as np
 import safe_autonomy_simulation.dynamics as dynamics
 import safe_autonomy_simulation.materials as materials
@@ -50,8 +51,8 @@ class Entity:
         dynamics: dynamics.Dynamics,
         control_queue: control_queue.ControlQueue,
         material: materials.Material,
-        parent: typing.Union[typing.Self, None] = None,
-        children: list[typing.Self] = [],
+        parent: typing.Union[typing_extensions.Self, None] = None,
+        children: list[typing_extensions.Self] = [],
     ):
         self.name = name
 
@@ -162,7 +163,7 @@ class Entity:
         """
         self.control_queue.add_control(control)
 
-    def _is_descendant(self, entity: typing.Self) -> bool:
+    def _is_descendant(self, entity: typing_extensions.Self) -> bool:
         """
         Check if descendant of entity
 
@@ -184,7 +185,7 @@ class Entity:
             return False
         return self.parent._is_descendant(entity)
 
-    def add_child(self, child: typing.Self):
+    def add_child(self, child: typing_extensions.Self):
         """
         Adds a child entity to the entity
 
@@ -202,7 +203,7 @@ class Entity:
         child._parent = self
         self._children.add(child)
 
-    def remove_child(self, child: typing.Self):
+    def remove_child(self, child: typing_extensions.Self):
         """
         Removes a child entity from the entity
 
@@ -252,7 +253,7 @@ class Entity:
         return self._last_control
 
     @property
-    def parent(self) -> typing.Union[typing.Self, None]:
+    def parent(self) -> typing.Union[typing_extensions.Self, None]:
         """
         Parent entity
 
@@ -264,7 +265,7 @@ class Entity:
         return self._parent
 
     @property
-    def children(self) -> sets.TypedSet[typing.Self]:
+    def children(self) -> sets.TypedSet[typing_extensions.Self]:
         """
         Set of child entities of the entity
 
