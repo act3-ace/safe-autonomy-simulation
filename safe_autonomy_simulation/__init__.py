@@ -1,4 +1,7 @@
-""" Root __init__ file for safe_autonomy_simulation package """
+"""
+The `safe-autonomy-sims` package contains various modules designed to help implement
+continuous simulations in python.
+"""
 
 from safe_autonomy_simulation import dynamics, entities, materials, controls, sims, utils
 from safe_autonomy_simulation.dynamics import Dynamics

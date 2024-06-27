@@ -92,8 +92,6 @@ class Camera(e.PhysicalEntity):
         ----------
         point: Point
             point to check for illumination
-        camera: Camera
-            camera entity inspecting the points
         light: PhysicalEntity
             light entity
         viewed_object: Entity

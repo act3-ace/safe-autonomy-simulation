@@ -43,24 +43,13 @@ pyinstrument = "^4.3.0"
 optional = true
 
 [tool.poetry.group.docs.dependencies]
-mkdocs = "^1.3.1"
-mkdocs-git-revision-date-localized-plugin = "^1.1.0"
-mkdocs-macros-plugin = "^1.0.0"
-mkdocs-material = "^9.0.0"
-mkdocs-material-extensions = "^1.0.3"
-mkdocs-mermaid-plugin = "^0.1.1"
-mkdocs-pdf-export-plugin = "^0.5.10"
-mktheapidocs = { extras = ["plugin"], version = "^0.3.1" }
-mkdocstrings = "0.24.0"
-mkdocs-autorefs = "^0.5.0"
-mkdocs-coverage = "^1.0.0"
+mkdocs = "^1.6.0"
+mkdocstrings = {extras = ["python"], version = "^0.25.1"}
+mkdocs-material = "^9.5.27"
 mkdocs-gen-files = "^0.5.0"
-mkdocs-literate-nav = "^0.6.0"
-mkdocs-section-index = "^0.3.4"
-mkdocs-with-pdf = "^0.9.3"
-papermill = "^2.4.0"
-Pillow = "^10.0.0"
-pymdown-extensions = "^9.5"
+mkdocs-autorefs = "^1.0.1"
+mkdocs-section-index = "^0.3.9"
+
 
 [tool.poetry.group.pipeline]
 optional = true

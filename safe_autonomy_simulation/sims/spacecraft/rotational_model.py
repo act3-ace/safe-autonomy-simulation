@@ -54,16 +54,12 @@ class CWHRotation2dSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-pub
     ----------
     name: str
         Name of spacecraft
-    x: float or pint.Quantity, optional
-        Initial absolute x position value, by default 0
-    y: float or pint.Quantity, optional
-        Initial absolute y position value, by default 0
+    position: np.ndarray, optional
+        Initial absolute position, by default np.zeros(2)
+    velocity: np.ndarray, optional
+        Initial absolulte velocity, by default np.zeros(2)
     theta: float or pint.Quantity, optional
         Initial absolute rotation angle value, by default 0
-    x_dot: float or pint.Quantity, optional
-        Initial absolute x velocity value, by default 0
-    y_dot: float or pint.Quantity, optional
-        Initial absolute y velocity value, by default 0
     wz: float or pint.Quantity, optional
         Initial absolute rotation rate value, by default 0
     m: float, optional

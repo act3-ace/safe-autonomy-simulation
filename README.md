@@ -16,9 +16,9 @@ safe-autonomy-simulation has features such as:
 
 The documentation for safe-autonomy-simulation is organized as follows:
 
-- **[Quick Start Guide](docs/quick-start-guide.md)**: provides documentation of prerequisites, downloading, installing, and configuring safe-autonomy-simulation.
+<!-- - **[Quick Start Guide](docs/quick-start-guide.md)**: provides documentation of prerequisites, downloading, installing, and configuring safe-autonomy-simulation. -->
 <!--Modify the description above, as needed, based on the product and what sections are actually in the doc -->
-- **[User Guide](docs/user-guide.md)**: provides a conceptual overview of safe-autonomy-simulation by explaining key concepts. This doc also helps users understand the benefits, usage, and best practices for working with safe-autonomy-simulation.
+<!-- - **[User Guide](docs/user-guide.md)**: provides a conceptual overview of safe-autonomy-simulation by explaining key concepts. This doc also helps users understand the benefits, usage, and best practices for working with safe-autonomy-simulation. -->
 
 ## ACE Hub Environment
 
@@ -36,15 +36,15 @@ Launch the latest development version of this library in an ACE Hub environment 
 
 > Alternative: **[VPN-only link][ace-hub-url-vpn-dev]**
 
-## How to Contribute
+<!-- ## How to Contribute
 
 <!-- - **[Developer Guide](docs/developer-guide.md)**: detailed guide for contributing to the safe-autonomy-simulation repository. -->
 
-## Support
+<!-- ## Support -->
 
-- **[Troubleshooting FAQ](docs/troubleshooting-faq.md)**: consult list of frequently asked questions and their answers.
-- **Mattermost channel(<!-- replace this with a URL and make link active -->)**: create a post in the safe-autonomy-simulation channel for assistance.
-- **Create a GitLab issue by email(<!-- replace this with a URL and make link active -->)**
+<!-- - **[Troubleshooting FAQ](docs/troubleshooting-faq.md)**: consult list of frequently asked questions and their answers. -->
+<!-- - **Mattermost channel(<!-- replace this with a URL and make link active -->)**: create a post in the safe-autonomy-simulation channel for assistance. -->
+<!-- - **Create a GitLab issue by email(replace this with a URL and make link active -->)** -->
 
 [ace-hub-url]: <https://hub.ace.act3.ai/environments/0?replicas=1&image=reg.git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation:latest&hubName=safe-autonomy-simulation&proxyType=normal&resources\[cpu\]=1&resources\[memory\]=1Gi&shm=64Mi>
 [ace-hub-url-vpn]: <https://hub.lion.act3-ace.ai/environments/0?replicas=1&image=reg.git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/cicd:latest&hubName=safe-autonomy-simulation&proxyType=normal&resources\[cpu\]=1&resources\[memory\]=1Gi&shm=64Mi>

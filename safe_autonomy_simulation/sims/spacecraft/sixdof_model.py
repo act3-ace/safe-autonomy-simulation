@@ -37,7 +37,7 @@ def number_list_to_np(
 
     Parameters
     ----------
-    input : float, int, list, np.ndarray
+    input_val : float, int, list, np.ndarray
         input to be converted to standardized np.ndarray
     shape : Tuple[int]
         shape of desired np.ndarray
@@ -251,8 +251,6 @@ class SixDOFDynamics(d.ControlAffineODEDynamics):
         Angular acceleration limit in rad/s^2. If array_like, applied to x, y, z elementwise, by default 0.017453
     ang_vel_limit: float, list, np.ndarray, optional
         Angular velocity limit in rad/s. If array_like, applied to x, y, z elementwise, by default 0.034907
-    thrust_control_limit: float, optional
-        Thrust control limit in N, by default 1.0
     n: float, optional
         Orbital mean motion of Hill's reference frame's circular orbit in rad/s, by default 0.001027
     body_frame_thrust: bool, optional
@@ -488,7 +486,7 @@ class SixDOFDynamics(d.ControlAffineODEDynamics):
             quaternion vector of form [x, y, z, w]
         q : np.ndarray
             quaternion vector of form [x, y, z, w]
-        
+
         Returns
         -------
         np.ndarray

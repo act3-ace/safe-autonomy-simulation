@@ -88,7 +88,7 @@ class MutableSet:
 
         Parameters
         ----------
-        Element : T
+        element : T
             Element to remove from set
         """
         assert element in self, f"Element {element} not found in set"
