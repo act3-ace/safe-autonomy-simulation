@@ -89,7 +89,7 @@ COPY pyproject.toml poetry.lock ./
 
 RUN --mount=type=secret,id=ACT3_SECRETS_POETRY,required=true,dst=/root/.config/pypoetry/auth.toml \
   poetry config virtualenvs.create false && \
-  poetry install --with docs,test,pipeline --no-root --no-cache
+  poetry install --with docs,lint,test,pipeline --no-root --no-cache
 
 WORKDIR /opt
 
@@ -117,4 +117,4 @@ COPY pyproject.toml poetry.lock ./
 
 RUN --mount=type=secret,id=ACT3_SECRETS_POETRY,required=true,dst=/root/.config/pypoetry/auth.toml \
   poetry config virtualenvs.create false && \
-  poetry install --with test,pipeline --no-root --no-cache
+  poetry install --with test,lint,pipeline --no-root --no-cache
