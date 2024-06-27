@@ -32,15 +32,9 @@ import safe_autonomy_simulation
                 safe_autonomy_simulation.sims.inspection.Target(
                     name="target",
                     position=np.array([1, 0, 0]),
-                    inspection_points=safe_autonomy_simulation.sims.inspection.InspectionPointSet(
-                        name="inspection_points",
-                        parent=safe_autonomy_simulation.entities.Point(
-                            name="parent", position=np.array([0, 0, 0])
-                        ),
-                        num_points=10,
-                        radius=1,
-                        priority_vector=np.array([1, 0, 0]),
-                    ),
+                    num_points=10,
+                    radius=1,
+                    priority_vector=np.array([1, 0, 0]),
                 )
             ],
         )
@@ -94,15 +88,9 @@ def test_init_default(
                 safe_autonomy_simulation.sims.inspection.Target(
                     name="target",
                     position=np.array([1, 0, 0]),
-                    inspection_points=safe_autonomy_simulation.sims.inspection.InspectionPointSet(
-                        name="inspection_points",
-                        parent=safe_autonomy_simulation.entities.Point(
-                            name="parent", position=np.array([0, 0, 0])
-                        ),
-                        num_points=10,
-                        radius=1,
-                        priority_vector=np.array([1, 0, 0]),
-                    ),
+                    num_points=10,
+                    radius=1,
+                    priority_vector=np.array([1, 0, 0]),
                 )
             ],
             safe_autonomy_simulation.sims.inspection.Sun(),
@@ -158,15 +146,9 @@ def test_init_args(frame_rate, inspectors, targets, sun, binary_ray):
                 safe_autonomy_simulation.sims.inspection.Target(
                     name="target",
                     position=np.array([1, 0, 0]),
-                    inspection_points=safe_autonomy_simulation.sims.inspection.InspectionPointSet(
-                        name="inspection_points",
-                        parent=safe_autonomy_simulation.entities.Point(
-                            name="parent", position=np.array([0, 0, 0])
-                        ),
-                        num_points=10,
-                        radius=1,
-                        priority_vector=np.array([1, 0, 0]),
-                    ),
+                    num_points=10,
+                    radius=1,
+                    priority_vector=np.array([1, 0, 0]),
                 )
             ],
             sun=safe_autonomy_simulation.sims.inspection.Sun(),
@@ -225,15 +207,9 @@ def test_reset(
                 safe_autonomy_simulation.sims.inspection.Target(
                     name="target",
                     position=np.array([1, 0, 0]),
-                    inspection_points=safe_autonomy_simulation.sims.inspection.InspectionPointSet(
-                        name="inspection_points",
-                        parent=safe_autonomy_simulation.entities.Point(
-                            name="parent", position=np.array([0, 0, 0])
-                        ),
-                        num_points=10,
-                        radius=1,
-                        priority_vector=np.array([1, 0, 0]),
-                    ),
+                    num_points=10,
+                    radius=1,
+                    priority_vector=np.array([1, 0, 0]),
                 )
             ],
             sun=safe_autonomy_simulation.sims.inspection.Sun(),
