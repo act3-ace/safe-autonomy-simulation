@@ -1,3 +1,5 @@
+# Home
+
 This site contains the project documentation for the
 `safe-autonomy-simulation` project.
 Its aim is to give you a framework to build
