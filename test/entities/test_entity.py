@@ -12,7 +12,9 @@ class TestEntity(safe_autonomy_simulation.Entity):
         self,
         name,
         dynamics=TestDynamics(),
-        control_queue=safe_autonomy_simulation.ControlQueue(default_control=np.array([1])),
+        control_queue=safe_autonomy_simulation.ControlQueue(
+            default_control=np.array([1])
+        ),
         material=safe_autonomy_simulation.materials.BLACK,
         parent=None,
         children=[],
@@ -92,7 +94,7 @@ def test__pre_step():
         assert np.all(child.state == np.array([0]))
         assert child.last_control is None
         assert np.all(child.state_dot == np.zeros_like(child.state))
-        assert child.control_queue.empty() 
+        assert child.control_queue.empty()
 
 
 def test__post_step():
@@ -108,7 +110,7 @@ def test__post_step():
         assert np.all(child.state == np.array([0]))
         assert child.last_control is None
         assert np.all(child.state_dot == np.zeros_like(child.state))
-        assert child.control_queue.empty() 
+        assert child.control_queue.empty()
 
 
 def test_step():

@@ -101,9 +101,7 @@ class ControlQueue:
         ):  # pylint: disable=used-before-assignment
             control = control.copy()
         else:
-            raise ValueError(
-                "control must be type list, np.ndarray or jnp.ndarray"
-            )
+            raise ValueError("control must be type list, np.ndarray or jnp.ndarray")
 
         # enforce control bounds (if any)
         if (self.control_min or self.control_max) and (

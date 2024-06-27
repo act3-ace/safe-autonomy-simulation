@@ -74,14 +74,11 @@ class ODEDynamics(d.Dynamics):
             use_jax=use_jax,
         )
 
-        assert (
-            integration_method
-            in [
-                "RK45",
-                "RK45_JAX",
-                "Euler",
-            ]
-        ), f"invalid integration method {integration_method}, must be one of 'RK45', 'RK45_JAX', 'Euler'"
+        assert integration_method in [
+            "RK45",
+            "RK45_JAX",
+            "Euler",
+        ], f"invalid integration method {integration_method}, must be one of 'RK45', 'RK45_JAX', 'Euler'"
         self.integration_method = integration_method
         self.state_dot_min = state_dot_min
         self.state_dot_max = state_dot_max
@@ -397,12 +394,8 @@ class LinearODEDynamics(ControlAffineODEDynamics):
             use_jax=use_jax,
         )
 
-        assert (
-            len(A.shape) == 2
-        ), f"A must be a 2D matrix. Instead got shape {A.shape}"
-        assert (
-            len(B.shape) == 2
-        ), f"B must be a 2D matrix. Instead got shape {B.shape}"
+        assert len(A.shape) == 2, f"A must be a 2D matrix. Instead got shape {A.shape}"
+        assert len(B.shape) == 2, f"B must be a 2D matrix. Instead got shape {B.shape}"
         assert (
             A.shape[0] == A.shape[1]
         ), f"A must be a square matrix, not shape {A.shape}"

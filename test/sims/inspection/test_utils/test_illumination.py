@@ -26,7 +26,12 @@ import safe_autonomy_simulation
     ],
 )
 def test_illumination(point, light, radius, expected):
-    assert safe_autonomy_simulation.sims.inspection.utils.illumination.is_illuminated(point, light, radius) == expected
+    assert (
+        safe_autonomy_simulation.sims.inspection.utils.illumination.is_illuminated(
+            point, light, radius
+        )
+        == expected
+    )
 
 
 @pytest.mark.parametrize(
@@ -60,5 +65,8 @@ def test_illumination(point, light, radius, expected):
 )
 def test_illumination_rgb(rgb, rgb_min, rgb_max, expected):
     assert (
-        safe_autonomy_simulation.sims.inspection.utils.illumination.is_illuminated_rgb(rgb, rgb_min, rgb_max) == expected
+        safe_autonomy_simulation.sims.inspection.utils.illumination.is_illuminated_rgb(
+            rgb, rgb_min, rgb_max
+        )
+        == expected
     )

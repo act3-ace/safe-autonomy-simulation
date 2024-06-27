@@ -338,9 +338,7 @@ class TypedSet(typing.Generic[T], MutableSet):
             New set with elements in this set but not in the other set
         """
         if not other.type == self.type:
-            raise TypeError(
-                f"Cannot take difference with set of type {other.type}"
-            )
+            raise TypeError(f"Cannot take difference with set of type {other.type}")
         return TypedSet[self.type](
             type=self.type,
             elements=[element for element in self if element not in other],
@@ -360,9 +358,7 @@ class TypedSet(typing.Generic[T], MutableSet):
             New set with elements common to both sets
         """
         if not other.type == self.type:
-            raise TypeError(
-                f"Cannot take intersection with set of type {other.type}"
-            )
+            raise TypeError(f"Cannot take intersection with set of type {other.type}")
         return TypedSet[self.type](
             type=self.type, elements=[element for element in self if element in other]
         )
@@ -376,9 +372,7 @@ class TypedSet(typing.Generic[T], MutableSet):
             Set to take the intersection with
         """
         if not other.type == self.type:
-            raise TypeError(
-                f"Cannot take intersection with set of type {other.type}"
-            )
+            raise TypeError(f"Cannot take intersection with set of type {other.type}")
         self._set = {id(element): element for element in self if element in other}
 
     def union(self, other: typing.Self) -> typing.Self:
@@ -419,9 +413,7 @@ class TypedSet(typing.Generic[T], MutableSet):
             Set of elements to remove from this set
         """
         if not other.type == self.type:
-            raise TypeError(
-                f"Cannot take difference with set of type {other.type}"
-            )
+            raise TypeError(f"Cannot take difference with set of type {other.type}")
         self._set = {id(element): element for element in self if element not in other}
 
     def symmetric_difference(self, other: typing.Self) -> typing.Self:

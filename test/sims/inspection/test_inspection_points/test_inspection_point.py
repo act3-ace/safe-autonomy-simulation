@@ -101,7 +101,7 @@ def test_state():
         (np.array([1, 0, 0, 0, 0, 0, 1, 0]), np.array([1, 0, 0, 0, 0, 0, 1, 0])),
         (np.array([0, 1, 0, 0, 0, 0, 1, 0]), np.array([0, 1, 0, 0, 0, 0, 1, 0])),
         (np.array([0, 0, 1, 0, 0, 0, 1, 0]), np.array([0, 0, 1, 0, 0, 0, 1, 0])),
-    ]
+    ],
 )
 def test_set_state(new_state, expected):
     inspection_point = safe_autonomy_simulation.sims.inspection.InspectionPoint(

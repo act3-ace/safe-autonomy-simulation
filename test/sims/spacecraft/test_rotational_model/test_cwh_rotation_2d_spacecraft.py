@@ -45,7 +45,9 @@ def test_init_default():
         spacecraft.inertia_wheel
         == safe_autonomy_simulation.sims.spacecraft.defaults.INERTIA_WHEEL_DEFAULT
     )
-    assert isinstance(spacecraft.control_queue, safe_autonomy_simulation.controls.ControlQueue)
+    assert isinstance(
+        spacecraft.control_queue, safe_autonomy_simulation.controls.ControlQueue
+    )
     assert np.all(spacecraft.control_queue.default_control == np.zeros(3))
     assert np.all(
         spacecraft.control_queue.control_min
@@ -195,7 +197,9 @@ def test_init_args(
     assert spacecraft.acc_limit_wheel == acc_limit_wheel
     assert spacecraft.vel_limit_wheel == vel_limit_wheel
     assert spacecraft.inertia_wheel == inertia_wheel
-    assert isinstance(spacecraft.control_queue, safe_autonomy_simulation.controls.ControlQueue)
+    assert isinstance(
+        spacecraft.control_queue, safe_autonomy_simulation.controls.ControlQueue
+    )
     assert np.all(spacecraft.control_queue.default_control == np.zeros(3))
     assert np.all(
         spacecraft.control_queue.control_min

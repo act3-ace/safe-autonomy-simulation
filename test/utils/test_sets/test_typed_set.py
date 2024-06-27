@@ -74,7 +74,9 @@ def test_difference():
 
 def test_difference_wrong_type():
     typed_set1 = safe_autonomy_simulation.utils.TypedSet(type=int, elements=[1, 2, 3])
-    typed_set2 = safe_autonomy_simulation.utils.TypedSet(type=str, elements=["a", "b", "c"])
+    typed_set2 = safe_autonomy_simulation.utils.TypedSet(
+        type=str, elements=["a", "b", "c"]
+    )
     with pytest.raises(TypeError):
         typed_set1.difference(typed_set2)
 
@@ -92,7 +94,9 @@ def test_intersection():
 
 def test_intersection_wrong_type():
     typed_set1 = safe_autonomy_simulation.utils.TypedSet(type=int, elements=[1, 2, 3])
-    typed_set2 = safe_autonomy_simulation.utils.TypedSet(type=str, elements=["a", "b", "c"])
+    typed_set2 = safe_autonomy_simulation.utils.TypedSet(
+        type=str, elements=["a", "b", "c"]
+    )
     with pytest.raises(TypeError):
         typed_set1.intersection(typed_set2)
 
@@ -110,7 +114,9 @@ def test_intersection_update():
 
 def test_intersection_update_wrong_type():
     typed_set1 = safe_autonomy_simulation.utils.TypedSet(type=int, elements=[1, 2, 3])
-    typed_set2 = safe_autonomy_simulation.utils.TypedSet(type=str, elements=["a", "b", "c"])
+    typed_set2 = safe_autonomy_simulation.utils.TypedSet(
+        type=str, elements=["a", "b", "c"]
+    )
     with pytest.raises(TypeError):
         typed_set1.intersection_update(typed_set2)
 
@@ -129,7 +135,9 @@ def test_union():
 
 def test_union_wrong_type():
     typed_set1 = safe_autonomy_simulation.utils.TypedSet(type=int, elements=[1, 2, 3])
-    typed_set2 = safe_autonomy_simulation.utils.TypedSet(type=str, elements=["a", "b", "c"])
+    typed_set2 = safe_autonomy_simulation.utils.TypedSet(
+        type=str, elements=["a", "b", "c"]
+    )
     with pytest.raises(TypeError):
         typed_set1.union(typed_set2)
 
@@ -147,7 +155,9 @@ def test_update():
 
 def test_update_wrong_type():
     typed_set1 = safe_autonomy_simulation.utils.TypedSet(type=int, elements=[1, 2, 3])
-    typed_set2 = safe_autonomy_simulation.utils.TypedSet(type=str, elements=["a", "b", "c"])
+    typed_set2 = safe_autonomy_simulation.utils.TypedSet(
+        type=str, elements=["a", "b", "c"]
+    )
     with pytest.raises(TypeError):
         typed_set1.update(typed_set2)
 
@@ -165,7 +175,9 @@ def test_difference_update():
 
 def test_difference_update_wrong_type():
     typed_set1 = safe_autonomy_simulation.utils.TypedSet(type=int, elements=[1, 2, 3])
-    typed_set2 = safe_autonomy_simulation.utils.TypedSet(type=str, elements=["a", "b", "c"])
+    typed_set2 = safe_autonomy_simulation.utils.TypedSet(
+        type=str, elements=["a", "b", "c"]
+    )
     with pytest.raises(TypeError):
         typed_set1.difference_update(typed_set2)
 
@@ -184,7 +196,9 @@ def test_symmetric_difference():
 
 def test_symmetric_difference_wrong_type():
     typed_set1 = safe_autonomy_simulation.utils.TypedSet(type=int, elements=[1, 2, 3])
-    typed_set2 = safe_autonomy_simulation.utils.TypedSet(type=str, elements=["a", "b", "c"])
+    typed_set2 = safe_autonomy_simulation.utils.TypedSet(
+        type=str, elements=["a", "b", "c"]
+    )
     with pytest.raises(TypeError):
         typed_set1.symmetric_difference(typed_set2)
 
@@ -202,7 +216,9 @@ def test_symmetric_difference_update():
 
 def test_symmetric_difference_update_wrong_type():
     typed_set1 = safe_autonomy_simulation.utils.TypedSet(type=int, elements=[1, 2, 3])
-    typed_set2 = safe_autonomy_simulation.utils.TypedSet(type=str, elements=["a", "b", "c"])
+    typed_set2 = safe_autonomy_simulation.utils.TypedSet(
+        type=str, elements=["a", "b", "c"]
+    )
     with pytest.raises(TypeError):
         typed_set1.symmetric_difference_update(typed_set2)
 
@@ -241,6 +257,8 @@ def test_isdisjoint():
 
 def test_isdisjoint_wrong_type():
     typed_set1 = safe_autonomy_simulation.utils.TypedSet(type=int, elements=[1, 2, 3])
-    typed_set2 = safe_autonomy_simulation.utils.TypedSet(type=str, elements=["a", "b", "c"])
+    typed_set2 = safe_autonomy_simulation.utils.TypedSet(
+        type=str, elements=["a", "b", "c"]
+    )
     with pytest.raises(TypeError):
         typed_set1.isdisjoint(typed_set2)

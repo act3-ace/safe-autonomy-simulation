@@ -14,7 +14,7 @@ class Simulator:
     Each entity is responsible for updating its own state vector.
     2. The simulation state is updated based on the new entity state vectors via the update() method.
     During this stage entity *state vectors* can be read but **not modified**. Entity object *attributes*
-    can be modified during this stage. A common use case for the update() method is to handle entity interactions. 
+    can be modified during this stage. A common use case for the update() method is to handle entity interactions.
 
     Parameters
     ----------
@@ -27,7 +27,9 @@ class Simulator:
     def __init__(self, frame_rate: float, entities: list[e.Entity]):
         assert frame_rate > 0, "Frame rate must be greater than 0"
         for entity in entities:
-            assert entity.parent is None, "Entities must be top-level entities with no parent"
+            assert (
+                entity.parent is None
+            ), "Entities must be top-level entities with no parent"
         self._frame_rate = frame_rate
         self._sim_time = 0
         self._entities = utils.TypedSet(type=e.Entity, elements=entities)

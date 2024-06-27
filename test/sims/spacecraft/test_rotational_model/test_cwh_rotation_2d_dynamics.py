@@ -6,7 +6,9 @@ import safe_autonomy_simulation.sims.spacecraft.rotational_model
 
 
 def test_init_default():
-    dynamics = safe_autonomy_simulation.sims.spacecraft.rotational_model.CWHRotation2dDynamics()
+    dynamics = (
+        safe_autonomy_simulation.sims.spacecraft.rotational_model.CWHRotation2dDynamics()
+    )
     assert dynamics.m == safe_autonomy_simulation.sims.spacecraft.defaults.M_DEFAULT
     assert dynamics.n == safe_autonomy_simulation.sims.spacecraft.defaults.N_DEFAULT
     assert (
@@ -213,7 +215,9 @@ def test_init_args(
     ],
 )
 def test_state_transition_system(state):
-    dynamics = safe_autonomy_simulation.sims.spacecraft.rotational_model.CWHRotation2dDynamics()
+    dynamics = (
+        safe_autonomy_simulation.sims.spacecraft.rotational_model.CWHRotation2dDynamics()
+    )
     state_dot = dynamics.state_transition_system(state)
     assert state_dot.shape == (6,)
     x, y, xdot, ydot, theta, wz = state
@@ -242,7 +246,9 @@ def test_state_transition_system(state):
     ],
 )
 def test_state_transition_input(state):
-    dynamics = safe_autonomy_simulation.sims.spacecraft.rotational_model.CWHRotation2dDynamics()
+    dynamics = (
+        safe_autonomy_simulation.sims.spacecraft.rotational_model.CWHRotation2dDynamics()
+    )
     st_input = dynamics.state_transition_input(state)
     x, y, xdot, ydot, theta, wz = state
     expected_st_input = np.array(

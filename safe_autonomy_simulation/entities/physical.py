@@ -116,17 +116,19 @@ class PhysicalEntity(e.Entity):
         assert velocity.shape == (
             3,
         ), f"Velocity must be a 3D vector of shape (3,), got shape {velocity.shape}"
-        assert (
-            orientation.shape == (4,)
+        assert orientation.shape == (
+            4,
         ), f"Orientation must be a quaternion of shape (4,), got shape {orientation.shape}"
-        assert (
-            angular_velocity.shape == (3,)
+        assert angular_velocity.shape == (
+            3,
         ), f"Angular velocity must be a 3D vector of shape (3,), got shape {angular_velocity.shape}"
 
         self._initial_position = position
         self._initial_velocity = velocity
         self._initial_orientation = orientation
-        self._initial_angular_velocity = angular_velocity % (2 * np.pi)  # wrap angles to [0, 2 * pi]
+        self._initial_angular_velocity = angular_velocity % (
+            2 * np.pi
+        )  # wrap angles to [0, 2 * pi]
         super().__init__(
             name=name,
             dynamics=dynamics,
@@ -168,7 +170,7 @@ class PhysicalEntity(e.Entity):
             state vector of the entity
         """
         return self._state
-    
+
     @state.setter
     def state(self, state: np.ndarray):
         """Set state of the entity
@@ -178,7 +180,9 @@ class PhysicalEntity(e.Entity):
         state : np.ndarray
             state vector of the entity
         """
-        assert state.shape == self.state.shape, f"State shape must match {self.state.shape}, got {state.shape}"
+        assert (
+            state.shape == self.state.shape
+        ), f"State shape must match {self.state.shape}, got {state.shape}"
         state = state.astype(self._state.dtype)
         state[10:] = state[10:] % (2 * np.pi)  # wrap angles to [0, 2 * pi]
         self._state = state

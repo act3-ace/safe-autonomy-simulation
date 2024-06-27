@@ -10,7 +10,11 @@ defines the interface for all dynamics models in the simulation.
 
 from safe_autonomy_simulation.dynamics.dynamics import Dynamics
 from safe_autonomy_simulation.dynamics.passthrough import PassThroughDynamics
-from safe_autonomy_simulation.dynamics.ode import ODEDynamics, ControlAffineODEDynamics, LinearODEDynamics
+from safe_autonomy_simulation.dynamics.ode import (
+    ODEDynamics,
+    ControlAffineODEDynamics,
+    LinearODEDynamics,
+)
 
 __all__ = [
     "Dynamics",  # base dynamics model

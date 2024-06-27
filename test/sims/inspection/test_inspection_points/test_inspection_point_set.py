@@ -477,10 +477,9 @@ def test_get_percentage_of_points_inspected_inspector(camera, sun, binary_ray):
     percentage_of_points_inspected = point_set.get_percentage_of_points_inspected(
         inspector_entity=camera
     )
-    expected_percentage_of_points_inspected = (
-        point_set.get_num_points_inspected(inspector_entity=camera)
-        / len(point_set.points)
-    )
+    expected_percentage_of_points_inspected = point_set.get_num_points_inspected(
+        inspector_entity=camera
+    ) / len(point_set.points)
     assert percentage_of_points_inspected == expected_percentage_of_points_inspected
 
 
@@ -565,7 +564,9 @@ def get_total_weight_inspected_inspector(camera, sun, binary_ray):
         priority_vector=np.array([1, 0, 0]),
     )
     point_set.update_points_inspection_status(camera, sun, binary_ray)
-    total_weight_inspected = point_set.get_total_weight_inspected(inspector_entity=camera)
+    total_weight_inspected = point_set.get_total_weight_inspected(
+        inspector_entity=camera
+    )
     expected_total_weight_inspected = sum(
         [
             p.weight

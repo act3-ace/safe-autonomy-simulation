@@ -231,9 +231,9 @@ class InspectionPointSet(e.Entity):
         control_queue: c.ControlQueue = c.NoControl(),
         material: m.Material = m.BLACK,
     ):
-        self._points: typing.Dict[
-            int, InspectionPoint
-        ] = {}  # initialize points as empty for correct parent assignment
+        self._points: typing.Dict[int, InspectionPoint] = (
+            {}
+        )  # initialize points as empty for correct parent assignment
         super().__init__(
             name=name,
             parent=parent,
@@ -277,9 +277,10 @@ class InspectionPointSet(e.Entity):
         typing.Dict[int, Point]
             dictionary of {point_id: Point}
         """
-        assert (
-            points_algorithm in ["cmu", "fibonacci"]
-        ), f"Invalid points algorithm {points_algorithm}. Must be one of 'cmu' or 'fibonacci'"
+        assert points_algorithm in [
+            "cmu",
+            "fibonacci",
+        ], f"Invalid points algorithm {points_algorithm}. Must be one of 'cmu' or 'fibonacci'"
 
         if points_algorithm == "cmu":
             points_alg = sphere.points_on_sphere_cmu

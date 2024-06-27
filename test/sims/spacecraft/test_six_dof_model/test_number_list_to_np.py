@@ -13,5 +13,7 @@ import safe_autonomy_simulation.sims.spacecraft.sixdof_model
     ],
 )
 def test_number_list_to_np(input_val, shape, dtype, expected_output):
-    output = safe_autonomy_simulation.sims.spacecraft.sixdof_model.number_list_to_np(input_val, shape, dtype)
+    output = safe_autonomy_simulation.sims.spacecraft.sixdof_model.number_list_to_np(
+        input_val, shape, dtype
+    )
     assert np.all(output == expected_output)

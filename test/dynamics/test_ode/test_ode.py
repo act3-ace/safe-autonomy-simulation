@@ -220,16 +220,32 @@ def test__clip_state_dot_direct(state_dot, min, max, expected):
 @pytest.mark.parametrize(
     "state, state_dot, state_min, state_max, expected",
     [
-        (np.array([1, 2, 3]), np.array([1, 2, 3]), -np.inf, np.inf, np.array([1, 2, 3])),
+        (
+            np.array([1, 2, 3]),
+            np.array([1, 2, 3]),
+            -np.inf,
+            np.inf,
+            np.array([1, 2, 3]),
+        ),
         (np.array([1, 2, 3]), np.array([1, 2, 3]), -np.inf, 2, np.array([1, 0, 0])),
         (np.array([1, 2, 3]), np.array([1, 2, 3]), -np.inf, 1, np.array([0, 0, 0])),
         (np.array([1, 2, 3]), np.array([1, 2, 3]), 0, np.inf, np.array([1, 2, 3])),
         (np.array([1, 2, 3]), np.array([1, 2, 3]), 2, np.inf, np.array([1, 2, 3])),
         (np.array([1, 2, 3]), np.array([1, 2, 3]), 3, np.inf, np.array([1, 2, 3])),
-        (np.array([1, 2, 3]), np.array([-1, 2, -3]), np.array([3, 2, 1]), np.array([4, 3, 2]), np.array([0, 2, -3])),
-    ]
+        (
+            np.array([1, 2, 3]),
+            np.array([-1, 2, -3]),
+            np.array([3, 2, 1]),
+            np.array([4, 3, 2]),
+            np.array([0, 2, -3]),
+        ),
+    ],
 )
-def test__clip_state_dot_by_state_limits(state, state_dot, state_min, state_max, expected):
-    ode = safe_autonomy_simulation.dynamics.ODEDynamics(state_min=state_min, state_max=state_max)
+def test__clip_state_dot_by_state_limits(
+    state, state_dot, state_min, state_max, expected
+):
+    ode = safe_autonomy_simulation.dynamics.ODEDynamics(
+        state_min=state_min, state_max=state_max
+    )
     clipped = ode._clip_state_dot_by_state_limits(state, state_dot)
     assert np.all(clipped == expected)

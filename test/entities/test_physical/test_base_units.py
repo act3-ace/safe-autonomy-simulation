@@ -4,8 +4,15 @@ import safe_autonomy_simulation
 import safe_autonomy_simulation.entities.physical
 
 
-STR_UNIT_GROUPS = [(d, t, a) for d in ["m", "km", "ft", "mi"] for t in ["s", "min", "hr"] for a in ["rad", "deg", "cycle"]]
-PINT_UNIT_GROUPS = [(pint.Unit(d), pint.Unit(t), pint.Unit(a)) for d, t, a in STR_UNIT_GROUPS]
+STR_UNIT_GROUPS = [
+    (d, t, a)
+    for d in ["m", "km", "ft", "mi"]
+    for t in ["s", "min", "hr"]
+    for a in ["rad", "deg", "cycle"]
+]
+PINT_UNIT_GROUPS = [
+    (pint.Unit(d), pint.Unit(t), pint.Unit(a)) for d, t, a in STR_UNIT_GROUPS
+]
 UNIT_GROUPS = STR_UNIT_GROUPS + PINT_UNIT_GROUPS
 
 

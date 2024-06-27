@@ -11,5 +11,5 @@ from safe_autonomy_simulation.controls.no_control import NoControl
 
 __all__ = [
     "ControlQueue",  # base control queue
-    "NoControl", # control queue with an empty default control vector
+    "NoControl",  # control queue with an empty default control vector
 ]

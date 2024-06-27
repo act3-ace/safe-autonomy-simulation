@@ -153,8 +153,9 @@ class SixDOFSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-public-met
         inertia_wheel: float | np.ndarray = defaults.INERTIA_WHEEL_DEFAULT,
         acc_limit_wheel: float | np.ndarray = defaults.ACC_LIMIT_WHEEL_DEFAULT,
         vel_limit_wheel: float | np.ndarray = defaults.VEL_LIMIT_WHEEL_DEFAULT,
-        thrust_control_limit: float
-        | np.ndarray = defaults.THRUST_CONTROL_LIMIT_DEFAULT,
+        thrust_control_limit: (
+            float | np.ndarray
+        ) = defaults.THRUST_CONTROL_LIMIT_DEFAULT,
         body_frame_thrust: bool = True,
         n: float = defaults.N_DEFAULT,
         trajectory_samples: int = 0,

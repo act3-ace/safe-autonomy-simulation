@@ -22,16 +22,16 @@ def test_init_default(name, num_points, radius):
     assert target.inspection_points.radius == radius
     assert len(target.children) == 1
     for child in target.children:
-        assert isinstance(child, safe_autonomy_simulation.sims.inspection.InspectionPointSet)
+        assert isinstance(
+            child, safe_autonomy_simulation.sims.inspection.InspectionPointSet
+        )
     assert np.all(target.position == np.zeros(3))
     assert np.all(target.velocity == np.zeros(3))
     assert (
-        target.dynamics.m
-        == safe_autonomy_simulation.sims.spacecraft.defaults.M_DEFAULT
+        target.dynamics.m == safe_autonomy_simulation.sims.spacecraft.defaults.M_DEFAULT
     )
     assert (
-        target.dynamics.n
-        == safe_autonomy_simulation.sims.spacecraft.defaults.N_DEFAULT
+        target.dynamics.n == safe_autonomy_simulation.sims.spacecraft.defaults.N_DEFAULT
     )
     assert target.dynamics.trajectory_samples == 0
     assert target.dynamics.integration_method == "RK45"
@@ -93,7 +93,9 @@ def test_init_args(
     assert target.inspection_points.radius == radius
     assert len(target.children) == 1
     for child in target.children:
-        assert isinstance(child, safe_autonomy_simulation.sims.inspection.InspectionPointSet)
+        assert isinstance(
+            child, safe_autonomy_simulation.sims.inspection.InspectionPointSet
+        )
     assert np.all(target.position == position)
     assert np.all(target.velocity == velocity)
     assert target.dynamics.m == m

@@ -27,7 +27,9 @@ import safe_autonomy_simulation.controls as c
 import safe_autonomy_simulation.sims.spacecraft.defaults as defaults
 
 
-class CWHRotation2dSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-public-methods
+class CWHRotation2dSpacecraft(
+    e.PhysicalEntity
+):  # pylint: disable=too-many-public-methods
     """
     Spacecraft with 2D translational Clohessy-Wiltshire dynamics in Hill's reference frame.
     In-plane motion (x,y) using +/- x thruster rotated to desired direction
@@ -112,7 +114,7 @@ class CWHRotation2dSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-pub
         use_jax: bool = False,
         material: mat.Material = defaults.CWH_MATERIAL,
         parent: typing.Union[e.PhysicalEntity, None] = None,
-        children: list[e.PhysicalEntity] = []
+        children: list[e.PhysicalEntity] = [],
     ):
         assert position.shape == (2,), f"Position must be 2D. Instead got {position}"
         assert velocity.shape == (2,), f"Velocity must be 2D. Instead got {velocity}"
@@ -195,7 +197,9 @@ class CWHRotation2dSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-pub
         np.ndarray
             state vector of form [x, y, x_dot, y_dot, theta, wz]
         """
-        return np.concatenate([self.position[:2], self.velocity[:2], [self.theta], [self.wz]])
+        return np.concatenate(
+            [self.position[:2], self.velocity[:2], [self.theta], [self.wz]]
+        )
 
     @state.setter
     def state(self, state: np.ndarray):
@@ -212,7 +216,9 @@ class CWHRotation2dSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-pub
         # Internal state is [x, y, z, x_dot, y_dot, z_dot, q0, q1, q2, q3, wx, wy, wz]
         self._state[0:2] = state[0:2]
         self._state[3:4] = state[2:4]
-        self._state[6:10] = transform.Rotation.from_euler("ZYX", [state[4], 0, 0]).as_quat()
+        self._state[6:10] = transform.Rotation.from_euler(
+            "ZYX", [state[4], 0, 0]
+        ).as_quat()
         self._state[12] = state[5]
 
 

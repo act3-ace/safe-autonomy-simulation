@@ -143,7 +143,9 @@ def test_init_args(
     assert np.all(spacecraft.angular_velocity == angular_velocity % (2 * np.pi))
     assert np.all(
         spacecraft.state
-        == np.concatenate((position, velocity, orientation, angular_velocity % (2 * np.pi)))
+        == np.concatenate(
+            (position, velocity, orientation, angular_velocity % (2 * np.pi))
+        )
     )
     assert spacecraft.dynamics.m == m
     assert np.all(spacecraft.dynamics.inertia_matrix == inertia_matrix)
@@ -172,14 +174,8 @@ def test_init_args(
         spacecraft.control_queue, safe_autonomy_simulation.controls.ControlQueue
     )
     assert np.all(spacecraft.control_queue.default_control == np.zeros(6))
-    assert np.all(
-        spacecraft.control_queue.control_min
-        == -expected_control_limit
-    )
-    assert np.all(
-        spacecraft.control_queue.control_max
-        == expected_control_limit
-    )
+    assert np.all(spacecraft.control_queue.control_min == -expected_control_limit)
+    assert np.all(spacecraft.control_queue.control_max == expected_control_limit)
 
 
 @pytest.mark.parametrize(

@@ -2,7 +2,9 @@
 
 from safe_autonomy_simulation.sims.spacecraft.point_model import CWHSpacecraft
 from safe_autonomy_simulation.sims.spacecraft.sixdof_model import SixDOFSpacecraft
-from safe_autonomy_simulation.sims.spacecraft.rotational_model import CWHRotation2dSpacecraft
+from safe_autonomy_simulation.sims.spacecraft.rotational_model import (
+    CWHRotation2dSpacecraft,
+)
 
 
 __all__ = [

@@ -33,7 +33,9 @@ class InspectionSimulator(sim.Simulator):
     def __init__(
         self,
         frame_rate: float,
-        inspectors: typing.Union[typing.List[i.Inspector], typing.List[i.SixDOFInspector]],
+        inspectors: typing.Union[
+            typing.List[i.Inspector], typing.List[i.SixDOFInspector]
+        ],
         targets: typing.Union[typing.List[t.Target], typing.List[t.SixDOFTarget]],
         sun: typing.Union[sun.Sun, None] = None,
         binary_ray: bool = False,
@@ -79,7 +81,9 @@ class InspectionSimulator(sim.Simulator):
         return self._inspectors
 
     @property
-    def targets(self) -> typing.Union[typing.List[t.Target], typing.List[t.SixDOFTarget]]:
+    def targets(
+        self,
+    ) -> typing.Union[typing.List[t.Target], typing.List[t.SixDOFTarget]]:
         """List of inspection targets
 
         Returns
