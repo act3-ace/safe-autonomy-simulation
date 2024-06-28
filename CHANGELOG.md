@@ -1,3 +1,10 @@
+## [2.0.1](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v2.0.0...v2.0.1) (2024-06-28)
+
+
+### Bug Fixes
+
+* **deps:** allow backward compatibility with older python versions ([2f4ed6d](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/commit/2f4ed6d298df503a0c616e8634cff4fefb246663)), closes [#23](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/issues/23)
+
 # [2.0.0](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v1.3.0...v2.0.0) (2024-06-27)
 
 
