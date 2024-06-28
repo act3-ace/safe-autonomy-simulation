@@ -1,3 +1,10 @@
+## [2.0.2](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v2.0.1...v2.0.2) (2024-06-28)
+
+
+### Bug Fixes
+
+* **deps:** use typing-extensions ([502ad98](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/commit/502ad98aa53efd15a52438c124f2c922d0e554ba))
+
 ## [2.0.1](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v2.0.0...v2.0.1) (2024-06-28)
 
 
