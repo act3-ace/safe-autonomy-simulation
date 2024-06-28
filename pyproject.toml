@@ -19,7 +19,7 @@ classifiers = [
 packages = [{ include = "safe_autonomy_simulation" }]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.11"
 numpy = "^1.23.5"
 pint = "^0.23"
 scipy = "^1.13.0"
