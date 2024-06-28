@@ -1,5 +1,4 @@
 import typing
-import typing_extensions
 
 
 T = typing.TypeVar("T")
@@ -38,40 +37,40 @@ class MutableSet:
     def __ne__(self, other: typing.Any) -> bool:
         return not self == other
 
-    def __or__(self, other: typing_extensions.Self) -> typing_extensions.Self:
+    def __or__(self, other: typing.Self) -> typing.Self:
         return self.union(other)
 
-    def __and__(self, other: typing_extensions.Self) -> typing_extensions.Self:
+    def __and__(self, other: typing.Self) -> typing.Self:
         return self.intersection(other)
 
-    def __sub__(self, other: typing_extensions.Self) -> typing_extensions.Self:
+    def __sub__(self, other: typing.Self) -> typing.Self:
         return self.difference(other)
 
-    def __xor__(self, other: typing_extensions.Self) -> typing_extensions.Self:
+    def __xor__(self, other: typing.Self) -> typing.Self:
         return self.symmetric_difference(other)
 
-    def __ior__(self, other: typing_extensions.Self):
+    def __ior__(self, other: typing.Self):
         self.update(other)
 
-    def __iand__(self, other: typing_extensions.Self):
+    def __iand__(self, other: typing.Self):
         self.intersection_update(other)
 
-    def __isub__(self, other: typing_extensions.Self):
+    def __isub__(self, other: typing.Self):
         self.difference_update(other)
 
-    def __ixor__(self, other: typing_extensions.Self):
+    def __ixor__(self, other: typing.Self):
         self.symmetric_difference_update(other)
 
-    def __ge__(self, other: typing_extensions.Self) -> bool:
+    def __ge__(self, other: typing.Self) -> bool:
         return self.issuperset(other)
 
-    def __gt__(self, other: typing_extensions.Self) -> bool:
+    def __gt__(self, other: typing.Self) -> bool:
         return self.issuperset(other) and self != other
 
-    def __le__(self, other: typing_extensions.Self) -> bool:
+    def __le__(self, other: typing.Self) -> bool:
         return self.issubset(other)
 
-    def __lt__(self, other: typing_extensions.Self) -> bool:
+    def __lt__(self, other: typing.Self) -> bool:
         return self.issubset(other) and self != other
 
     def add(self, element):
@@ -99,7 +98,7 @@ class MutableSet:
         """Remove all elements from the set"""
         self._set.clear()
 
-    def copy(self) -> typing_extensions.Self:
+    def copy(self) -> typing.Self:
         """Return a shallow copy of the set
 
         Returns
@@ -119,7 +118,7 @@ class MutableSet:
         """
         return self._set.popitem()[1]
 
-    def difference(self, other: typing_extensions.Self) -> typing_extensions.Self:
+    def difference(self, other: typing.Self) -> typing.Self:
         """Return the difference of two sets as a new set
 
         Parameters
@@ -136,7 +135,7 @@ class MutableSet:
             elements=[element for element in self if element not in other]
         )
 
-    def difference_update(self, other: typing_extensions.Self):
+    def difference_update(self, other: typing.Self):
         """Remove all elements of another set from this set
 
         Parameters
@@ -146,7 +145,7 @@ class MutableSet:
         """
         self._set = {id(element): element for element in self if element not in other}
 
-    def intersection(self, other: typing_extensions.Self) -> typing_extensions.Self:
+    def intersection(self, other: typing.Self) -> typing.Self:
         """Return the intersection of two sets as a new set
 
         Parameters
@@ -161,7 +160,7 @@ class MutableSet:
         """
         return MutableSet(elements=[element for element in self if element in other])
 
-    def intersection_update(self, other: typing_extensions.Self):
+    def intersection_update(self, other: typing.Self):
         """Remove all elements from this set that are not in another set
 
         Parameters
@@ -171,7 +170,7 @@ class MutableSet:
         """
         self._set = {id(element): element for element in self if element in other}
 
-    def isdisjoint(self, other: typing_extensions.Self) -> bool:
+    def isdisjoint(self, other: typing.Self) -> bool:
         """Return True if the set has no elements in common with another set
 
         Parameters
@@ -186,7 +185,7 @@ class MutableSet:
         """
         return len(self.intersection(other)) == 0
 
-    def issubset(self, other: typing_extensions.Self) -> bool:
+    def issubset(self, other: typing.Self) -> bool:
         """Report whether another set contains this set
 
         Parameters
@@ -201,7 +200,7 @@ class MutableSet:
         """
         return len(self.difference(other)) == 0
 
-    def issuperset(self, other: typing_extensions.Self) -> bool:
+    def issuperset(self, other: typing.Self) -> bool:
         """Report whether this set contains another set
 
         Parameters
@@ -216,7 +215,7 @@ class MutableSet:
         """
         return other.issubset(self)
 
-    def symmetric_difference(self, other: typing_extensions.Self) -> typing_extensions.Self:
+    def symmetric_difference(self, other: typing.Self) -> typing.Self:
         """Return the symmetric difference of two sets as a new set
 
         Parameters
@@ -231,7 +230,7 @@ class MutableSet:
         """
         return self.difference(other).union(other.difference(self))
 
-    def symmetric_difference_update(self, other: typing_extensions.Self):
+    def symmetric_difference_update(self, other: typing.Self):
         """Update this set with the symmetric difference of itself and another set
 
         Parameters
@@ -244,7 +243,7 @@ class MutableSet:
             for element in self.difference(other).union(other.difference(self))
         }
 
-    def union(self, other: typing_extensions.Self) -> typing_extensions.Self:
+    def union(self, other: typing.Self) -> typing.Self:
         """Return the union of two sets as a new set
 
         Parameters
@@ -259,7 +258,7 @@ class MutableSet:
         """
         return MutableSet(elements=list(self) + list(other))
 
-    def update(self, other: typing_extensions.Self):
+    def update(self, other: typing.Self):
         """Update this set with the union of itself and another set
 
         Parameters
@@ -305,7 +304,7 @@ class TypedSet(typing.Generic[T], MutableSet):
             raise TypeError(f"Element '{element}' is not of type {self.type}")
         super().remove(element)
 
-    def copy(self) -> typing_extensions.Self:
+    def copy(self) -> typing.Self:
         """Return a shallow copy of the set
 
         Returns
@@ -325,7 +324,7 @@ class TypedSet(typing.Generic[T], MutableSet):
         """
         return super().pop()
 
-    def difference(self, other: typing_extensions.Self) -> typing_extensions.Self:
+    def difference(self, other: typing.Self) -> typing.Self:
         """Return the difference of two sets as a new set
 
         Parameters
@@ -345,7 +344,7 @@ class TypedSet(typing.Generic[T], MutableSet):
             elements=[element for element in self if element not in other],
         )
 
-    def intersection(self, other: typing_extensions.Self) -> typing_extensions.Self:
+    def intersection(self, other: typing.Self) -> typing.Self:
         """Return the intersection of two sets as a new set
 
         Parameters
@@ -364,7 +363,7 @@ class TypedSet(typing.Generic[T], MutableSet):
             type=self.type, elements=[element for element in self if element in other]
         )
 
-    def intersection_update(self, other: typing_extensions.Self):
+    def intersection_update(self, other: typing.Self):
         """Remove all elements from this set that are not in another set
 
         Parameters
@@ -376,7 +375,7 @@ class TypedSet(typing.Generic[T], MutableSet):
             raise TypeError(f"Cannot take intersection with set of type {other.type}")
         self._set = {id(element): element for element in self if element in other}
 
-    def union(self, other: typing_extensions.Self) -> typing_extensions.Self:
+    def union(self, other: typing.Self) -> typing.Self:
         """Return the union of two sets as a new set
 
         Parameters
@@ -393,7 +392,7 @@ class TypedSet(typing.Generic[T], MutableSet):
             raise TypeError(f"Cannot take union with set of type {other.type}")
         return TypedSet[self.type](type=self.type, elements=list(self) + list(other))
 
-    def update(self, other: typing_extensions.Self):
+    def update(self, other: typing.Self):
         """Update this set with the union of itself and another set
 
         Parameters
@@ -405,7 +404,7 @@ class TypedSet(typing.Generic[T], MutableSet):
             raise TypeError(f"Cannot take union with set of type {other.type}")
         self._set = {id(element): element for element in self.union(other)}
 
-    def difference_update(self, other: typing_extensions.Self):
+    def difference_update(self, other: typing.Self):
         """Remove all elements of another set from this set
 
         Parameters
@@ -417,7 +416,7 @@ class TypedSet(typing.Generic[T], MutableSet):
             raise TypeError(f"Cannot take difference with set of type {other.type}")
         self._set = {id(element): element for element in self if element not in other}
 
-    def symmetric_difference(self, other: typing_extensions.Self) -> typing_extensions.Self:
+    def symmetric_difference(self, other: typing.Self) -> typing.Self:
         """Return the symmetric difference of two sets as a new set
 
         Parameters
@@ -436,7 +435,7 @@ class TypedSet(typing.Generic[T], MutableSet):
             )
         return self.difference(other).union(other.difference(self))
 
-    def symmetric_difference_update(self, other: typing_extensions.Self):
+    def symmetric_difference_update(self, other: typing.Self):
         """Update this set with the symmetric difference of itself and another set
 
         Parameters
@@ -453,7 +452,7 @@ class TypedSet(typing.Generic[T], MutableSet):
             for element in self.difference(other).union(other.difference(self))
         }
 
-    def issubset(self, other: typing_extensions.Self) -> bool:
+    def issubset(self, other: typing.Self) -> bool:
         """Report whether another set contains this set
 
         Parameters
@@ -470,7 +469,7 @@ class TypedSet(typing.Generic[T], MutableSet):
             raise TypeError(f"Cannot compare with set of type {other.type}")
         return len(self.difference(other)) == 0
 
-    def issuperset(self, other: typing_extensions.Self) -> bool:
+    def issuperset(self, other: typing.Self) -> bool:
         """Report whether this set contains another set
 
         Parameters
@@ -487,7 +486,7 @@ class TypedSet(typing.Generic[T], MutableSet):
             raise TypeError(f"Cannot compare with set of type {other.type}")
         return other.issubset(self)
 
-    def isdisjoint(self, other: typing_extensions.Self) -> bool:
+    def isdisjoint(self, other: typing.Self) -> bool:
         """Return True if the set has no elements in common with another set
 
         Parameters
@@ -504,40 +503,40 @@ class TypedSet(typing.Generic[T], MutableSet):
             raise TypeError(f"Cannot compare with set of type {other.type}")
         return len(self.intersection(other)) == 0
 
-    def __or__(self, other: typing_extensions.Self) -> typing_extensions.Self:
+    def __or__(self, other: typing.Self) -> typing.Self:
         return self.union(other)
 
-    def __and__(self, other: typing_extensions.Self) -> typing_extensions.Self:
+    def __and__(self, other: typing.Self) -> typing.Self:
         return self.intersection(other)
 
-    def __sub__(self, other: typing_extensions.Self) -> typing_extensions.Self:
+    def __sub__(self, other: typing.Self) -> typing.Self:
         return self.difference(other)
 
-    def __xor__(self, other: typing_extensions.Self) -> typing_extensions.Self:
+    def __xor__(self, other: typing.Self) -> typing.Self:
         return self.symmetric_difference(other)
 
-    def __ior__(self, other: typing_extensions.Self):
+    def __ior__(self, other: typing.Self):
         self.update(other)
 
-    def __iand__(self, other: typing_extensions.Self):
+    def __iand__(self, other: typing.Self):
         self.intersection_update(other)
 
-    def __isub__(self, other: typing_extensions.Self):
+    def __isub__(self, other: typing.Self):
         self.difference_update(other)
 
-    def __ixor__(self, other: typing_extensions.Self):
+    def __ixor__(self, other: typing.Self):
         self.symmetric_difference_update(other)
 
-    def __ge__(self, other: typing_extensions.Self) -> bool:
+    def __ge__(self, other: typing.Self) -> bool:
         return self.issuperset(other)
 
-    def __gt__(self, other: typing_extensions.Self) -> bool:
+    def __gt__(self, other: typing.Self) -> bool:
         return self.issuperset(other) and self != other
 
-    def __le__(self, other: typing_extensions.Self) -> bool:
+    def __le__(self, other: typing.Self) -> bool:
         return self.issubset(other)
 
-    def __lt__(self, other: typing_extensions.Self) -> bool:
+    def __lt__(self, other: typing.Self) -> bool:
         return self.issubset(other) and self != other
 
     def __contains__(self, element: T) -> bool:
