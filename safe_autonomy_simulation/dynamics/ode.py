@@ -222,16 +222,19 @@ class ODEDynamics(d.Dynamics):
 
         return next_state, state_dot
 
-    def compute_state_dot_jax(self, t: float, state: np.ndarray, control: np.ndarray):
+    def compute_state_dot_jax(self, state: np.ndarray, t: float, control: np.ndarray):
         """Compute state dot for jax odeint
+
+        Jax requires a specific signature for the function passed to odeint. This function
+        is a wrapper around the compute_state_dot function that has the correct signature.
 
         Parameters
         ----------
+        state : np.ndarray
+            Current state vector at time t.
         t : float
             Time in seconds since the beginning of the simulation step.
             Note, this is NOT the total simulation time but the time within the individual step.
-        state : np.ndarray
-            Current state vector at time t.
         control : np.ndarray
             Control vector.
 
