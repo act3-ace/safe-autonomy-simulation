@@ -1,3 +1,10 @@
+## [2.0.3](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v2.0.2...v2.0.3) (2024-07-01)
+
+
+### Bug Fixes
+
+* **ode:** use correct positional arg order for jax solver ([d1f5878](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/commit/d1f587828074de25a8cab623fd470645471a14ec)), closes [#25](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/issues/25)
+
 ## [2.0.2](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v2.0.1...v2.0.2) (2024-06-28)
 
 
