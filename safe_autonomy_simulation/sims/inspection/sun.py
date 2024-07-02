@@ -72,7 +72,21 @@ class Sun(e.Point):
         np.ndarray
             state vector of form [theta]
         """
-        return np.array(self._state[-1])
+        return np.array([self._state[-1]])
+    
+    @state.setter
+    def state(self, state: np.ndarray):
+        """Set the sun entity state vector
+
+        Parameters
+        ----------
+        state : np.ndarray
+            New state vector [theta]
+        """
+        assert (
+            state.shape == self.state.shape
+        ), f"State shape must be {self.state.shape}, got {state.shape}"
+        self._state[0] = state[0]
 
     @property
     def theta(self) -> float:
