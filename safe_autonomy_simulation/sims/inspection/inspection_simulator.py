@@ -1,6 +1,7 @@
 """This module implements a simulator for an inspection environment with or without illumination."""
 
 import typing
+import numpy as np
 
 import safe_autonomy_simulation.sims.inspection.sun as sun
 import safe_autonomy_simulation.simulator as sim
@@ -38,7 +39,7 @@ class InspectionSimulator(sim.Simulator):
         ],
         targets: typing.Union[typing.List[t.Target], typing.List[t.SixDOFTarget]],
         sun: typing.Union[sun.Sun, None] = None,
-        binary_ray: bool = False,
+        binary_ray: bool = True,
     ):
         self._inspectors = inspectors
         self._targets = targets
@@ -63,6 +64,7 @@ class InspectionSimulator(sim.Simulator):
         """Update inspection point statuses for all targets"""
         for inspector in self.inspectors:
             for target in self.targets:
+                inspector.camera.state = np.concatenate((inspector.position, inspector.velocity, inspector.orientation, inspector.angular_velocity))
                 target.inspection_points.update_points_inspection_status(
                     camera=inspector.camera, sun=self.sun, binary_ray=self.binary_ray
                 )

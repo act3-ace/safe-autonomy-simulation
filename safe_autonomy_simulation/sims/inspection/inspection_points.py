@@ -140,7 +140,8 @@ class InspectionPoint(e.Point):
         ), f"State vector must be of shape {self.state.shape}, got {state.shape}"
         self._state[0:6] = state[0:6]
         self.weight = state[6]
-        self.inspected = state[7]
+        # TODO: this resets the inspection status
+        # self.inspected = state[7]
 
     @property
     def default_position(self) -> np.ndarray:
@@ -339,7 +340,10 @@ class InspectionPointSet(e.Entity):
         """
         # calculate h of the spherical cap (inspection zone)
         cam_position = camera.position
-        r_c = transform.Rotation.from_quat(camera.orientation).as_euler("xyz")
+        # TODO: r_c is the vector aligned with the camera's boresight. The rotation needs to be applied to some initial orientation.
+        # r_c = transform.Rotation.from_quat(camera.orientation).apply(np.array([1, 0, 0]))
+        # For translational motion only, camera always points towards chief
+        r_c = -cam_position
         r_c = r_c / np.linalg.norm(r_c)  # inspector sensor unit vector
 
         r = self.radius
@@ -357,10 +361,10 @@ class InspectionPointSet(e.Entity):
             # check that point hasn't already been inspected
             if not point.inspected:
                 p = point.position - cam_position
-                p_rc = np.dot(p, r_c) * r_c
-                d = np.linalg.norm(p - p_rc)
-                c_r = np.linalg.norm(p_rc) * np.tan(camera.fov / 2)
-                if c_r >= d:
+                cos_theta = np.dot(p / np.linalg.norm(p), r_c)
+                angle_to_point = np.arccos(cos_theta)
+                # If the point can be inspected (within FOV)
+                if angle_to_point <= (camera.fov / 2) * np.pi / 180:
                     # if no point light (sun), assume no illumination
                     if not sun:
                         # project point onto inspection zone axis and check if in inspection zone
@@ -466,10 +470,7 @@ class InspectionPointSet(e.Entity):
         num_points = 0
         for _, point in self.points.items():
             if point.inspected:
-                if inspector_entity and point.inspector == inspector_entity.name:
-                    num_points += 1
-                else:
-                    num_points += 1
+                num_points += 1
         return num_points
 
     def get_percentage_of_points_inspected(

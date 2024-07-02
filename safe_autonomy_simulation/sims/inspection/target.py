@@ -44,7 +44,7 @@ class Target(spacecraft.CWHSpacecraft):
         name: str,
         num_points: int,
         radius: float,
-        priority_vector: np.ndarray = np.zeros(3),
+        priority_vector: np.ndarray = np.array([1, 0, 0]),
         position: np.ndarray = np.zeros(3),
         velocity: np.ndarray = np.zeros(3),
         m: float = defaults.M_DEFAULT,
