@@ -126,7 +126,7 @@ class InspectionPoint(e.Point):
         np.ndarray
             inspection point state vector
         """
-        return np.concatenate(self._state[:6], [self.weight, self.inspected])
+        return np.concatenate((self._state[:6], [self.weight, self.inspected]))
 
     @state.setter
     def state(self, state: np.ndarray):

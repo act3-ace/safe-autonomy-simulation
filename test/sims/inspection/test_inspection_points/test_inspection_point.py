@@ -74,7 +74,16 @@ def test_build_initial_state():
     )
     assert np.all(
         inspection_point.build_initial_state()
-        == np.concatenate((np.array([1, 0, 0]), np.zeros(3), [1], [0]))
+        == np.concatenate(
+            (
+                np.array([1, 0, 0]),
+                np.zeros(3),
+                np.array([0, 0, 0, 1]),
+                np.zeros(3),
+                [1],
+                [0],
+            )
+        )
     )
 
 
