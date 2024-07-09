@@ -14,7 +14,7 @@ class MutableSet:
     """
 
     def __init__(self, elements: list = []):
-        self._set = {}
+        self._set: dict = {}
         for element in elements:
             self.add(element)
 
@@ -107,7 +107,7 @@ class MutableSet:
         MutableSet
             Shallow copy of the set
         """
-        return MutableSet(elements=list(self._set.values()))
+        return self.__class__(elements=list(self._set.values()))
 
     def pop(self) -> typing.Any:
         """Remove and return an arbitrary element from the set
@@ -132,7 +132,7 @@ class MutableSet:
         MutableSet
             New set with elements in this set but not in the other set
         """
-        return MutableSet(
+        return self.__class__(
             elements=[element for element in self if element not in other]
         )
 
@@ -159,7 +159,9 @@ class MutableSet:
         MutableSet
             New set with elements common to both sets
         """
-        return MutableSet(elements=[element for element in self if element in other])
+        return self.__class__(
+            elements=[element for element in self if element in other]
+        )
 
     def intersection_update(self, other: typing_extensions.Self):
         """Remove all elements from this set that are not in another set
@@ -259,7 +261,7 @@ class MutableSet:
         MutableSet
             New set with all elements from both sets
         """
-        return MutableSet(elements=list(self) + list(other))
+        return self.__class__(elements=list(self) + list(other))
 
     def update(self, other: typing_extensions.Self):
         """Update this set with the union of itself and another set
@@ -315,7 +317,7 @@ class TypedSet(typing.Generic[T], MutableSet):
         TypedSet
             Shallow copy of the set
         """
-        return TypedSet[self.type](type=self.type, elements=list(self._set.values()))
+        return self.__class__(type=self.type, elements=list(self._set.values()))
 
     def pop(self) -> T:
         """Remove and return an arbitrary element from the set
@@ -342,7 +344,7 @@ class TypedSet(typing.Generic[T], MutableSet):
         """
         if not other.type == self.type:
             raise TypeError(f"Cannot take difference with set of type {other.type}")
-        return TypedSet[self.type](
+        return self.__class__(
             type=self.type,
             elements=[element for element in self if element not in other],
         )
@@ -362,7 +364,7 @@ class TypedSet(typing.Generic[T], MutableSet):
         """
         if not other.type == self.type:
             raise TypeError(f"Cannot take intersection with set of type {other.type}")
-        return TypedSet[self.type](
+        return self.__class__(
             type=self.type, elements=[element for element in self if element in other]
         )
 
@@ -393,7 +395,7 @@ class TypedSet(typing.Generic[T], MutableSet):
         """
         if not other.type == self.type:
             raise TypeError(f"Cannot take union with set of type {other.type}")
-        return TypedSet[self.type](type=self.type, elements=list(self) + list(other))
+        return self.__class__(type=self.type, elements=list(self) + list(other))
 
     def update(self, other: typing_extensions.Self):
         """Update this set with the union of itself and another set

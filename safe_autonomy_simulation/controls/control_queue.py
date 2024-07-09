@@ -33,19 +33,19 @@ class ControlQueue:
         Queue of control vectors to be applied to the entity.
     default_control : np.ndarray
         Default control vector used when the control queue is empty. Typically 0 or neutral for each actuator.
-    control_min : Union[np.ndarray, None], optional
+    control_min : Union[float, np.ndarray, None], optional
         Minimum allowable control vector values. Control vectors that exceed this limit are clipped. By default None.
-    control_max : Union[np.ndarray, None], optional
+    control_max : Union[float, np.ndarray, None], optional
         Maximum allowable control vector values. Control vectors that exceed this limit are clipped. By default None.
     """
 
     def __init__(
         self,
         default_control: np.ndarray,
-        control_min: typing.Union[float, None] = None,
-        control_max: typing.Union[float, None] = None,
+        control_min: typing.Union[float, np.ndarray, None] = None,
+        control_max: typing.Union[float, np.ndarray, None] = None,
     ):
-        self.controls = queue.SimpleQueue()
+        self.controls: queue.SimpleQueue = queue.SimpleQueue()
         self.default_control = default_control
         self.control_min = control_min
         self.control_max = control_max
