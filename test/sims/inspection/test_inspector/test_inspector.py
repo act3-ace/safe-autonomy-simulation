@@ -4,34 +4,17 @@ import safe_autonomy_simulation
 import safe_autonomy_simulation.sims.spacecraft.defaults
 
 
-@pytest.mark.parametrize(
-    "name, camera",
-    [
-        (
-            "inspector",
-            safe_autonomy_simulation.sims.inspection.Camera(
-                name="camera",
-                fov=np.pi / 2,
-                resolution=[1920, 1080],
-                focal_length=1,
-                pixel_pitch=1e-3,
-                position=np.array([0, 0, 0]),
-                velocity=np.array([0, 0, 0]),
-                orientation=np.array([0, 0, 0, 1]),
-                angular_velocity=np.array([0, 0, 0]),
-                parent=None,
-                children=[],
-            ),
-        ),
-    ],
-)
-def test_init_default(name, camera):
-    inspector = safe_autonomy_simulation.sims.inspection.Inspector(
-        name=name, camera=camera
-    )
+@pytest.mark.parametrize("name", ["inspector"])
+def test_init_default(name):
+    inspector = safe_autonomy_simulation.sims.inspection.Inspector(name=name)
     assert inspector.name == name
-    assert inspector.camera == camera
-    assert camera in inspector.children
+    assert inspector.camera.name == f"{name}_camera"
+    assert inspector.camera.fov == np.pi / 2
+    assert inspector.camera.resolution == (640, 480)
+    assert inspector.camera.focal_length == 0.01
+    assert inspector.camera.pixel_pitch == 1.12e-6
+    assert len(inspector.children) == 1
+    assert inspector.camera in inspector.children
     assert np.all(inspector.position == np.zeros(3))
     assert np.all(inspector.velocity == np.zeros(3))
     assert (
@@ -52,23 +35,14 @@ def test_init_default(name, camera):
 
 
 @pytest.mark.parametrize(
-    "name, camera, position, velocity, m, n, trajectory_samples, integration_method, material, parent",
+    "name, fov, resolution, focal_length, pixel_pitch, position, velocity, m, n, trajectory_samples, integration_method, material, parent",
     [
         (
             "inspector",
-            safe_autonomy_simulation.sims.inspection.Camera(
-                name="camera",
-                fov=np.pi / 2,
-                resolution=[1920, 1080],
-                focal_length=1,
-                pixel_pitch=1e-3,
-                position=np.array([0, 0, 0]),
-                velocity=np.array([0, 0, 0]),
-                orientation=np.array([0, 0, 0, 1]),
-                angular_velocity=np.array([0, 0, 0]),
-                parent=None,
-                children=[],
-            ),
+            np.pi,
+            (1920, 1080),
+            1,
+            1e-3,
             np.array([1, 0, 0]),
             np.array([0, 0, 0]),
             1,
@@ -82,7 +56,10 @@ def test_init_default(name, camera):
 )
 def test_init_args(
     name,
-    camera,
+    fov,
+    resolution,
+    focal_length,
+    pixel_pitch,
     position,
     velocity,
     m,
@@ -94,7 +71,10 @@ def test_init_args(
 ):
     inspector = safe_autonomy_simulation.sims.inspection.Inspector(
         name=name,
-        camera=camera,
+        fov=fov,
+        resolution=resolution,
+        focal_length=focal_length,
+        pixel_pitch=pixel_pitch,
         position=position,
         velocity=velocity,
         m=m,
@@ -105,8 +85,13 @@ def test_init_args(
         parent=parent,
     )
     assert inspector.name == name
-    assert inspector.camera == camera
-    assert camera in inspector.children
+    assert inspector.camera.name == f"{name}_camera"
+    assert inspector.camera.fov == fov
+    assert inspector.camera.resolution == resolution
+    assert inspector.camera.focal_length == focal_length
+    assert inspector.camera.pixel_pitch == pixel_pitch
+    assert len(inspector.children) == 1
+    assert inspector.camera in inspector.children
     assert np.all(inspector.position == position)
     assert np.all(inspector.velocity == velocity)
     assert inspector.dynamics.m == m
@@ -115,3 +100,19 @@ def test_init_args(
     assert inspector.dynamics.integration_method == integration_method
     assert inspector.material == material
     assert inspector.parent == parent
+
+
+def test__post_step():
+    inspector = safe_autonomy_simulation.sims.inspection.Inspector(name="inspector")
+    inspector._post_step(0.1)
+    assert np.all(
+        inspector.camera.state
+        == np.concatenate(
+            (
+                inspector.position,
+                inspector.velocity,
+                inspector.orientation,
+                inspector.angular_velocity,
+            )
+        )
+    )
