@@ -1,7 +1,6 @@
 """This module implements a simulator for an inspection environment with or without illumination."""
 
 import typing
-import numpy as np
 
 import safe_autonomy_simulation.sims.inspection.sun as sun
 import safe_autonomy_simulation.simulator as sim
