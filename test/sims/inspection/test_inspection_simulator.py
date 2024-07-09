@@ -13,19 +13,6 @@ import safe_autonomy_simulation
                 safe_autonomy_simulation.sims.inspection.Inspector(
                     name="inspector",
                     position=np.array([0, 0, 0]),
-                    camera=safe_autonomy_simulation.sims.inspection.Camera(
-                        name="camera",
-                        fov=np.pi / 2,
-                        resolution=[1920, 1080],
-                        focal_length=1,
-                        pixel_pitch=1e-3,
-                        position=np.array([0, 0, 0]),
-                        velocity=np.array([0, 0, 0]),
-                        orientation=np.array([0, 0, 0, 1]),
-                        angular_velocity=np.array([0, 0, 0]),
-                        parent=None,
-                        children=[],
-                    ),
                 ),
             ],
             [
@@ -57,7 +44,7 @@ def test_init_default(
     for e in entities:
         assert e in inspection_sim.entities
     assert inspection_sim.sun is None
-    assert not inspection_sim.binary_ray
+    assert inspection_sim.binary_ray
 
 
 @pytest.mark.parametrize(
@@ -69,19 +56,6 @@ def test_init_default(
                 safe_autonomy_simulation.sims.inspection.Inspector(
                     name="inspector",
                     position=np.array([0, 0, 0]),
-                    camera=safe_autonomy_simulation.sims.inspection.Camera(
-                        name="camera",
-                        fov=np.pi / 2,
-                        resolution=[1920, 1080],
-                        focal_length=1,
-                        pixel_pitch=1e-3,
-                        position=np.array([0, 0, 0]),
-                        velocity=np.array([0, 0, 0]),
-                        orientation=np.array([0, 0, 0, 1]),
-                        angular_velocity=np.array([0, 0, 0]),
-                        parent=None,
-                        children=[],
-                    ),
                 ),
             ],
             [
@@ -127,19 +101,6 @@ def test_init_args(frame_rate, inspectors, targets, sun, binary_ray):
                 safe_autonomy_simulation.sims.inspection.Inspector(
                     name="inspector",
                     position=np.array([0, 0, 0]),
-                    camera=safe_autonomy_simulation.sims.inspection.Camera(
-                        name="camera",
-                        fov=np.pi / 2,
-                        resolution=[1920, 1080],
-                        focal_length=1,
-                        pixel_pitch=1e-3,
-                        position=np.array([0, 0, 0]),
-                        velocity=np.array([0, 0, 0]),
-                        orientation=np.array([0, 0, 0, 1]),
-                        angular_velocity=np.array([0, 0, 0]),
-                        parent=None,
-                        children=[],
-                    ),
                 ),
             ],
             targets=[
@@ -188,19 +149,6 @@ def test_reset(
                 safe_autonomy_simulation.sims.inspection.Inspector(
                     name="inspector",
                     position=np.array([0, 0, 0]),
-                    camera=safe_autonomy_simulation.sims.inspection.Camera(
-                        name="camera",
-                        fov=np.pi / 2,
-                        resolution=[1920, 1080],
-                        focal_length=1,
-                        pixel_pitch=1e-3,
-                        position=np.array([0, 0, 0]),
-                        velocity=np.array([0, 0, 0]),
-                        orientation=np.array([0, 0, 0, 1]),
-                        angular_velocity=np.array([0, 0, 0]),
-                        parent=None,
-                        children=[],
-                    ),
                 ),
             ],
             targets=[
@@ -217,7 +165,7 @@ def test_reset(
         ),
     ],
 )
-def test_post_step(
+def test_update(
     inspection_sim: safe_autonomy_simulation.sims.inspection.InspectionSimulator,
 ):
     for inspector in inspection_sim.inspectors:
@@ -231,9 +179,69 @@ def test_post_step(
         target.name: target.inspection_points.points
         for target in inspection_sim.targets
     }
-    inspection_sim._post_step()
+    inspection_sim.update()
     for inspector in inspection_sim.inspectors:
         for target in inspection_sim.targets:
             for id, point in target.inspection_points.points.items():
                 expected_point = expected_inspection_point_states[target.name][id]
                 assert np.all(point.state == expected_point.state)
+
+
+@pytest.mark.parametrize(
+    "frame_rate, inspectors, targets",
+    [
+        (
+            1,
+            [
+                safe_autonomy_simulation.sims.inspection.Inspector(
+                    name="inspector",
+                    position=np.array([0, 0, 0]),
+                ),
+            ],
+            [
+                safe_autonomy_simulation.sims.inspection.Target(
+                    name="target",
+                    position=np.array([1, 0, 0]),
+                    num_points=10,
+                    radius=1,
+                    priority_vector=np.array([1, 0, 0]),
+                )
+            ],
+        )
+    ],
+)
+def test_step(frame_rate, inspectors, targets):
+    inspection_sim = safe_autonomy_simulation.sims.inspection.InspectionSimulator(
+        frame_rate=frame_rate, inspectors=inspectors, targets=targets
+    )
+    inspection_sim.reset()
+
+    # check initial sim time
+    assert inspection_sim.sim_time == 0
+
+    # save the initial state of the entities
+    initial_states = {id(entity): entity.state for entity in inspection_sim.entities}
+
+    inspection_sim.step()
+
+    # check that the simulation time has been updated
+    assert inspection_sim.sim_time == 1 / frame_rate
+
+    # check that the entities' state has updated
+    for entity in inspection_sim.entities:
+        old_state = initial_states[id(entity)]
+        default_control = entity.control_queue.default_control
+        new_state, state_dot = entity.dynamics.step(
+            step_size=1 / frame_rate, state=old_state, control=default_control
+        )
+        assert np.all(entity.state == new_state)
+
+    # check that inspection points have been updated
+    for target in inspection_sim.targets:
+        for point in target.inspection_points.points.values():
+            new_point_state, _ = point.dynamics.step(
+                step_size=1 / frame_rate,
+                state=point.state,
+                control=point.control_queue.default_control,
+            )
+            assert np.all(point.state == new_point_state)

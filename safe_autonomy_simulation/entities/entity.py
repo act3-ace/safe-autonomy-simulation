@@ -3,9 +3,9 @@
 import typing
 import typing_extensions
 import numpy as np
-import safe_autonomy_simulation.dynamics as dynamics
+import safe_autonomy_simulation.dynamics as d
 import safe_autonomy_simulation.materials as materials
-import safe_autonomy_simulation.controls.control_queue as control_queue
+import safe_autonomy_simulation.controls.control_queue as controls
 import safe_autonomy_simulation.utils.sets as sets
 
 if typing.TYPE_CHECKING:
@@ -48,25 +48,25 @@ class Entity:
     def __init__(
         self,
         name: str,
-        dynamics: dynamics.Dynamics,
-        control_queue: control_queue.ControlQueue,
+        dynamics: d.Dynamics,
+        control_queue: controls.ControlQueue,
         material: materials.Material,
         parent: typing.Union[typing_extensions.Self, None] = None,
         children: list[typing_extensions.Self] = [],
     ):
-        self.name = name
+        self.name: str = name
 
-        self._state = self.build_initial_state()
+        self._state: np.ndarray = self.build_initial_state()
 
-        self._dynamics = dynamics
+        self._dynamics: d.Dynamics = dynamics
 
-        self._control_queue = control_queue
-        self._last_control = None
-        self._state_dot = np.zeros_like(self.state)
+        self._control_queue: controls.ControlQueue = control_queue
+        self._last_control: np.ndarray | None = None
+        self._state_dot: np.ndarray = np.zeros_like(self.state)
 
         # Register parent and children
-        self._children = sets.TypedSet[Entity](type=Entity)
-        self._parent = None
+        self._children: sets.TypedSet = sets.TypedSet[Entity](type=Entity)
+        self._parent: Entity | None = None
         if parent is not None:
             parent.add_child(self)
         for child in children:
@@ -153,7 +153,7 @@ class Entity:
             child.step(step_size)
         self._post_step(step_size)
 
-    def add_control(self, control: typing.Union[np.ndarray, list, jnp.ndarray, dict]):
+    def add_control(self, control: typing.Union[np.ndarray, list, jnp.ndarray]):
         """Add a control to the entity's control queue
 
         Parameters
@@ -289,7 +289,7 @@ class Entity:
         return self._material
 
     @property
-    def dynamics(self) -> dynamics.Dynamics:
+    def dynamics(self) -> d.Dynamics:
         """
         Dynamics object for computing state transitions
 
@@ -301,7 +301,7 @@ class Entity:
         return self._dynamics
 
     @property
-    def control_queue(self) -> control_queue.ControlQueue:
+    def control_queue(self) -> controls.ControlQueue:
         """
         Queue of control vectors to be applied to the entity
 

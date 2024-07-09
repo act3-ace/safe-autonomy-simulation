@@ -38,7 +38,10 @@ class Inspector(spacecraft.CWHSpacecraft):
     def __init__(
         self,
         name: str,
-        camera: cam.Camera,
+        fov: float = np.pi / 2,
+        resolution: typing.Tuple[int, int] = (640, 480),
+        focal_length: float = 0.01,
+        pixel_pitch: float = 1.12e-6,
         position: np.ndarray = np.zeros(3),
         velocity: np.ndarray = np.zeros(3),
         m: float = defaults.M_DEFAULT,
@@ -59,8 +62,26 @@ class Inspector(spacecraft.CWHSpacecraft):
             material=material,
             parent=parent,
         )
-        self._camera = camera
-        self.add_child(camera)
+        self._camera = cam.Camera(
+            name=f"{name}_camera",
+            fov=fov,
+            resolution=resolution,
+            focal_length=focal_length,
+            pixel_pitch=pixel_pitch,
+            parent=self,
+        )
+
+    def _post_step(self, step_size: float):
+        # Set camera state == spacecraft state
+        super()._post_step(step_size)
+        self.camera.state = np.concatenate(
+            (
+                self.position,
+                self.velocity,
+                self.orientation,
+                self.angular_velocity,
+            )
+        )
 
     @property
     def camera(self) -> cam.Camera:
@@ -124,7 +145,10 @@ class SixDOFInspector(spacecraft.SixDOFSpacecraft):
     def __init__(
         self,
         name: str,
-        camera: cam.Camera,
+        fov: float = np.pi / 2,
+        resolution: typing.Tuple[int, int] = (640, 480),
+        focal_length: float = 0.01,
+        pixel_pitch: float = 1.12e-6,
         position: np.ndarray = np.zeros(3),
         velocity: np.ndarray = np.zeros(3),
         orientation: np.ndarray = np.array([0, 0, 0, 1]),
@@ -165,8 +189,26 @@ class SixDOFInspector(spacecraft.SixDOFSpacecraft):
             material=material,
             parent=parent,
         )
-        self._camera = camera
-        self.add_child(camera)
+        self._camera = cam.Camera(
+            name=f"{name}_camera",
+            fov=fov,
+            resolution=resolution,
+            focal_length=focal_length,
+            pixel_pitch=pixel_pitch,
+            parent=self,
+        )
+
+    def _post_step(self, step_size: float):
+        # Set camera state == spacecraft state
+        super()._post_step(step_size)
+        self.camera.state = np.concatenate(
+            (
+                self.position,
+                self.velocity,
+                self.orientation,
+                self.angular_velocity,
+            )
+        )
 
     @property
     def camera(self) -> cam.Camera:

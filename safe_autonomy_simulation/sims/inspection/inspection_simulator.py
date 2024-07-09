@@ -38,7 +38,7 @@ class InspectionSimulator(sim.Simulator):
         ],
         targets: typing.Union[typing.List[t.Target], typing.List[t.SixDOFTarget]],
         sun: typing.Union[sun.Sun, None] = None,
-        binary_ray: bool = False,
+        binary_ray: bool = True,
     ):
         self._inspectors = inspectors
         self._targets = targets
@@ -55,7 +55,12 @@ class InspectionSimulator(sim.Simulator):
         # update inspection points statuses after all entities have been reset
         self._update_inspected()
 
-    def _post_step(self):
+    def update(self):
+        # set cameras to point at target if inspectors are 3dof and there is only one target
+        if isinstance(self.inspectors[0], i.Inspector) and len(self.targets) == 1:
+            target = self.targets[0]
+            for inspector in self.inspectors:
+                inspector.camera.point_at(target)
         # update inspection points statuses after all entities have been stepped
         self._update_inspected()
 

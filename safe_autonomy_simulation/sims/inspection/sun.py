@@ -33,6 +33,8 @@ class Sun(e.Point):
         material properties of the sun, by default LIGHT
     """
 
+    SUN_DISTANCE = 1.496e11  # meters
+
     def __init__(
         self,
         name: str = "sun",
@@ -72,7 +74,21 @@ class Sun(e.Point):
         np.ndarray
             state vector of form [theta]
         """
-        return np.array(self._state[-1])
+        return np.array([self._state[-1]])
+
+    @state.setter
+    def state(self, state: np.ndarray):
+        """Set the sun entity state vector
+
+        Parameters
+        ----------
+        state : np.ndarray
+            New state vector [theta]
+        """
+        assert (
+            state.shape == self.state.shape
+        ), f"State shape must be {self.state.shape}, got {state.shape}"
+        self._state[0] = state[0]
 
     @property
     def theta(self) -> float:
@@ -95,6 +111,23 @@ class Sun(e.Point):
             Sun mean motion in rad/s
         """
         return self._n
+
+    @property
+    def position(self) -> np.ndarray:
+        """Sun position in Hill's reference frame
+
+        Returns
+        -------
+        np.ndarray
+            Sun position in meters
+        """
+        return np.array(
+            [
+                Sun.SUN_DISTANCE * np.cos(self.theta),
+                Sun.SUN_DISTANCE * np.sin(self.theta),
+                0,
+            ]
+        )
 
 
 class SunDynamics(d.ODEDynamics):

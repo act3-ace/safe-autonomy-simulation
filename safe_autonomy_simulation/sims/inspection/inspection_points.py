@@ -95,9 +95,9 @@ class InspectionPoint(e.Point):
         name: str = "point",
     ):
         self._default_position = position
-        self._inspected = inspected
+        self._initial_inspected = inspected
         self._inspector = inspector
-        self._weight = weight
+        self._initial_weight = weight
         super().__init__(
             name=name,
             position=position,
@@ -107,8 +107,14 @@ class InspectionPoint(e.Point):
 
     def build_initial_state(self) -> np.ndarray:
         # Append weight and inspection status to internal state
+        # We keep the internal state vector inherited from PhysicalEntity
+        # unchanged so that the PhysicalEntity properties are correct.
+        # Our new states are appended to the end of the inherited internal
+        # state vector.
         state = super().build_initial_state()
-        state = np.concatenate((state[:6], [self.weight], [self.inspected]))
+        state = np.concatenate(
+            (state, [self._initial_weight], [self._initial_inspected])
+        )
         return state
 
     @property
@@ -122,9 +128,7 @@ class InspectionPoint(e.Point):
         np.ndarray
             inspection point state vector
         """
-        # Append weight and inspection status to parent state
-        state = np.concatenate((self._state[0:6], [self.weight], [self.inspected]))
-        return state
+        return np.concatenate((self._state[:6], [self.weight, self.inspected]))
 
     @state.setter
     def state(self, state: np.ndarray):
@@ -162,11 +166,11 @@ class InspectionPoint(e.Point):
         bool
             inspection status of the point
         """
-        return self._inspected
+        return self._state[-1]
 
     @inspected.setter
     def inspected(self, inspected: bool):
-        self._inspected = inspected
+        self._state[-1] = inspected
 
     @property
     def inspector(self) -> str:
@@ -192,11 +196,11 @@ class InspectionPoint(e.Point):
         float
             weight of the point
         """
-        return self._weight
+        return self._state[-2]
 
     @weight.setter
     def weight(self, weight: float):
-        self._weight = weight
+        self._state[-2] = weight
 
 
 class InspectionPointSet(e.Entity):
@@ -339,7 +343,11 @@ class InspectionPointSet(e.Entity):
         """
         # calculate h of the spherical cap (inspection zone)
         cam_position = camera.position
-        r_c = transform.Rotation.from_quat(camera.orientation).as_euler("xyz")
+        # TODO: orientation axis vector should be defined externally
+        r_c = transform.Rotation.from_quat(camera.orientation).apply(
+            np.array([1, 0, 0])
+        )
+        # For translational motion only, camera always points towards chief
         r_c = r_c / np.linalg.norm(r_c)  # inspector sensor unit vector
 
         r = self.radius
@@ -357,10 +365,10 @@ class InspectionPointSet(e.Entity):
             # check that point hasn't already been inspected
             if not point.inspected:
                 p = point.position - cam_position
-                p_rc = np.dot(p, r_c) * r_c
-                d = np.linalg.norm(p - p_rc)
-                c_r = np.linalg.norm(p_rc) * np.tan(camera.fov / 2)
-                if c_r >= d:
+                cos_theta = np.dot(p / np.linalg.norm(p), r_c)
+                angle_to_point = np.arccos(cos_theta)
+                # If the point can be inspected (within FOV)
+                if angle_to_point <= (camera.fov / 2) * np.pi / 180:
                     # if no point light (sun), assume no illumination
                     if not sun:
                         # project point onto inspection zone axis and check if in inspection zone
@@ -466,10 +474,7 @@ class InspectionPointSet(e.Entity):
         num_points = 0
         for _, point in self.points.items():
             if point.inspected:
-                if inspector_entity and point.inspector == inspector_entity.name:
-                    num_points += 1
-                else:
-                    num_points += 1
+                num_points += 1
         return num_points
 
     def get_percentage_of_points_inspected(
