@@ -1,3 +1,10 @@
+## [2.0.5](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v2.0.4...v2.0.5) (2024-07-09)
+
+
+### Bug Fixes
+
+* **entity:** remove angle wrapping on physical entity angular velocity ([9901ca1](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/commit/9901ca1491c8abc9c0400cf54b95a45be65fef19)), closes [#26](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/issues/26)
+
 ## [2.0.4](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v2.0.3...v2.0.4) (2024-07-09)
 
 
