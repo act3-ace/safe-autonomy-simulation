@@ -81,7 +81,7 @@ def test_init(
     assert np.all(entity.position == position)
     assert np.all(entity.velocity == velocity)
     assert np.all(entity.orientation == orientation)
-    assert np.all(entity.angular_velocity == angular_velocity % (2 * np.pi))
+    assert np.all(entity.angular_velocity == angular_velocity)
     assert entity.control_queue == control_queue
     assert entity.dynamics == dynamics
     assert entity.material == material
@@ -277,7 +277,7 @@ def test_state(initial_state, state):
     assert np.all(entity.position == state[:3])
     assert np.all(entity.velocity == state[3:6])
     assert np.all(entity.orientation == state[6:10])
-    assert np.all(entity.angular_velocity == state[10:13] % (2 * np.pi))
+    assert np.all(entity.angular_velocity == state[10:13])
 
 
 @pytest.mark.parametrize(
@@ -437,7 +437,7 @@ def test_orientation(entity, orientation):
     [(a, b) for a, b in zip(utils.TEST_ENTITIES, utils.TEST_ANGULAR_VELOCITIES)],
 )
 def test_wx(entity, angular_velocity):
-    assert entity.wx == angular_velocity[0] % (2 * np.pi)
+    assert entity.wx == angular_velocity[0]
 
 
 @pytest.mark.parametrize(
@@ -447,7 +447,7 @@ def test_wx(entity, angular_velocity):
 def test_wx_with_units(entity, angular_velocity):
     ureg = pint.get_application_registry()
     expected = ureg.Quantity(
-        angular_velocity[0] % (2 * np.pi), entity.base_units.angular_velocity
+        angular_velocity[0], entity.base_units.angular_velocity
     )
     assert entity.wx_with_units == expected
 
@@ -457,7 +457,7 @@ def test_wx_with_units(entity, angular_velocity):
     [(a, b) for a, b in zip(utils.TEST_ENTITIES, utils.TEST_ANGULAR_VELOCITIES)],
 )
 def test_wy(entity, angular_velocity):
-    assert entity.wy == angular_velocity[1] % (2 * np.pi)
+    assert entity.wy == angular_velocity[1]
 
 
 @pytest.mark.parametrize(
@@ -467,7 +467,7 @@ def test_wy(entity, angular_velocity):
 def test_wy_with_units(entity, angular_velocity):
     ureg = pint.get_application_registry()
     expected = ureg.Quantity(
-        angular_velocity[1] % (2 * np.pi), entity.base_units.angular_velocity
+        angular_velocity[1], entity.base_units.angular_velocity
     )
     assert entity.wy_with_units == expected
 
@@ -477,7 +477,7 @@ def test_wy_with_units(entity, angular_velocity):
     [(a, b) for a, b in zip(utils.TEST_ENTITIES, utils.TEST_ANGULAR_VELOCITIES)],
 )
 def test_wz(entity, angular_velocity):
-    assert entity.wz == angular_velocity[2] % (2 * np.pi)
+    assert entity.wz == angular_velocity[2]
 
 
 @pytest.mark.parametrize(
@@ -487,7 +487,7 @@ def test_wz(entity, angular_velocity):
 def test_wz_with_units(entity, angular_velocity):
     ureg = pint.get_application_registry()
     expected = ureg.Quantity(
-        angular_velocity[2] % (2 * np.pi), entity.base_units.angular_velocity
+        angular_velocity[2], entity.base_units.angular_velocity
     )
     assert entity.wz_with_units == expected
 
@@ -497,7 +497,7 @@ def test_wz_with_units(entity, angular_velocity):
     [(a, b) for a, b in zip(utils.TEST_ENTITIES, utils.TEST_ANGULAR_VELOCITIES)],
 )
 def test_angular_velocity(entity, angular_velocity):
-    assert np.all(entity.angular_velocity == angular_velocity % (2 * np.pi))
+    assert np.all(entity.angular_velocity == angular_velocity)
 
 
 @pytest.mark.parametrize(
@@ -507,6 +507,6 @@ def test_angular_velocity(entity, angular_velocity):
 def test_angular_velocity_with_units(entity, angular_velocity):
     ureg = pint.get_application_registry()
     expected = ureg.Quantity(
-        angular_velocity % (2 * np.pi), entity.base_units.angular_velocity
+        angular_velocity, entity.base_units.angular_velocity
     )
     assert np.all(entity.angular_velocity_with_units == expected)
