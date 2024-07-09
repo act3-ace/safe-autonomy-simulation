@@ -28,7 +28,7 @@ def is_illuminated(point: e.Point, light: e.PhysicalEntity, radius: float) -> bo
     normal_to_surface = vector.normalize(point.position)
     # Get a point slightly off the surface of the sphere so don't detect surface as an intersection
     shifted_point = point.position + 1e-5 * normal_to_surface
-    light_position = np.array([150000000000 * (np.cos(light.theta)), -150000000000 * (np.sin(light.theta)), 0])
+    light_position = light.position
     intersection_to_light = vector.normalize(light_position - shifted_point)
 
     intersect_var = sphere.sphere_intersect(
