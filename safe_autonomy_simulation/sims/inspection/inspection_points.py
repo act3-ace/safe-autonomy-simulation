@@ -341,10 +341,9 @@ class InspectionPointSet(e.Entity):
         """
         # calculate h of the spherical cap (inspection zone)
         cam_position = camera.position
-        # TODO: r_c is the vector aligned with the camera's boresight. The rotation needs to be applied to some initial orientation.
-        # r_c = transform.Rotation.from_quat(camera.orientation).apply(np.array([1, 0, 0]))
+        # TODO: orientation axis vector should be defined externally
+        r_c = transform.Rotation.from_quat(camera.orientation).apply(np.array([1, 0, 0]))
         # For translational motion only, camera always points towards chief
-        r_c = -cam_position
         r_c = r_c / np.linalg.norm(r_c)  # inspector sensor unit vector
 
         r = self.radius
