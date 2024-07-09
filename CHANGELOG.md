@@ -1,3 +1,10 @@
+## [2.0.4](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v2.0.3...v2.0.4) (2024-07-09)
+
+
+### Bug Fixes
+
+* **inspection:** properly update inspection sim entities on step ([6baa1af](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/commit/6baa1af29e5edef7b722ae93bc86005d7c0b850f))
+
 ## [2.0.3](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v2.0.2...v2.0.3) (2024-07-01)
 
 
