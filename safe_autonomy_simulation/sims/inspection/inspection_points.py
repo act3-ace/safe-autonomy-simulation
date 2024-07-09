@@ -107,8 +107,12 @@ class InspectionPoint(e.Point):
 
     def build_initial_state(self) -> np.ndarray:
         # Append weight and inspection status to internal state
+        # We keep the internal state vector inherited from PhysicalEntity
+        # unchanged so that the PhysicalEntity properties are correct.
+        # Our new states are appended to the end of the inherited internal
+        # state vector.
         state = super().build_initial_state()
-        state = np.concatenate((state[:6], [self._initial_weight], [self._initial_inspected]))
+        state = np.concatenate((state, [self._initial_weight], [self._initial_inspected]))
         return state
 
     @property
@@ -122,8 +126,7 @@ class InspectionPoint(e.Point):
         np.ndarray
             inspection point state vector
         """
-        # Append weight and inspection status to parent state
-        return self._state
+        return np.concatenate(self._state[:6], [self.weight, self.inspected])
 
     @state.setter
     def state(self, state: np.ndarray):
@@ -161,11 +164,11 @@ class InspectionPoint(e.Point):
         bool
             inspection status of the point
         """
-        return self._state[7]
+        return self._state[-1]
 
     @inspected.setter
     def inspected(self, inspected: bool):
-        self._state[7] = inspected
+        self._state[-1] = inspected
 
     @property
     def inspector(self) -> str:
@@ -191,11 +194,11 @@ class InspectionPoint(e.Point):
         float
             weight of the point
         """
-        return self._state[6]
+        return self._state[-2]
 
     @weight.setter
     def weight(self, weight: float):
-        self._state[6] = weight
+        self._state[-2] = weight
 
 
 class InspectionPointSet(e.Entity):
