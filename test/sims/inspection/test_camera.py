@@ -128,9 +128,13 @@ def test_init(
     ],
 )
 def test_point_at(camera, target):
-    direction = (target.position - camera.position) / np.linalg.norm(target.position - camera.position)
+    direction = (target.position - camera.position) / np.linalg.norm(
+        target.position - camera.position
+    )
     camera.point_at(target)
-    assert np.all(camera.orientation == transform.Rotation.from_euler("xyz", direction).as_quat())
+    assert np.all(
+        camera.orientation == transform.Rotation.from_euler("xyz", direction).as_quat()
+    )
 
 
 @pytest.mark.parametrize(

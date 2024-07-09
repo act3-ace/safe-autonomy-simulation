@@ -112,7 +112,9 @@ class InspectionPoint(e.Point):
         # Our new states are appended to the end of the inherited internal
         # state vector.
         state = super().build_initial_state()
-        state = np.concatenate((state, [self._initial_weight], [self._initial_inspected]))
+        state = np.concatenate(
+            (state, [self._initial_weight], [self._initial_inspected])
+        )
         return state
 
     @property
@@ -342,7 +344,9 @@ class InspectionPointSet(e.Entity):
         # calculate h of the spherical cap (inspection zone)
         cam_position = camera.position
         # TODO: orientation axis vector should be defined externally
-        r_c = transform.Rotation.from_quat(camera.orientation).apply(np.array([1, 0, 0]))
+        r_c = transform.Rotation.from_quat(camera.orientation).apply(
+            np.array([1, 0, 0])
+        )
         # For translational motion only, camera always points towards chief
         r_c = r_c / np.linalg.norm(r_c)  # inspector sensor unit vector
 

@@ -216,7 +216,9 @@ class MutableSet:
         """
         return other.issubset(self)
 
-    def symmetric_difference(self, other: typing_extensions.Self) -> typing_extensions.Self:
+    def symmetric_difference(
+        self, other: typing_extensions.Self
+    ) -> typing_extensions.Self:
         """Return the symmetric difference of two sets as a new set
 
         Parameters
@@ -417,7 +419,9 @@ class TypedSet(typing.Generic[T], MutableSet):
             raise TypeError(f"Cannot take difference with set of type {other.type}")
         self._set = {id(element): element for element in self if element not in other}
 
-    def symmetric_difference(self, other: typing_extensions.Self) -> typing_extensions.Self:
+    def symmetric_difference(
+        self, other: typing_extensions.Self
+    ) -> typing_extensions.Self:
         """Return the symmetric difference of two sets as a new set
 
         Parameters
