@@ -69,7 +69,6 @@ class InspectionSimulator(sim.Simulator):
         """Update inspection point statuses for all targets"""
         for inspector in self.inspectors:
             for target in self.targets:
-                inspector.camera.state = np.concatenate((inspector.position, inspector.velocity, inspector.orientation, inspector.angular_velocity))
                 target.inspection_points.update_points_inspection_status(
                     camera=inspector.camera, sun=self.sun, binary_ray=self.binary_ray
                 )
