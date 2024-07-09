@@ -95,9 +95,9 @@ class InspectionPoint(e.Point):
         name: str = "point",
     ):
         self._default_position = position
-        self._inspected = inspected
+        self._initial_inspected = inspected
         self._inspector = inspector
-        self._weight = weight
+        self._initial_weight = weight
         super().__init__(
             name=name,
             position=position,
@@ -108,7 +108,7 @@ class InspectionPoint(e.Point):
     def build_initial_state(self) -> np.ndarray:
         # Append weight and inspection status to internal state
         state = super().build_initial_state()
-        state = np.concatenate((state[:6], [self.weight], [self.inspected]))
+        state = np.concatenate((state[:6], [self._initial_weight], [self._initial_inspected]))
         return state
 
     @property
@@ -123,8 +123,7 @@ class InspectionPoint(e.Point):
             inspection point state vector
         """
         # Append weight and inspection status to parent state
-        state = np.concatenate((self._state[0:6], [self.weight], [self.inspected]))
-        return state
+        return self._state
 
     @state.setter
     def state(self, state: np.ndarray):
@@ -140,8 +139,7 @@ class InspectionPoint(e.Point):
         ), f"State vector must be of shape {self.state.shape}, got {state.shape}"
         self._state[0:6] = state[0:6]
         self.weight = state[6]
-        # TODO: this resets the inspection status
-        # self.inspected = state[7]
+        self.inspected = state[7]
 
     @property
     def default_position(self) -> np.ndarray:
@@ -163,11 +161,11 @@ class InspectionPoint(e.Point):
         bool
             inspection status of the point
         """
-        return self._inspected
+        return self._state[7]
 
     @inspected.setter
     def inspected(self, inspected: bool):
-        self._inspected = inspected
+        self._state[7] = inspected
 
     @property
     def inspector(self) -> str:
@@ -193,11 +191,11 @@ class InspectionPoint(e.Point):
         float
             weight of the point
         """
-        return self._weight
+        return self._state[6]
 
     @weight.setter
     def weight(self, weight: float):
-        self._weight = weight
+        self._state[6] = weight
 
 
 class InspectionPointSet(e.Entity):
