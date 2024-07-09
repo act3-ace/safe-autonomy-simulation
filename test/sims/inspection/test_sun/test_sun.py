@@ -8,7 +8,10 @@ def test_init_default():
     sun = safe_autonomy_simulation.sims.inspection.Sun()
     assert sun.theta == 0
     assert sun.n == safe_autonomy_simulation.sims.spacecraft.defaults.N_DEFAULT
-    assert np.all(sun.position == np.array([0, 0, 0]))
+    assert np.all(
+        sun.position
+        == np.array([safe_autonomy_simulation.sims.inspection.Sun.SUN_DISTANCE, 0, 0])
+    )
     assert not sun.dynamics.use_jax
     assert sun.dynamics.integration_method == "RK45"
     assert sun.dynamics.n == safe_autonomy_simulation.sims.spacecraft.defaults.N_DEFAULT
@@ -42,5 +45,16 @@ def test_init_args(name, theta, n, integration_method, use_jax, material):
     assert sun.dynamics.integration_method == integration_method
     assert sun.dynamics.use_jax == use_jax
     assert sun.material == material
-    assert np.all(sun.position == np.array([0, 0, 0]))
+    assert np.all(
+        sun.position
+        == np.array(
+            [
+                safe_autonomy_simulation.sims.inspection.Sun.SUN_DISTANCE
+                * np.cos(theta),
+                safe_autonomy_simulation.sims.inspection.Sun.SUN_DISTANCE
+                * np.sin(theta),
+                0,
+            ]
+        )
+    )
     assert sun.dynamics.n == n
