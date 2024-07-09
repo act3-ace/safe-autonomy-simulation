@@ -97,7 +97,7 @@ def test_init(
     assert np.all(camera.position == position)
     assert np.all(camera.velocity == velocity)
     assert np.all(camera.orientation == orientation)
-    assert np.all(camera.angular_velocity == angular_velocity % (2.0 * np.pi))
+    assert np.all(camera.angular_velocity == angular_velocity)
     assert camera.control_queue == control_queue
     assert camera.material == material
     assert camera.parent == parent

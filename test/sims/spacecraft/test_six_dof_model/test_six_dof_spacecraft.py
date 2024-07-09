@@ -140,11 +140,11 @@ def test_init_args(
     assert np.all(spacecraft.position == position)
     assert np.all(spacecraft.velocity == velocity)
     assert np.all(spacecraft.orientation == orientation)
-    assert np.all(spacecraft.angular_velocity == angular_velocity % (2 * np.pi))
+    assert np.all(spacecraft.angular_velocity == angular_velocity)
     assert np.all(
         spacecraft.state
         == np.concatenate(
-            (position, velocity, orientation, angular_velocity % (2 * np.pi))
+            (position, velocity, orientation, angular_velocity)
         )
     )
     assert spacecraft.dynamics.m == m

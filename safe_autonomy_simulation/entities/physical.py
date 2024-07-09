@@ -126,9 +126,7 @@ class PhysicalEntity(e.Entity):
         self._initial_position = position
         self._initial_velocity = velocity
         self._initial_orientation = orientation
-        self._initial_angular_velocity = angular_velocity % (
-            2 * np.pi
-        )  # wrap angles to [0, 2 * pi]
+        self._initial_angular_velocity = angular_velocity
         super().__init__(
             name=name,
             dynamics=dynamics,
@@ -184,7 +182,7 @@ class PhysicalEntity(e.Entity):
             state.shape == self.state.shape
         ), f"State shape must match {self.state.shape}, got {state.shape}"
         state = state.astype(self._state.dtype)
-        state[10:] = state[10:] % (2 * np.pi)  # wrap angles to [0, 2 * pi]
+        state[10:] = state[10:13]
         self._state = state
 
     @property

@@ -129,7 +129,7 @@ def test_init_args(
     assert np.all(target.position == position)
     assert np.all(target.velocity == velocity)
     assert np.all(target.orientation == orientation)
-    assert np.all(target.angular_velocity == angular_velocity % (2 * np.pi))
+    assert np.all(target.angular_velocity == angular_velocity)
     assert target.dynamics.m == m
     assert target.dynamics.n == n
     assert target.dynamics.trajectory_samples == trajectory_samples
