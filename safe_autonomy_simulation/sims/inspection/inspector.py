@@ -83,6 +83,17 @@ class Inspector(spacecraft.CWHSpacecraft):
             )
         )
 
+    def reset(self):
+        super().reset()
+        self.camera.state = np.concatenate(
+            (
+                self.position,
+                self.velocity,
+                self.orientation,
+                self.angular_velocity,
+            )
+        )
+
     @property
     def camera(self) -> cam.Camera:
         """Inspector camera sensor
@@ -201,6 +212,17 @@ class SixDOFInspector(spacecraft.SixDOFSpacecraft):
     def _post_step(self, step_size: float):
         # Set camera state == spacecraft state
         super()._post_step(step_size)
+        self.camera.state = np.concatenate(
+            (
+                self.position,
+                self.velocity,
+                self.orientation,
+                self.angular_velocity,
+            )
+        )
+
+    def reset(self):
+        super().reset()
         self.camera.state = np.concatenate(
             (
                 self.position,

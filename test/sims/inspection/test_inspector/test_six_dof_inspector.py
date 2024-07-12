@@ -150,3 +150,21 @@ def test__post_step():
             )
         )
     )
+
+
+def test_reset():
+    inspector = safe_autonomy_simulation.sims.inspection.SixDOFInspector(
+        name="inspector"
+    )
+    inspector.reset()
+    assert np.all(
+        inspector.camera.state
+        == np.concatenate(
+            (
+                inspector.position,
+                inspector.velocity,
+                inspector.orientation,
+                inspector.angular_velocity,
+            )
+        )
+    )
