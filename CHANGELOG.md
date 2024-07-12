@@ -1,3 +1,10 @@
+## [2.0.7](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v2.0.6...v2.0.7) (2024-07-12)
+
+
+### Bug Fixes
+
+* **sixdof:** use valid default bound types for sixdof state and state dot ([62b0d3f](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/commit/62b0d3f85506513e9d905e313f8cec011916db3c)), closes [#29](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/issues/29)
+
 ## [2.0.6](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v2.0.5...v2.0.6) (2024-07-12)
 
 
