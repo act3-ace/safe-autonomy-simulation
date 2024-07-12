@@ -1,3 +1,10 @@
+## [2.0.9](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v2.0.8...v2.0.9) (2024-07-12)
+
+
+### Bug Fixes
+
+* **camera:** set the camera state in the inspector `reset()` method ([2cc4e6d](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/commit/2cc4e6dfd7f537fab57158c86a516e90de5aad5f)), closes [#32](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/issues/32)
+
 ## [2.0.8](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v2.0.7...v2.0.8) (2024-07-12)
 
 
