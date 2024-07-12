@@ -260,13 +260,13 @@ class SixDOFDynamics(d.ControlAffineODEDynamics):
     trajectory_samples : int, optional
         number of trajectory samples the generate and store on steps, by default 0
     state_max : float or np.ndarray, optional
-        Maximum state values, by default None
+        Maximum state values, by default np.inf
     state_min : float or np.ndarray, optional
-        Minimum state values, by default None
+        Minimum state values, by default -np.inf
     state_dot_max : float or np.ndarray, optional
-        Maximum state derivative values, by default None
+        Maximum state derivative values, by default np.inf
     state_dot_min : float or np.ndarray, optional
-        Minimum state derivative values, by default None
+        Minimum state derivative values, by default -np.inf
     integration_method: str, optional
         Numerical integration method passed to dynamics model. See BaseODESolverDynamics. By default "RK45"
     use_jax: bool, optional
@@ -282,10 +282,10 @@ class SixDOFDynamics(d.ControlAffineODEDynamics):
         n=defaults.N_DEFAULT,
         body_frame_thrust=True,
         trajectory_samples: int = 0,
-        state_max: typing.Union[float, np.ndarray] = None,
-        state_min: typing.Union[float, np.ndarray] = None,
-        state_dot_max: typing.Union[float, np.ndarray] = None,
-        state_dot_min: typing.Union[float, np.ndarray] = None,
+        state_max: typing.Union[float, np.ndarray] = np.inf,
+        state_min: typing.Union[float, np.ndarray] = -np.inf,
+        state_dot_max: typing.Union[float, np.ndarray] = np.inf,
+        state_dot_min: typing.Union[float, np.ndarray] = -np.inf,
         integration_method="RK45",
         use_jax=False,
     ):
