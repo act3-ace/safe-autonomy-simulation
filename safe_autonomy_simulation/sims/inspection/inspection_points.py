@@ -444,7 +444,7 @@ class InspectionPointSet(e.Entity):
             kmeans = cluster.KMeans(
                 init=init,
                 n_clusters=n,
-                n_init=10,
+                n_init=1,
                 max_iter=50,
             )
             kmeans.fit(data)
