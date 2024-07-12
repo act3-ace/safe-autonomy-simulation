@@ -1,3 +1,10 @@
+## [2.0.6](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v2.0.5...v2.0.6) (2024-07-12)
+
+
+### Bug Fixes
+
+* **controls:** unambiguous truth value check for control bounds ([76e2fc1](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/commit/76e2fc142929407bebd097cb93c1a93da446899e)), closes [#28](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/issues/28)
+
 ## [2.0.5](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v2.0.4...v2.0.5) (2024-07-09)
 
 
