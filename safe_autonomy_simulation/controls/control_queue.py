@@ -104,7 +104,7 @@ class ControlQueue:
             raise ValueError("control must be type list, np.ndarray or jnp.ndarray")
 
         # enforce control bounds (if any)
-        if (self.control_min or self.control_max) and (
+        if (self.control_min is not None or self.control_max is not None) and (
             np.any(control < self.control_min) or np.any(control > self.control_max)
         ):
             warnings.warn(
