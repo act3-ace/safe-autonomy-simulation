@@ -1,3 +1,10 @@
+## [2.0.8](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v2.0.7...v2.0.8) (2024-07-12)
+
+
+### Bug Fixes
+
+* **inspection:** set kmeans n_init to 1 to suppress runtime warning ([8a37a4f](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/commit/8a37a4f01a03a027f7bdbb573c97dff44106d56f)), closes [#31](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/issues/31)
+
 ## [2.0.7](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v2.0.6...v2.0.7) (2024-07-12)
 
 
