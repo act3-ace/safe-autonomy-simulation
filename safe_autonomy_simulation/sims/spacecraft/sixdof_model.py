@@ -324,7 +324,7 @@ class SixDOFDynamics(d.ControlAffineODEDynamics):
             dtype=np.float64,
         )
 
-        if state_min is None:
+        if state_min == -np.inf:
             state_min = np.array(
                 [
                     -np.inf,
@@ -343,7 +343,7 @@ class SixDOFDynamics(d.ControlAffineODEDynamics):
                 ]
             )
 
-        if state_max is None:
+        if state_max == np.inf:
             state_max = np.array(
                 [
                     np.inf,
