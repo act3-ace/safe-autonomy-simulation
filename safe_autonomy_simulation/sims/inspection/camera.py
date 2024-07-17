@@ -19,13 +19,13 @@ class Camera(e.PhysicalEntity):
     name: str
         name of the entity
     fov: float
-        field of view of the camera
+        field of view of the camera in radians
     resolution: list[int]
-        resolution of the camera
+        resolution of the camera in pixels
     focal_length: float
-        focal length of the camera
+        focal length of the camera in meters
     pixel_pitch: float
-        pixel pitch of the camera
+        pixel pitch of the camera in meters
     position: np.ndarray, optional
         initial absolute position of the entity, by default [0, 0, 0]
     velocity: np.ndarray, optional

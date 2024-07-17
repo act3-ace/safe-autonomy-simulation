@@ -236,9 +236,9 @@ class InspectionPointSet(e.Entity):
         control_queue: c.ControlQueue = c.NoControl(),
         material: m.Material = m.BLACK,
     ):
-        self._points: typing.Dict[int, InspectionPoint] = (
-            {}
-        )  # initialize points as empty for correct parent assignment
+        self._points: typing.Dict[
+            int, InspectionPoint
+        ] = {}  # initialize points as empty for correct parent assignment
         super().__init__(
             name=name,
             parent=parent,
@@ -256,6 +256,11 @@ class InspectionPointSet(e.Entity):
     def build_initial_state(self) -> np.ndarray:
         state = np.array([p.state for p in self.points.values()])
         return state
+
+    def _pre_step(self, step_size: float):
+        super()._pre_step(step_size)
+        # Update state in pre step to ensure that all points have been updated
+        self._state = np.array([p.state for p in self.points.values()])
 
     def _post_step(self, step_size: float):
         super()._post_step(step_size)
@@ -282,10 +287,13 @@ class InspectionPointSet(e.Entity):
         typing.Dict[int, Point]
             dictionary of {point_id: Point}
         """
-        assert points_algorithm in [
-            "cmu",
-            "fibonacci",
-        ], f"Invalid points algorithm {points_algorithm}. Must be one of 'cmu' or 'fibonacci'"
+        assert (
+            points_algorithm
+            in [
+                "cmu",
+                "fibonacci",
+            ]
+        ), f"Invalid points algorithm {points_algorithm}. Must be one of 'cmu' or 'fibonacci'"
 
         if points_algorithm == "cmu":
             points_alg = sphere.points_on_sphere_cmu
@@ -373,7 +381,7 @@ class InspectionPointSet(e.Entity):
                 cos_theta = np.dot(p / np.linalg.norm(p), r_c)
                 angle_to_point = np.arccos(cos_theta)
                 # If the point can be inspected (within FOV)
-                if angle_to_point <= (camera.fov / 2) * np.pi / 180:
+                if angle_to_point <= (camera.fov / 2):
                     # if no point light (sun), assume no illumination
                     if not sun:
                         # project point onto inspection zone axis and check if in inspection zone
@@ -503,7 +511,9 @@ class InspectionPointSet(e.Entity):
         percent = self.get_num_points_inspected(inspector_entity) / total_num_points
         return percent
 
-    def get_total_weight_inspected(self, inspector_entity: e.Entity | None = None) -> float:
+    def get_total_weight_inspected(
+        self, inspector_entity: e.Entity | None = None
+    ) -> float:
         """Get total weight of points inspected by an entity.
 
         If no entity is provided, return total weight of points inspected.
