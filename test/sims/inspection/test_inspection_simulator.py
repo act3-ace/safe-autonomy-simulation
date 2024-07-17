@@ -300,8 +300,13 @@ def test_run_sim(frame_rate, inspectors, targets):
 
     rng = np.random.default_rng()
 
+    prev_inspected = {target.name: 0 for target in inspection_sim.targets}
     for i in range(100):
         for inspector in inspection_sim.inspectors:
             control = rng.uniform(-1, 1, size=inspector.control_queue.default_control.shape)
             inspector.add_control(control)
         inspection_sim.step()
+        for target in inspection_sim.targets:
+            num_inspected = target.inspection_points.get_num_points_inspected()
+            assert num_inspected >= prev_inspected[target.name]
+            prev_inspected[target.name] = num_inspected
