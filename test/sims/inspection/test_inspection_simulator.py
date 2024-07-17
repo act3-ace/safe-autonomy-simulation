@@ -245,3 +245,63 @@ def test_step(frame_rate, inspectors, targets):
                 control=point.control_queue.default_control,
             )
             assert np.all(point.state == new_point_state)
+
+
+@pytest.mark.parametrize(
+    "frame_rate, inspectors, targets",
+    [
+        (
+            1,
+            [
+                safe_autonomy_simulation.sims.inspection.Inspector(
+                    name="inspector",
+                    position=np.array([0, 0, 0]),
+                ),
+            ],
+            [
+                safe_autonomy_simulation.sims.inspection.Target(
+                    name="target",
+                    position=np.array([1, 0, 0]),
+                    num_points=10,
+                    radius=1,
+                    priority_vector=np.array([1, 0, 0]),
+                )
+            ],
+        ),
+        (
+            1,
+            [
+                safe_autonomy_simulation.sims.inspection.SixDOFInspector(
+                    name="inspector",
+                    position=np.array([0, 0, 0]),
+                ),
+            ],
+            [
+                safe_autonomy_simulation.sims.inspection.SixDOFTarget(
+                    name="target",
+                    position=np.array([1, 0, 0]),
+                    num_points=10,
+                    radius=1,
+                    priority_vector=np.array([1, 0, 0]),
+                )
+            ],
+        )
+    ],
+)
+def test_run_sim(frame_rate, inspectors, targets):
+    inspection_sim = safe_autonomy_simulation.sims.inspection.InspectionSimulator(
+        frame_rate=frame_rate,
+        inspectors=inspectors,
+        targets=targets,
+        sun=safe_autonomy_simulation.sims.inspection.Sun(),
+        binary_ray=True,
+    )
+    inspection_sim.reset()
+
+    rng = np.random.default_rng()
+
+    for i in range(100):
+        for inspector in inspection_sim.inspectors:
+            control = rng.uniform(-1, 1, size=inspector.control_queue.default_control.shape)
+            inspector.add_control(control)
+        inspection_sim.step()
