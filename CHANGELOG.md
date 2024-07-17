@@ -1,3 +1,10 @@
+## [2.0.11](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v2.0.10...v2.0.11) (2024-07-17)
+
+
+### Bug Fixes
+
+* **inspection points:** ensure `InspectionPointSet` state is properly set during `step()` ([953afdf](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/commit/953afdfdc01ffe89f94cacf237aeb028d916fff0)), closes [#35](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/issues/35)
+
 ## [2.0.10](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v2.0.9...v2.0.10) (2024-07-17)
 
 
