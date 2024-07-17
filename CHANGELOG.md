@@ -1,3 +1,10 @@
+## [2.0.12](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v2.0.11...v2.0.12) (2024-07-17)
+
+
+### Bug Fixes
+
+* **inspection point set:** initialize inspection points with normalized weights ([3a26587](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/commit/3a2658734727c2d43204c4c4977766d3b4778e54)), closes [#38](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/issues/38)
+
 ## [2.0.11](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v2.0.10...v2.0.11) (2024-07-17)
 
 
