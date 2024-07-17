@@ -1,3 +1,10 @@
+## [2.0.10](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v2.0.9...v2.0.10) (2024-07-17)
+
+
+### Bug Fixes
+
+* **camera:** assume camera points at origin when not on sixdof spacecraft ([b3a2b77](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/commit/b3a2b778ca7135c5b0c04c83b7c645b36f93d237)), closes [#33](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/issues/33)
+
 ## [2.0.9](https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/compare/v2.0.8...v2.0.9) (2024-07-12)
 
 
