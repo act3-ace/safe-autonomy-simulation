@@ -503,7 +503,7 @@ class InspectionPointSet(e.Entity):
         percent = self.get_num_points_inspected(inspector_entity) / total_num_points
         return percent
 
-    def get_total_weight_inspected(self, inspector_entity: e.Entity = None) -> float:
+    def get_total_weight_inspected(self, inspector_entity: e.Entity | None = None) -> float:
         """Get total weight of points inspected by an entity.
 
         If no entity is provided, return total weight of points inspected.
