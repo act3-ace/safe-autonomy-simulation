@@ -12,6 +12,7 @@ import safe_autonomy_simulation.materials as m
 import safe_autonomy_simulation.sims.inspection.camera as cam
 import safe_autonomy_simulation.sims.inspection.sun as sun
 import safe_autonomy_simulation.sims.inspection.utils.sphere as sphere
+import safe_autonomy_simulation.sims.spacecraft as spacecraft
 
 
 class InspectionPointDynamics(d.Dynamics):
@@ -343,11 +344,15 @@ class InspectionPointSet(e.Entity):
         """
         # calculate h of the spherical cap (inspection zone)
         cam_position = camera.position
-        # TODO: orientation axis vector should be defined externally
-        r_c = transform.Rotation.from_quat(camera.orientation).apply(
-            np.array([1, 0, 0])
-        )
-        # For translational motion only, camera always points towards chief
+        if isinstance(camera.parent, spacecraft.SixDOFSpacecraft):
+            # TODO: orientation axis vector should be defined externally
+            r_c = transform.Rotation.from_quat(camera.orientation).apply(
+                np.array([1, 0, 0])
+            )
+        else:
+            # For translational motion only, camera always points towards chief (origin)
+            # TODO: don't assume chief is at origin
+            r_c = -cam_position
         r_c = r_c / np.linalg.norm(r_c)  # inspector sensor unit vector
 
         r = self.radius

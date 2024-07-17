@@ -57,10 +57,11 @@ class InspectionSimulator(sim.Simulator):
 
     def update(self):
         # set cameras to point at target if inspectors are 3dof and there is only one target
-        if isinstance(self.inspectors[0], i.Inspector) and len(self.targets) == 1:
-            target = self.targets[0]
-            for inspector in self.inspectors:
-                inspector.camera.point_at(target)
+        # if isinstance(self.inspectors[0], i.Inspector) and len(self.targets) == 1:
+        #     target = self.targets[0]
+        #     for inspector in self.inspectors:
+        #         inspector.camera.point_at(target)
+
         # update inspection points statuses after all entities have been stepped
         self._update_inspected()
 

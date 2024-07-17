@@ -78,25 +78,25 @@ class Camera(e.PhysicalEntity):
         self._focal_length = focal_length
         self._pixel_pitch = pixel_pitch
 
-    def point_at(self, target: e.PhysicalEntity):
-        """Point the camera at a target
+    # def point_at(self, target: e.PhysicalEntity):
+    #     """Point the camera at a target
 
-        Sets the camera orientation to point at the target
-        entity's position.
+    #     Sets the camera orientation to point at the target
+    #     entity's position.
 
-        Parameters
-        ----------
-        target: Entity
-            target to point the camera at
-        """
-        target_position = target.position
-        target_direction = vector.normalize(target_position - self.position)
-        new_orientation = transform.Rotation.from_euler(
-            "xyz", target_direction
-        ).as_quat()
-        self.state = np.concatenate(
-            (self.position, self.velocity, new_orientation, self.angular_velocity)
-        )
+    #     Parameters
+    #     ----------
+    #     target: Entity
+    #         target to point the camera at
+    #     """
+    #     target_position = target.position
+    #     target_direction = vector.normalize(target_position - self.position)
+    #     new_orientation = transform.Rotation.from_euler(
+    #         "xyz", target_direction
+    #     ).as_quat()
+    #     self.state = np.concatenate(
+    #         (self.position, self.velocity, new_orientation, self.angular_velocity)
+    #     )
 
     def check_point_illumination(
         self,

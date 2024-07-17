@@ -106,35 +106,35 @@ def test_init(
         assert child in camera.children
 
 
-@pytest.mark.parametrize(
-    "camera, target",
-    [
-        (
-            safe_autonomy_simulation.sims.inspection.Camera(
-                name="camera",
-                fov=np.pi / 2,
-                resolution=[1920, 1080],
-                focal_length=1,
-                pixel_pitch=1e-3,
-                position=np.array([0, 0, 0]),
-                velocity=np.array([0, 0, 0]),
-                orientation=np.array([0, 0, 0, 1]),
-                angular_velocity=np.array([0, 0, 0]),
-            ),
-            safe_autonomy_simulation.entities.Point(
-                name="target", position=np.array([1, 0, 0])
-            ),
-        ),
-    ],
-)
-def test_point_at(camera, target):
-    direction = (target.position - camera.position) / np.linalg.norm(
-        target.position - camera.position
-    )
-    camera.point_at(target)
-    assert np.all(
-        camera.orientation == transform.Rotation.from_euler("xyz", direction).as_quat()
-    )
+# @pytest.mark.parametrize(
+#     "camera, target",
+#     [
+#         (
+#             safe_autonomy_simulation.sims.inspection.Camera(
+#                 name="camera",
+#                 fov=np.pi / 2,
+#                 resolution=[1920, 1080],
+#                 focal_length=1,
+#                 pixel_pitch=1e-3,
+#                 position=np.array([0, 0, 0]),
+#                 velocity=np.array([0, 0, 0]),
+#                 orientation=np.array([0, 0, 0, 1]),
+#                 angular_velocity=np.array([0, 0, 0]),
+#             ),
+#             safe_autonomy_simulation.entities.Point(
+#                 name="target", position=np.array([1, 0, 0])
+#             ),
+#         ),
+#     ],
+# )
+# def test_point_at(camera, target):
+#     direction = (target.position - camera.position) / np.linalg.norm(
+#         target.position - camera.position
+#     )
+#     camera.point_at(target)
+#     assert np.all(
+#         camera.orientation == transform.Rotation.from_euler("xyz", direction).as_quat()
+#     )
 
 
 @pytest.mark.parametrize(
