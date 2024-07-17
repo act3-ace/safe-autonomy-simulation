@@ -257,6 +257,11 @@ class InspectionPointSet(e.Entity):
         state = np.array([p.state for p in self.points.values()])
         return state
 
+    def _pre_step(self, step_size: float):
+        super()._pre_step(step_size)
+        # Update state in pre step to ensure that all points have been updated
+        self._state = np.array([p.state for p in self.points.values()])
+
     def _post_step(self, step_size: float):
         super()._post_step(step_size)
         # Updating state in post step to ensure that all points have been updated
