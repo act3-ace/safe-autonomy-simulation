@@ -304,16 +304,19 @@ class InspectionPointSet(e.Entity):
         point_positions = points_alg(
             num_points, self.radius
         )  # TODO: HANDLE POSITION UNITS*
+        point_weights = [
+            np.arccos(
+                np.dot(-self.priority_vector, pos)
+                / (np.linalg.norm(-self.priority_vector) * np.linalg.norm(pos))
+            )
+            / np.pi
+            for pos in point_positions
+        ]
+        total_weight = sum(point_weights)
+        point_weights = [w / total_weight for w in point_weights]  # normalize weights
 
         points = {}
-        for i, pos in enumerate(point_positions):
-            weight = (
-                np.arccos(
-                    np.dot(-self.priority_vector, pos)
-                    / (np.linalg.norm(-self.priority_vector) * np.linalg.norm(pos))
-                )
-                / np.pi
-            )
+        for i, (pos, weight) in enumerate(zip(point_positions, point_weights)):
             point = InspectionPoint(
                 position=pos,
                 inspected=False,
@@ -322,11 +325,6 @@ class InspectionPointSet(e.Entity):
                 parent=self,
             )
             points[i] = point
-
-        # normalize point weights
-        total_weight = sum([p.weight for p in points.values()])
-        for _, point in points.items():
-            point.weight /= total_weight
 
         return points
 

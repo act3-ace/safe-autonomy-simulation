@@ -147,6 +147,28 @@ def test_build_initial_state():
     assert np.all(point_set.build_initial_state() == expected_state)
 
 
+def test_reset():
+    point_set = safe_autonomy_simulation.sims.inspection.InspectionPointSet(
+        name="set",
+        parent=safe_autonomy_simulation.entities.Point(
+            "parent", position=np.array([0, 0, 0])
+        ),
+        num_points=10,
+        radius=1,
+        priority_vector=np.array([1, 0, 0]),
+    )
+    initial_weights = {i: p.weight for i, p in point_set.points.items()}
+    point_set.reset()
+    for i, point in point_set.points.items():
+        assert np.allclose(np.linalg.norm(point.position), 1)
+        assert not point.inspected
+        assert point.inspector is None
+        assert point.parent == point_set
+        assert point.name == "point"
+        assert point.weight == initial_weights[i]
+
+
+
 def test__pre_step():
     point_set = safe_autonomy_simulation.sims.inspection.InspectionPointSet(
         name="set",
