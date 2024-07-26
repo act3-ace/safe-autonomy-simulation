@@ -16,7 +16,6 @@ motion and rotation about the z axis. 3D scenario is pending.
 
 import typing
 
-import numpy as np
 import pint
 import scipy.spatial.transform as transform
 
@@ -25,6 +24,11 @@ import safe_autonomy_simulation.dynamics as d
 import safe_autonomy_simulation.materials as mat
 import safe_autonomy_simulation.controls as c
 import safe_autonomy_simulation.sims.spacecraft.defaults as defaults
+
+try:
+    import jax.numpy as np
+except ImportError:
+    import numpy as np
 
 
 class CWHRotation2dSpacecraft(
@@ -84,8 +88,6 @@ class CWHRotation2dSpacecraft(
         number of trajectory samples the generate and store on steps, by default 0
     integration_method: str, optional
         Numerical integration method passed to dynamics model. See BaseODESolverDynamics. By default "RK45".
-    use_jax : bool, optional
-        True if using jax version of numpy/scipy in dynamics model. By default, False
     material: Material, optional
         Material properties of the spacecraft, by default CWH_MATERIAL
     parent: Union[PhysicalEntity, None], optional
@@ -111,7 +113,6 @@ class CWHRotation2dSpacecraft(
         n=defaults.N_DEFAULT,
         trajectory_samples=0,
         integration_method="RK45",
-        use_jax: bool = False,
         material: mat.Material = defaults.CWH_MATERIAL,
         parent: typing.Union[e.PhysicalEntity, None] = None,
         children: list[e.PhysicalEntity] = [],
@@ -150,7 +151,6 @@ class CWHRotation2dSpacecraft(
             n=n,
             trajectory_samples=trajectory_samples,
             integration_method=integration_method,
-            use_jax=use_jax,
         )
 
         super().__init__(
@@ -198,7 +198,7 @@ class CWHRotation2dSpacecraft(
             state vector of form [x, y, x_dot, y_dot, theta, wz]
         """
         return np.concatenate(
-            [self.position[:2], self.velocity[:2], [self.theta], [self.wz]]
+            [self.position[:2], self.velocity[:2], np.array([self.theta]), np.array([self.wz])]
         )
 
     @state.setter
@@ -251,8 +251,6 @@ class CWHRotation2dDynamics(d.ControlAffineODEDynamics):
         Maximum state derivative values, by default None
     integration_method: str, optional
         Numerical integration method, by default "RK45"
-    use_jax: bool, optional
-        Use jax version of numpy/scipy, by default False
     """
 
     def __init__(
@@ -268,7 +266,6 @@ class CWHRotation2dDynamics(d.ControlAffineODEDynamics):
         state_dot_min: typing.Union[float, np.ndarray, None] = None,
         state_dot_max: typing.Union[float, np.ndarray, None] = None,
         integration_method: str = "RK45",
-        use_jax: bool = False,
     ):
         self.m = m  # kg
         self.inertia = inertia  # kg*m^2
@@ -308,27 +305,27 @@ class CWHRotation2dDynamics(d.ControlAffineODEDynamics):
             state_dot_min=state_dot_min,
             state_dot_max=state_dot_max,
             integration_method=integration_method,
-            use_jax=use_jax,
         )
 
-        A = np.array(
+        # Use self.np for numpy operations to allow for jax compatibility
+        A = self.np.array(
             [
                 [0, 0, 1, 0],
                 [0, 0, 0, 1],
                 [3 * n**2, 0, 0, 2 * n],
                 [0, 0, -2 * n, 0],
             ],
-            dtype=np.float64,
+            dtype=self.np.float64,
         )
 
-        B = np.array(
+        B = self.np.array(
             [
                 [0, 0],
                 [0, 0],
                 [1 / m, 0],
                 [0, 1 / m],
             ],
-            dtype=np.float64,
+            dtype=self.np.float64,
         )
 
         self.A = self.np.copy(A)
@@ -337,7 +334,7 @@ class CWHRotation2dDynamics(d.ControlAffineODEDynamics):
     def state_transition_system(self, state: np.ndarray) -> np.ndarray:
         x, y, x_dot, y_dot, theta, wz = state
         # Form separate state vector for translational state
-        pos_vel_state_vec = self.np.array([x, y, x_dot, y_dot], dtype=np.float32)
+        pos_vel_state_vec = self.np.array([x, y, x_dot, y_dot], dtype=self.np.float32)
         # Compute derivatives
         pos_vel_derivative = self.A @ pos_vel_state_vec
 
@@ -351,7 +348,7 @@ class CWHRotation2dDynamics(d.ControlAffineODEDynamics):
                 pos_vel_derivative[3],
                 0,
             ],
-            dtype=np.float32,
+            dtype=self.np.float32,
         )
 
         return state_derivative

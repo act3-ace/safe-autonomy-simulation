@@ -21,8 +21,6 @@ class PassThroughDynamics(d.Dynamics):
         When a float, represents single limit applied to entire state vector.
         When an ndarray, each element represents the limit to the corresponding state vector element.
         By default, np.inf
-    use_jax : bool, optional
-        True if using jax version of numpy/scipy. By default, False
     """
 
     def _step(self, step_size: float, state: np.ndarray, control: np.ndarray):

@@ -182,7 +182,6 @@ class PhysicalEntity(e.Entity):
             state.shape == self.state.shape
         ), f"State shape must match {self.state.shape}, got {state.shape}"
         state = state.astype(self._state.dtype)
-        state[10:] = state[10:13]
         self._state = state
 
     @property

@@ -105,7 +105,7 @@ def test_init_default():
 
 
 @pytest.mark.parametrize(
-    "m, inertia, ang_acc_limit, ang_vel_limit, n, trajectory_samples, state_min, state_max, state_dot_min, state_dot_max, integration_method, use_jax",
+    "m, inertia, ang_acc_limit, ang_vel_limit, n, trajectory_samples, state_min, state_max, state_dot_min, state_dot_max, integration_method",
     [
         (
             1,
@@ -119,7 +119,6 @@ def test_init_default():
             np.zeros(6),
             np.ones(6),
             "Euler",
-            False,
         ),
         (
             2,
@@ -133,7 +132,6 @@ def test_init_default():
             np.ones(6),
             np.zeros(6),
             "RK45",
-            True,
         ),
     ],
 )
@@ -149,7 +147,6 @@ def test_init_args(
     state_dot_min,
     state_dot_max,
     integration_method,
-    use_jax,
 ):
     dynamics = (
         safe_autonomy_simulation.sims.spacecraft.rotational_model.CWHRotation2dDynamics(
@@ -164,7 +161,6 @@ def test_init_args(
             state_dot_min=state_dot_min,
             state_dot_max=state_dot_max,
             integration_method=integration_method,
-            use_jax=use_jax,
         )
     )
     assert dynamics.m == m
@@ -178,7 +174,6 @@ def test_init_args(
     assert np.all(dynamics.state_dot_min == state_dot_min)
     assert np.all(dynamics.state_dot_max == state_dot_max)
     assert dynamics.integration_method == integration_method
-    assert dynamics.use_jax == use_jax
     assert np.all(
         dynamics.A
         == np.array(

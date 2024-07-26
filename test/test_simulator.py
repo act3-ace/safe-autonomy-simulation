@@ -80,4 +80,4 @@ def test_simulator_step(simulator):
         simulator.step()
     assert simulator.sim_time == 10
     for entity in simulator.entities:
-        assert entity.state == [10]
+        assert entity.state == np.array([10])

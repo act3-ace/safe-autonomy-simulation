@@ -1,20 +1,11 @@
 """Base class for state transition dynamics models of entities in the simulation environment."""
 
 import typing
-import numpy as np
-import types
 
-if typing.TYPE_CHECKING:
-    import jax
-    import jax.numpy as jnp
-else:
-    try:
-        import jax
-        import jax.numpy as jnp
-    except ImportError:
-        jax = None
-        jnp = None
-        odeint = None
+try:
+    import jax.numpy as np
+except ImportError:
+    import numpy as np
 
 
 class Dynamics:
@@ -34,29 +25,16 @@ class Dynamics:
         When a float, represents single limit applied to entire state vector.
         When an ndarray, each element represents the limit to the corresponding state vector element.
         By default, np.inf
-    use_jax : bool, optional
-        True if using jax version of numpy/scipy. By default, False
     """
 
     def __init__(
         self,
         state_min: typing.Union[float, np.ndarray] = -np.inf,
         state_max: typing.Union[float, np.ndarray] = np.inf,
-        use_jax: bool = False,
     ):
+        self.np = np
         self.state_min = state_min
         self.state_max = state_max
-        self.use_jax = use_jax
-
-        self.np: types.ModuleType
-        if use_jax:
-            if jax is None:  # pylint: disable=used-before-assignment
-                raise ImportError(
-                    "Failed to import jax. Make sure to install jax if using the `use_jax` option"
-                )
-            self.np = jnp
-        else:
-            self.np = np
 
     def step(
         self, step_size: float, state: np.ndarray, control: np.ndarray

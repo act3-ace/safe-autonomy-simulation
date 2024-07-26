@@ -2,19 +2,15 @@
 
 import typing
 import typing_extensions
-import numpy as np
 import safe_autonomy_simulation.dynamics as d
 import safe_autonomy_simulation.materials as materials
 import safe_autonomy_simulation.controls.control_queue as controls
 import safe_autonomy_simulation.utils.sets as sets
 
-if typing.TYPE_CHECKING:
-    import jax.numpy as jnp
-else:
-    try:
-        import jax.numpy as jnp
-    except ImportError:
-        jnp = None
+try:
+    import jax.numpy as np
+except ImportError:
+    import numpy as np
 
 
 class Entity:
@@ -153,7 +149,7 @@ class Entity:
             child.step(step_size)
         self._post_step(step_size)
 
-    def add_control(self, control: typing.Union[np.ndarray, list, jnp.ndarray]):
+    def add_control(self, control: typing.Union[np.ndarray, list]):
         """Add a control to the entity's control queue
 
         Parameters
