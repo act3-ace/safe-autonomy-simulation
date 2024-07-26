@@ -1,52 +1,95 @@
 # safe-autonomy-simulation
 
-safe-autonomy-simulation is designed to:
+## Intro
 
-- <!--replace this with purpose 1-->
-- <!--replace this with purpose 2-->
-- <!--replace this with purpose 3 or delete, and so on-->
+The `safe-autonomy-simulation` package provides a framework for building continuous time simulation environments. This package also provides an example simulation environments and simulation entities in the `safe_autonomy_simulation.sims` package.
 
-safe-autonomy-simulation has features such as:
+## Installation
 
-- <!--replace this with feature 1-->
-- <!--replace this with feature 2-->
-- <!--replace this with feature 3 or delete, and so on-->
+The `safe-autonomy-simulation` package can be installed using any python package manager.
+It is recommended to install the project dependencies into an isolated virtual environment.
+The following command will install `safe-autonomy-simulation` into your local environment using the `pip` package manager:
 
-## Documentation
+```shell
+pip install safe-autonomy-simulation
+```
 
-The documentation for safe-autonomy-simulation is organized as follows:
+### Installing from source
 
-<!-- - **[Quick Start Guide](docs/quick-start-guide.md)**: provides documentation of prerequisites, downloading, installing, and configuring safe-autonomy-simulation. -->
-<!--Modify the description above, as needed, based on the product and what sections are actually in the doc -->
-<!-- - **[User Guide](docs/user-guide.md)**: provides a conceptual overview of safe-autonomy-simulation by explaining key concepts. This doc also helps users understand the benefits, usage, and best practices for working with safe-autonomy-simulation. -->
+Alternatively, `safe-autonomy-simulation` can be installed from source using any of the following methods. Again, it is recommended to install this package in an isolated virtual environment. The following sections describe how to install `safe-autonomy-simulation` from source in an isolated virtual environment using `poetry`, `conda`, and `pip + virtualenv`.
 
-## ACE Hub Environment
+#### Poetry (Recommended)
 
-Launch this library in an ACE Hub environment with this link:
+[Poetry](https://python-poetry.org/docs/) is a tool for dependency management and packaging in Python. It allows you to declare the libraries your project depends on and it will manage (install/update) them for you. Poetry will automatically create an isolated virtual environment in your project location
+for development.
 
-**[safe-autonomy-simulation ACE Hub Environment][ace-hub-url]**
+```shell
+cd safe-autonomy-simulation
+poetry install
+```
 
-> Alternative: **[VPN-only link][ace-hub-url-vpn]**
+#### Conda
 
-### Development Environments
+[Conda](https://conda.io/projects/conda/en/latest/index.html) is a powerful command line tool for package and environment management that runs on Windows, macOS, and Linux. Conda is often used for package and environment management in data science projects.
 
-Launch the latest development version of this library in an ACE Hub environment with this link:
+```shell
+cd safe-autonomy-simulation
+conda create -n my-env
+conda activate my-env
+conda install .
+```
 
-**[safe-autonomy-simulation Development Environment][ace-hub-url-dev]**
+#### Pip + virtualenv
 
-> Alternative: **[VPN-only link][ace-hub-url-vpn-dev]**
+[`pip`](https://pip.pypa.io/en/stable/) is the default package installer for Python. You can use pip to install packages from the Python Package Index and other indexes. [`virtualenv`](https://virtualenv.pypa.io/en/latest/) is a tool to create isolated Python environments. Since Python 3.3, a subset of it has been integrated into the python standard library under the `venv` module. You can use `pip` together with `virtualenv` to install your project dependencies in an isolated virtual environment.
 
-<!-- ## How to Contribute
+```shell
+cd safe-autonomy-simulation
+virtualenv venv
+pip install .
+```
 
-<!-- - **[Developer Guide](docs/developer-guide.md)**: detailed guide for contributing to the safe-autonomy-simulation repository. -->
+## Local Documentation
 
-<!-- ## Support -->
+This repository is setup to use [MkDocs](https://www.mkdocs.org/) which is a static site generator geared towards building project documentation. Documentation source files are written in Markdown, and configured with a single YAML configuration file.
 
-<!-- - **[Troubleshooting FAQ](docs/troubleshooting-faq.md)**: consult list of frequently asked questions and their answers. -->
-<!-- - **Mattermost channel(<!-- replace this with a URL and make link active -->)**: create a post in the safe-autonomy-simulation channel for assistance. -->
-<!-- - **Create a GitLab issue by email(replace this with a URL and make link active -->)** -->
+**NOTE**: In order to properly build the documentation locally, you must first have `safe-autonomy-simulation` and its dependencies installed in your container/environment!
 
-[ace-hub-url]: <https://hub.ace.act3.ai/environments/0?replicas=1&image=reg.git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation:latest&hubName=safe-autonomy-simulation&proxyType=normal&resources\[cpu\]=1&resources\[memory\]=1Gi&shm=64Mi>
-[ace-hub-url-vpn]: <https://hub.lion.act3-ace.ai/environments/0?replicas=1&image=reg.git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/cicd:latest&hubName=safe-autonomy-simulation&proxyType=normal&resources\[cpu\]=1&resources\[memory\]=1Gi&shm=64Mi>
-[ace-hub-url-dev]: <https://hub.ace.act3.ai/environments/0?replicas=1&image=reg.git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation:latest&hubName=safe-autonomy-simulation&proxyType=normal&resources\[cpu\]=1&resources\[memory\]=1Gi&shm=64Mi>
-[ace-hub-url-vpn-dev]: <https://hub.lion.act3-ace.ai/environments/0?replicas=1&image=reg.git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation/cicd:latest&hubName=safe-autonomy-simulation&proxyType=normal&resources\[cpu\]=1&resources\[memory\]=1Gi&shm=64Mi>
+### Build Docs with Poetry (recommended)
+
+Install the MkDocs modules in a container/virtual environment via Poetry:
+
+```shell
+poetry install --with docs
+```
+
+To build the documentation locally without serving it, use
+the following command from within your container/virtual environment:
+
+```shell
+poetry run mkdocs build
+```
+
+To serve the documentation on a local port, use the following
+command from within your container/virtual environment:
+
+```shell
+poetry run mkdocs serve 
+```
+
+## Usage
+
+## Public Release
+
+Approved for public release; distribution is unlimited. Case Number: AFRL-2024-3374
+
+## Team
+
+Jamie Cunningham,
+John McCarroll,
+Kyle Dunlap,
+Nate Hamilton,
+Charles Keating,
+Kochise Bennett,
+Aditesh Kumar,
+Kerianne Hobbs
