@@ -17,7 +17,6 @@ def test_init_default():
     assert dynamics.trajectory_samples == 0
     assert dynamics.integration_method == "RK45"
     assert dynamics.body_frame_thrust
-    assert not dynamics.use_jax
     ang_vel_limit = (
         safe_autonomy_simulation.sims.spacecraft.sixdof_model.number_list_to_np(
             safe_autonomy_simulation.sims.spacecraft.defaults.ANG_VEL_LIMIT_DEFAULT,
@@ -97,7 +96,7 @@ def test_init_default():
 
 
 @pytest.mark.parametrize(
-    "m, inertia_matrix, ang_acc_limit, ang_vel_limit, n, body_frame_thrust, trajectory_samples, state_max, state_min, state_dot_max, state_dot_min, integration_method, use_jax",
+    "m, inertia_matrix, ang_acc_limit, ang_vel_limit, n, body_frame_thrust, trajectory_samples, state_max, state_min, state_dot_max, state_dot_min, integration_method", 
     [
         (
             1,
@@ -112,7 +111,6 @@ def test_init_default():
             3,
             2,
             "RK45",
-            True,
         ),
     ],
 )
@@ -129,7 +127,6 @@ def test_init_args(
     state_dot_max,
     state_dot_min,
     integration_method,
-    use_jax,
 ):
     dynamics = safe_autonomy_simulation.sims.spacecraft.sixdof_model.SixDOFDynamics(
         m=m,
@@ -144,7 +141,6 @@ def test_init_args(
         state_dot_max=state_dot_max,
         state_dot_min=state_dot_min,
         integration_method=integration_method,
-        use_jax=use_jax,
     )
     assert dynamics.m == m
     assert np.all(dynamics.inertia_matrix == inertia_matrix)
@@ -156,7 +152,6 @@ def test_init_args(
     assert np.all(dynamics.state_dot_max == state_dot_max)
     assert np.all(dynamics.state_dot_min == state_dot_min)
     assert dynamics.integration_method == integration_method
-    assert dynamics.use_jax == use_jax
     ang_vel_limit = (
         safe_autonomy_simulation.sims.spacecraft.sixdof_model.number_list_to_np(
             ang_vel_limit, shape=(3,), dtype=np.float64

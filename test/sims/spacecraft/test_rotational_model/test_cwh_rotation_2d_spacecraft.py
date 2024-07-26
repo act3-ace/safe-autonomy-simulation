@@ -51,31 +51,35 @@ def test_init_default():
     assert np.all(spacecraft.control_queue.default_control == np.zeros(3))
     assert np.all(
         spacecraft.control_queue.control_min
-        == [
-            -1,
-            -1,
-            -min(
-                safe_autonomy_simulation.sims.spacecraft.defaults.ANG_ACC_LIMIT_DEFAULT,
-                safe_autonomy_simulation.sims.spacecraft.defaults.INERTIA_WHEEL_DEFAULT
-                * safe_autonomy_simulation.sims.spacecraft.defaults.ACC_LIMIT_WHEEL_DEFAULT
-                / safe_autonomy_simulation.sims.spacecraft.defaults.INERTIA_DEFAULT,
-            )
-            * safe_autonomy_simulation.sims.spacecraft.defaults.INERTIA_DEFAULT,
-        ]
+        == np.array(
+            [
+                -1,
+                -1,
+                -min(
+                    safe_autonomy_simulation.sims.spacecraft.defaults.ANG_ACC_LIMIT_DEFAULT,
+                    safe_autonomy_simulation.sims.spacecraft.defaults.INERTIA_WHEEL_DEFAULT
+                    * safe_autonomy_simulation.sims.spacecraft.defaults.ACC_LIMIT_WHEEL_DEFAULT
+                    / safe_autonomy_simulation.sims.spacecraft.defaults.INERTIA_DEFAULT,
+                )
+                * safe_autonomy_simulation.sims.spacecraft.defaults.INERTIA_DEFAULT,
+            ]
+        )
     )
     assert np.all(
         spacecraft.control_queue.control_max
-        == [
-            1,
-            1,
-            min(
-                safe_autonomy_simulation.sims.spacecraft.defaults.ANG_ACC_LIMIT_DEFAULT,
-                safe_autonomy_simulation.sims.spacecraft.defaults.INERTIA_WHEEL_DEFAULT
-                * safe_autonomy_simulation.sims.spacecraft.defaults.ACC_LIMIT_WHEEL_DEFAULT
-                / safe_autonomy_simulation.sims.spacecraft.defaults.INERTIA_DEFAULT,
-            )
-            * safe_autonomy_simulation.sims.spacecraft.defaults.INERTIA_DEFAULT,
-        ]
+        == np.array(
+            [
+                1,
+                1,
+                min(
+                    safe_autonomy_simulation.sims.spacecraft.defaults.ANG_ACC_LIMIT_DEFAULT,
+                    safe_autonomy_simulation.sims.spacecraft.defaults.INERTIA_WHEEL_DEFAULT
+                    * safe_autonomy_simulation.sims.spacecraft.defaults.ACC_LIMIT_WHEEL_DEFAULT
+                    / safe_autonomy_simulation.sims.spacecraft.defaults.INERTIA_DEFAULT,
+                )
+                * safe_autonomy_simulation.sims.spacecraft.defaults.INERTIA_DEFAULT,
+            ]
+        )
     )
     assert spacecraft.parent is None
     assert len(spacecraft.children) == 0
@@ -86,7 +90,7 @@ def test_init_default():
 
 
 @pytest.mark.parametrize(
-    "name, position, velocity, theta, wz, m, n, inertia, ang_acc_limit, ang_vel_limit, inertia_wheel, acc_limit_wheel, vel_limit_wheel, trajectory_samples, integration_method, use_jax, material, parent, children",
+    "name, position, velocity, theta, wz, m, n, inertia, ang_acc_limit, ang_vel_limit, inertia_wheel, acc_limit_wheel, vel_limit_wheel, trajectory_samples, integration_method, material, parent, children",
     [
         (
             "test",
@@ -104,7 +108,6 @@ def test_init_default():
             12,
             13,
             "RK45",
-            True,
             safe_autonomy_simulation.sims.spacecraft.defaults.CWH_MATERIAL,
             None,
             [],
@@ -125,7 +128,6 @@ def test_init_default():
             12,
             13,
             "Euler",
-            False,
             safe_autonomy_simulation.materials.BLACK,
             safe_autonomy_simulation.entities.Point(
                 name="parent", position=np.array([1, 2, 3])
@@ -154,7 +156,6 @@ def test_init_args(
     vel_limit_wheel,
     trajectory_samples,
     integration_method,
-    use_jax,
     material,
     parent,
     children,
@@ -175,7 +176,6 @@ def test_init_args(
         vel_limit_wheel=vel_limit_wheel,
         trajectory_samples=trajectory_samples,
         integration_method=integration_method,
-        use_jax=use_jax,
         material=material,
         parent=parent,
         children=children,
@@ -203,19 +203,24 @@ def test_init_args(
     assert np.all(spacecraft.control_queue.default_control == np.zeros(3))
     assert np.all(
         spacecraft.control_queue.control_min
-        == [
-            -1,
-            -1,
-            -min(ang_acc_limit, inertia_wheel * acc_limit_wheel / inertia) * inertia,
-        ]
+        == np.array(
+            [
+                -1,
+                -1,
+                -min(ang_acc_limit, inertia_wheel * acc_limit_wheel / inertia)
+                * inertia,
+            ]
+        )
     )
     assert np.all(
         spacecraft.control_queue.control_max
-        == [
-            1,
-            1,
-            min(ang_acc_limit, inertia_wheel * acc_limit_wheel / inertia) * inertia,
-        ]
+        == np.array(
+            [
+                1,
+                1,
+                min(ang_acc_limit, inertia_wheel * acc_limit_wheel / inertia) * inertia,
+            ]
+        )
     )
     assert spacecraft.parent == parent
     assert len(spacecraft.children) == len(children)

@@ -1,16 +1,11 @@
 """A default control queue with an empty default control vector."""
 
-import typing
-import numpy as np
 import safe_autonomy_simulation.controls.control_queue as c
 
-if typing.TYPE_CHECKING:
-    import jax.numpy as jnp
-else:
-    try:
-        import jax.numpy as jnp
-    except ImportError:
-        jnp = None
+try:
+    import jax.numpy as np
+except ImportError:
+    import numpy as np
 
 
 class NoControl(c.ControlQueue):
@@ -26,5 +21,5 @@ class NoControl(c.ControlQueue):
             control_max=np.empty(0),
         )
 
-    def add_control(self, control: np.ndarray | list | jnp.ndarray):
+    def add_control(self, control: np.ndarray | list):
         pass

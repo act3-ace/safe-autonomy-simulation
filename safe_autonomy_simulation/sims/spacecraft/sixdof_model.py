@@ -269,8 +269,6 @@ class SixDOFDynamics(d.ControlAffineODEDynamics):
         Minimum state derivative values, by default -np.inf
     integration_method: str, optional
         Numerical integration method passed to dynamics model. See BaseODESolverDynamics. By default "RK45"
-    use_jax: bool, optional
-        Flag to use JAX for numerical integration, by default False
     """
 
     def __init__(
@@ -287,7 +285,6 @@ class SixDOFDynamics(d.ControlAffineODEDynamics):
         state_dot_max: typing.Union[float, np.ndarray] = np.inf,
         state_dot_min: typing.Union[float, np.ndarray] = -np.inf,
         integration_method="RK45",
-        use_jax=False,
     ):
         self.m = m  # kg
         self.inertia_matrix = inertia_matrix  # kg*m^2
@@ -299,30 +296,6 @@ class SixDOFDynamics(d.ControlAffineODEDynamics):
 
         ang_acc_limit = number_list_to_np(ang_acc_limit, shape=(3,))  # rad/s^2
         ang_vel_limit = number_list_to_np(ang_vel_limit, shape=(3,))  # rad/s
-
-        self.A = np.array(
-            [
-                [0, 0, 0, 1, 0, 0],
-                [0, 0, 0, 0, 1, 0],
-                [0, 0, 0, 0, 0, 1],
-                [3 * n**2, 0, 0, 0, 2 * n, 0],
-                [0, 0, 0, -2 * n, 0, 0],
-                [0, 0, -(n**2), 0, 0, 0],
-            ],
-            dtype=np.float64,
-        )
-
-        self.B = np.array(
-            [
-                [0, 0, 0],
-                [0, 0, 0],
-                [0, 0, 0],
-                [1 / m, 0, 0],
-                [0, 1 / m, 0],
-                [0, 0, 1 / m],
-            ],
-            dtype=np.float64,
-        )
 
         if state_min == -np.inf:
             state_min = np.array(
@@ -369,41 +342,67 @@ class SixDOFDynamics(d.ControlAffineODEDynamics):
             state_dot_min=state_dot_min,
             state_dot_max=state_dot_max,
             integration_method=integration_method,
-            use_jax=use_jax,
+        )
+
+        self.A = self.np.array(
+            [
+                [0, 0, 0, 1, 0, 0],
+                [0, 0, 0, 0, 1, 0],
+                [0, 0, 0, 0, 0, 1],
+                [3 * n**2, 0, 0, 0, 2 * n, 0],
+                [0, 0, 0, -2 * n, 0, 0],
+                [0, 0, -(n**2), 0, 0, 0],
+            ],
+            dtype=self.np.float64,
+        )
+
+        self.B = self.np.array(
+            [
+                [0, 0, 0],
+                [0, 0, 0],
+                [0, 0, 0],
+                [1 / m, 0, 0],
+                [0, 1 / m, 0],
+                [0, 0, 1 / m],
+            ],
+            dtype=self.np.float64,
         )
 
     def state_transition_system(self, state: np.ndarray) -> np.ndarray:
         x, y, z, x_dot, y_dot, z_dot, q1, q2, q3, q4, wx, wy, wz = state
 
         # Compute translational derivatives
-        pos_vel_state_vec = np.array([x, y, z, x_dot, y_dot, z_dot], dtype=np.float64)
+        pos_vel_state_vec = self.np.array(
+            [x, y, z, x_dot, y_dot, z_dot], dtype=self.np.float64
+        )
         pos_vel_derivative = self.A @ pos_vel_state_vec
 
         # Compute rotational derivatives
-        q_derivative = np.zeros((4,))
-        w_derivative = np.zeros((3,))
-        q_derivative[0] = 0.5 * (q4 * wx - q3 * wy + q2 * wz)
-        q_derivative[1] = 0.5 * (q3 * wx + q4 * wy - q1 * wz)
-        q_derivative[2] = 0.5 * (-q2 * wx + q1 * wy + q4 * wz)
-        q_derivative[3] = 0.5 * (-q1 * wx - q2 * wy - q3 * wz)
-        w_derivative[0] = (
-            1
-            / self.inertia_matrix[0, 0]
-            * ((self.inertia_matrix[1, 1] - self.inertia_matrix[2, 2]) * wy * wz)
+        w_derivative = self.np.zeros((3,))
+        q_derivative = self.np.array(
+            [
+                0.5 * (q4 * wx - q3 * wy + q2 * wz),
+                0.5 * (q3 * wx + q4 * wy - q1 * wz),
+                0.5 * (-q2 * wx + q1 * wy + q4 * wz),
+                0.5 * (-q1 * wx - q2 * wy - q3 * wz),
+            ]
         )
-        w_derivative[1] = (
-            1
-            / self.inertia_matrix[1, 1]
-            * ((self.inertia_matrix[2, 2] - self.inertia_matrix[0, 0]) * wx * wz)
-        )
-        w_derivative[2] = (
-            1
-            / self.inertia_matrix[2, 2]
-            * ((self.inertia_matrix[0, 0] - self.inertia_matrix[1, 1]) * wx * wy)
+        w_derivative = self.np.array(
+            [
+                1
+                / self.inertia_matrix[0, 0]
+                * ((self.inertia_matrix[1, 1] - self.inertia_matrix[2, 2]) * wy * wz),
+                1
+                / self.inertia_matrix[1, 1]
+                * ((self.inertia_matrix[2, 2] - self.inertia_matrix[0, 0]) * wx * wz),
+                1
+                / self.inertia_matrix[2, 2]
+                * ((self.inertia_matrix[0, 0] - self.inertia_matrix[1, 1]) * wx * wy),
+            ]
         )
 
         # Form derivative array
-        state_derivative = np.array(
+        state_derivative = self.np.array(
             [
                 pos_vel_derivative[0],
                 pos_vel_derivative[1],
@@ -419,14 +418,14 @@ class SixDOFDynamics(d.ControlAffineODEDynamics):
                 w_derivative[1],
                 w_derivative[2],
             ],
-            dtype=np.float32,
+            dtype=self.np.float32,
         )
         return state_derivative
 
     def state_transition_input(self, state: np.ndarray) -> np.ndarray:
         quat = state[6:10]
 
-        w_derivative = np.array(
+        w_derivative = self.np.array(
             [
                 [1 / self.inertia_matrix[0, 0], 0, 0],
                 [0, 1 / self.inertia_matrix[1, 1], 0],
@@ -436,20 +435,20 @@ class SixDOFDynamics(d.ControlAffineODEDynamics):
 
         # Convert the control thrust to Hill's frame prior to application in the CWH equations
         if self.body_frame_thrust:
-            r1 = 1 / self.m * self.apply_quat(np.array([1, 0, 0]), quat)
-            r2 = 1 / self.m * self.apply_quat(np.array([0, 1, 0]), quat)
-            r3 = 1 / self.m * self.apply_quat(np.array([0, 0, 1]), quat)
-            vel_derivative = np.array(
+            r1 = 1 / self.m * self.apply_quat(self.np.array([1, 0, 0]), quat)
+            r2 = 1 / self.m * self.apply_quat(self.np.array([0, 1, 0]), quat)
+            r3 = 1 / self.m * self.apply_quat(self.np.array([0, 0, 1]), quat)
+            vel_derivative = self.np.array(
                 [[r1[0], r2[0], r3[0]], [r1[1], r2[1], r3[1]], [r1[2], r2[2], r3[2]]]
             )
         else:
             vel_derivative = self.B[3:6, :]
 
-        g = np.vstack(
+        g = self.np.vstack(
             (
-                np.zeros((7, 6)),
-                np.hstack((vel_derivative, np.zeros(vel_derivative.shape))),
-                np.hstack((np.zeros(w_derivative.shape), w_derivative)),
+                self.np.zeros((7, 6)),
+                self.np.hstack((vel_derivative, self.np.zeros(vel_derivative.shape))),
+                self.np.hstack((self.np.zeros(w_derivative.shape), w_derivative)),
             )
         )
 
@@ -471,9 +470,9 @@ class SixDOFDynamics(d.ControlAffineODEDynamics):
         np.ndarray
             rotated vector of length 3
         """
-        p = np.insert(x, 0, 0, axis=0)
-        r = np.array([quat[3], quat[0], quat[1], quat[2]])
-        r_p = np.array([quat[3], -quat[0], -quat[1], -quat[2]])
+        p = self.np.insert(x, 0, 0, axis=0)
+        r = self.np.array([quat[3], quat[0], quat[1], quat[2]])
+        r_p = self.np.array([quat[3], -quat[0], -quat[1], -quat[2]])
         rotated_x = self.hamilton_product(self.hamilton_product(r, p), r_p)[1:]
         return rotated_x
 
@@ -495,7 +494,7 @@ class SixDOFDynamics(d.ControlAffineODEDynamics):
         """
         assert r.shape == (4,), f"r must be of shape (4,) instead of {r.shape}"
         assert q.shape == (4,), f"q must be of shape (4,) instead of {q.shape}"
-        return np.array(
+        return self.np.array(
             [
                 r[0] * q[0] - r[1] * q[1] - r[2] * q[2] - r[3] * q[3],
                 r[0] * q[1] + r[1] * q[0] + r[2] * q[3] - r[3] * q[2],

@@ -27,8 +27,6 @@ class Sun(e.Point):
         mean motion of the sun in rad/s, by default 0.001027
     integration_method: str, optional
         integration method for dynamics, by default "RK45"
-    use_jax: bool, optional
-        whether to use jax for dynamics, by default False
     material: Material, optional
         material properties of the sun, by default LIGHT
     """
@@ -41,14 +39,11 @@ class Sun(e.Point):
         theta: typing.Union[float, pint.Quantity] = 0,
         n: float = defaults.N_DEFAULT,
         integration_method: str = "RK45",
-        use_jax: bool = False,
         material: mat.Material = mat.LIGHT,
     ):
         self._initial_theta = theta
         self._n = n  # rads/s
-        dynamics = SunDynamics(
-            n=n, integration_method=integration_method, use_jax=use_jax
-        )
+        dynamics = SunDynamics(n=n, integration_method=integration_method)
         super().__init__(
             name=name, dynamics=dynamics, position=np.zeros(3), material=material
         )
@@ -139,15 +134,13 @@ class SunDynamics(d.ODEDynamics):
         mean motion of the sun in rad/s, by default 0.001027
     integration_method: str, optional
         integration method for dynamics, by default "RK45"
-    use_jax: bool, optional
-        whether to use jax for dynamics, by default False
     """
 
-    def __init__(self, n=defaults.N_DEFAULT, integration_method="RK45", use_jax=False):
+    def __init__(self, n=defaults.N_DEFAULT, integration_method="RK45"):
         self.n = n  # rads/s
-        super().__init__(integration_method=integration_method, use_jax=use_jax)
+        super().__init__(integration_method=integration_method)
 
     def _compute_state_dot(
         self, t: float, state: np.ndarray, control: np.ndarray
     ) -> np.ndarray:
-        return np.array([self.n])
+        return self.np.array([self.n])

@@ -12,38 +12,34 @@ def test_init_default():
         sun.position
         == np.array([safe_autonomy_simulation.sims.inspection.Sun.SUN_DISTANCE, 0, 0])
     )
-    assert not sun.dynamics.use_jax
     assert sun.dynamics.integration_method == "RK45"
     assert sun.dynamics.n == safe_autonomy_simulation.sims.spacecraft.defaults.N_DEFAULT
 
 
 @pytest.mark.parametrize(
-    "name, theta, n, integration_method, use_jax, material",
+    "name, theta, n, integration_method, material",
     [
         (
             "sun",
             0,
             10,
             "RK45",
-            False,
             safe_autonomy_simulation.sims.spacecraft.defaults.CWH_MATERIAL,
         ),
     ],
 )
-def test_init_args(name, theta, n, integration_method, use_jax, material):
+def test_init_args(name, theta, n, integration_method, material):
     sun = safe_autonomy_simulation.sims.inspection.Sun(
         name=name,
         theta=theta,
         n=n,
         integration_method=integration_method,
-        use_jax=use_jax,
         material=material,
     )
     assert sun.name == name
     assert sun.theta == theta
     assert sun.n == n
     assert sun.dynamics.integration_method == integration_method
-    assert sun.dynamics.use_jax == use_jax
     assert sun.material == material
     assert np.all(
         sun.position

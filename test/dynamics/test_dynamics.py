@@ -1,23 +1,16 @@
 import pytest
-import numpy as np
-import jax.numpy as jnp
 import safe_autonomy_simulation
+
+try:
+    import jax.numpy as np
+except ImportError:
+    import numpy as np
 
 
 def test_init_no_jax():
     dynamics = safe_autonomy_simulation.Dynamics()
     assert dynamics.state_min == -np.inf
     assert dynamics.state_max == np.inf
-    assert not dynamics.use_jax
-    assert dynamics.np == np
-
-
-def test_init_jax():
-    dynamics = safe_autonomy_simulation.Dynamics(use_jax=True)
-    assert dynamics.state_min == -np.inf
-    assert dynamics.state_max == np.inf
-    assert dynamics.use_jax
-    assert dynamics.np == jnp
 
 
 def test_not_implemented_errors():

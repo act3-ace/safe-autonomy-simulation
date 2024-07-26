@@ -18,7 +18,6 @@ def test_init_no_args():
     assert np.all(dynamics.state_max == np.inf)
     assert np.all(dynamics.state_dot_min == -np.inf)
     assert np.all(dynamics.state_dot_max == np.inf)
-    assert not dynamics.use_jax
 
     A_1d = np.array([[0, 1], [0, -dynamics.damping]], dtype=np.float64)
     B_1d = np.array([[0], [1 / dynamics.m]], dtype=np.float64)
@@ -27,7 +26,7 @@ def test_init_no_args():
 
 
 @pytest.mark.parametrize(
-    "m, damping, mode, trajectory_samples, state_min, state_max, state_dot_min, state_dot_max, integration_method, use_jax, expected_A, expected_B",
+    "m, damping, mode, trajectory_samples, state_min, state_max, state_dot_min, state_dot_max, integration_method, expected_A, expected_B",
     [
         (
             1,
@@ -39,7 +38,6 @@ def test_init_no_args():
             np.array([-1]),
             np.array([1]),
             "Euler",
-            True,
             np.array([[0, 1], [0, -2]], dtype=np.float64),
             np.array([[0], [1]], dtype=np.float64),
         ),
@@ -53,7 +51,6 @@ def test_init_no_args():
             np.array([-1, -1]),
             np.array([1, 1]),
             "RK45",
-            False,
             np.array([[0, 0, 1, 0], [0, 0, 0, 1], [0, 0, -2, 0], [0, 0, 0, -2]]),
             np.array([[0, 0], [0, 0], [1, 0], [0, 1]]),
         ),
@@ -67,7 +64,6 @@ def test_init_no_args():
             np.array([-1, -1, -1]),
             np.array([1, 1, 1]),
             "RK45",
-            False,
             np.array(
                 [
                     [0, 0, 0, 1, 0, 0],
@@ -101,7 +97,6 @@ def test_init_args(
     state_dot_min,
     state_dot_max,
     integration_method,
-    use_jax,
     expected_A,
     expected_B,
 ):
@@ -115,7 +110,6 @@ def test_init_args(
         state_dot_min=state_dot_min,
         state_dot_max=state_dot_max,
         integration_method=integration_method,
-        use_jax=use_jax,
     )
     assert dynamics.m == m
     assert dynamics.damping == damping
@@ -125,7 +119,6 @@ def test_init_args(
     assert np.all(dynamics.state_max == state_max)
     assert np.all(dynamics.state_dot_min == state_dot_min)
     assert np.all(dynamics.state_dot_max == state_dot_max)
-    assert dynamics.use_jax == use_jax
 
     assert np.all(dynamics.A == expected_A)
     assert np.all(dynamics.B == expected_B)

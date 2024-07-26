@@ -15,7 +15,6 @@ def test_init_default():
     assert dynamics.state_dot_max == np.inf
     assert dynamics.integration_method == "RK45"
     assert dynamics.trajectory_samples == 0
-    assert not dynamics.use_jax
     n = safe_autonomy_simulation.sims.spacecraft.defaults.N_DEFAULT
     assert np.all(
         dynamics.A
@@ -49,7 +48,7 @@ def test_init_default():
 
 
 @pytest.mark.parametrize(
-    "m, n, trajectory_samples, state_min, state_max, state_dot_min, state_dot_max, integration_method, use_jax",
+    "m, n, trajectory_samples, state_min, state_max, state_dot_min, state_dot_max, integration_method",
     [
         (
             1,
@@ -60,7 +59,6 @@ def test_init_default():
             6,
             7,
             "RK45",
-            False,
         ),
     ],
 )
@@ -73,7 +71,6 @@ def test_init(
     state_dot_min,
     state_dot_max,
     integration_method,
-    use_jax,
 ):
     dynamics = safe_autonomy_simulation.sims.spacecraft.point_model.CWHDynamics(
         m=m,
@@ -84,7 +81,6 @@ def test_init(
         state_dot_min=state_dot_min,
         state_dot_max=state_dot_max,
         integration_method=integration_method,
-        use_jax=use_jax,
     )
     assert dynamics.m == m
     assert dynamics.n == n
@@ -94,7 +90,6 @@ def test_init(
     assert dynamics.state_dot_min == state_dot_min
     assert dynamics.state_dot_max == state_dot_max
     assert dynamics.integration_method == integration_method
-    assert dynamics.use_jax == use_jax
     assert np.all(
         dynamics.A
         == np.array(

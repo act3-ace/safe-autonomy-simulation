@@ -340,8 +340,6 @@ class PointMassIntegratorDynamics(d.LinearODEDynamics):
         maximum state derivative values, by default np.inf
     integration_method : str, optional
         Numerical integration method passed to dynamics model. See BaseODESolverDynamics. By default "RK45"
-    use_jax : bool, optional
-        Use JAX for numerical integration, by default False
     """
 
     def __init__(
@@ -355,7 +353,6 @@ class PointMassIntegratorDynamics(d.LinearODEDynamics):
         state_dot_min: typing.Union[float, np.ndarray] = -np.inf,
         state_dot_max: typing.Union[float, np.ndarray] = np.inf,
         integration_method: str = "RK45",
-        use_jax: bool = False,
     ):
         self.m = m
         self.damping = damping
@@ -369,7 +366,6 @@ class PointMassIntegratorDynamics(d.LinearODEDynamics):
             state_dot_min=state_dot_min,
             state_dot_max=state_dot_max,
             integration_method=integration_method,
-            use_jax=use_jax,
         )
 
     def generate_dynamics_matrices(

@@ -3,15 +3,11 @@
 import typing
 import queue
 import warnings
-import numpy as np
 
-if typing.TYPE_CHECKING:
-    import jax.numpy as jnp
-else:
-    try:
-        import jax.numpy as jnp
-    except ImportError:
-        jnp = None
+try:
+    import jax.numpy as np
+except ImportError:
+    import numpy as np
 
 
 class ControlQueue:
@@ -47,7 +43,11 @@ class ControlQueue:
     ):
         self.controls: queue.SimpleQueue = queue.SimpleQueue()
         self.default_control = default_control
+        if control_min is not None and not isinstance(control_min, np.ndarray):
+            control_min = np.array(control_min)
         self.control_min = control_min
+        if control_max is not None and not isinstance(control_max, np.ndarray):
+            control_max = np.array(control_max)
         self.control_max = control_max
 
     def reset(self):
@@ -66,14 +66,14 @@ class ControlQueue:
         """
         return self.controls.empty()
 
-    def next_control(self) -> typing.Union[np.ndarray, jnp.ndarray]:
+    def next_control(self) -> np.ndarray:
         """Removes and returns the next control in the control queue.
 
         If control queue is empty, returns the default control.
 
         Returns
         -------
-        Union[np.ndarray, jnp.ndarray]
+        np.ndarray
             Next control in the control queue or default control.
         """
         if self.empty():
@@ -83,29 +83,21 @@ class ControlQueue:
 
         return control
 
-    def add_control(self, control: typing.Union[np.ndarray, list, jnp.ndarray]):
+    def add_control(self, control: typing.Union[np.ndarray, list]):
         """Adds a control to the end of the control queue.
 
         Parameters
         ----------
-        control : Union[np.ndarray, list, jnp.ndarray]
+        control : Union[np.ndarray, list]
             Control vector to be added to the control queue.
         """
 
-        if isinstance(control, list):
-            control = np.array(control, dtype=np.float32)
-        elif isinstance(control, np.ndarray):
-            control = control.copy()
-        elif jnp is not None and isinstance(  # pylint: disable=used-before-assignment
-            control, jnp.ndarray
-        ):  # pylint: disable=used-before-assignment
-            control = control.copy()
-        else:
-            raise ValueError("control must be type list, np.ndarray or jnp.ndarray")
+        if not isinstance(control, np.ndarray):
+            control = np.array(control)
 
         # enforce control bounds (if any)
-        if (self.control_min is not None or self.control_max is not None) and (
-            np.any(control < self.control_min) or np.any(control > self.control_max)
+        if (self.control_min is not None and np.any(control < self.control_min)) or (
+            self.control_max is not None and np.any(control > self.control_max)
         ):
             warnings.warn(
                 f"Control input exceeded limits. Clipping to range ({self.control_min}, {self.control_max})"

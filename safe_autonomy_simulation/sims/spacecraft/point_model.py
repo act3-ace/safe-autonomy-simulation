@@ -167,13 +167,10 @@ class CWHDynamics(d.LinearODEDynamics):
         When an ndarray, each element represents the limit to the corresponding state vector element.
         By default, +inf
     integration_method : string, optional
-        Numerical integration method used by dynamics solver. One of ['RK45', 'RK45_JAX', 'Euler'].
-        'RK45' is slow but very accurate.
-        'RK45_JAX' is very accurate, and fast when JIT compiled but otherwise very slow. 'use_jax' must be set to True.
+        Numerical integration method used by dynamics solver. One of ['RK45', 'Euler'].
+        'RK45' is slow but very accurate. If jax is available, can be JIT compiled for speed.
         'Euler' is fast but very inaccurate.
         By default, 'RK45'.
-    use_jax : bool, optional
-        True if using jax version of numpy/scipy. By default, False
     """
 
     def __init__(
@@ -186,7 +183,6 @@ class CWHDynamics(d.LinearODEDynamics):
         state_dot_min: typing.Union[float, np.ndarray] = -np.inf,
         state_dot_max: typing.Union[float, np.ndarray] = np.inf,
         integration_method: str = "RK45",
-        use_jax: bool = False,
     ):
         self.m = m  # kg
         self.n = n  # rads/s
@@ -224,5 +220,4 @@ class CWHDynamics(d.LinearODEDynamics):
             state_dot_min=state_dot_min,
             state_dot_max=state_dot_max,
             integration_method=integration_method,
-            use_jax=use_jax,
         )

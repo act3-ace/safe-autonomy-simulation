@@ -1,22 +1,16 @@
 """Ordinary Differential Equation dynamics models"""
 
 import typing
-import numpy as np
 import scipy
 import safe_autonomy_simulation.dynamics.dynamics as d
 
-if typing.TYPE_CHECKING:
-    import jax.numpy as jnp
-    from jax.experimental.ode import odeint
-else:
-    try:
-        import jax
-        import jax.numpy as jnp
-        from jax.experimental.ode import odeint
-    except ImportError:
-        jax = None
-        jnp = None
-        odeint = None
+try:
+    import jax.numpy as np
+    import jax.experimental.ode as jode
+    JAX_AVAILABLE = True
+except ImportError:
+    import numpy as np
+    JAX_AVAILABLE = False
 
 
 class ODEDynamics(d.Dynamics):
@@ -49,13 +43,10 @@ class ODEDynamics(d.Dynamics):
         When an ndarray, each element represents the limit to the corresponding state vector element.
         By default, +inf
     integration_method : string, optional
-        Numerical integration method used by dynamics solver. One of ['RK45', 'RK45_JAX', 'Euler'].
-        'RK45' is slow but very accurate.
-        'RK45_JAX' is very accurate, and fast when JIT compiled but otherwise very slow. 'use_jax' must be set to True.
+        Numerical integration method used by dynamics solver. One of ['RK45', 'Euler'].
+        'RK45' is slow but very accurate. If jax is available, can be JIT compiled for speed.
         'Euler' is fast but very inaccurate.
         By default, 'RK45'.
-    use_jax : bool, optional
-        True if using jax version of numpy/scipy. By default, False
     """
 
     def __init__(
@@ -66,19 +57,16 @@ class ODEDynamics(d.Dynamics):
         state_dot_min: typing.Union[float, np.ndarray] = -np.inf,
         state_dot_max: typing.Union[float, np.ndarray] = np.inf,
         integration_method: str = "RK45",
-        use_jax: bool = False,
     ):
         super().__init__(
             state_min=state_min,
             state_max=state_max,
-            use_jax=use_jax,
         )
 
         assert integration_method in [
             "RK45",
-            "RK45_JAX",
             "Euler",
-        ], f"invalid integration method {integration_method}, must be one of 'RK45', 'RK45_JAX', 'Euler'"
+        ], f"invalid integration method {integration_method}, must be one of 'RK45', 'Euler'"
         self.integration_method = integration_method
         self.state_dot_min = state_dot_min
         self.state_dot_max = state_dot_max
@@ -178,39 +166,37 @@ class ODEDynamics(d.Dynamics):
 
     def _step(self, step_size: float, state: np.ndarray, control: np.ndarray):
         if self.integration_method == "RK45":
-            t_eval = None
-            if self.trajectory_samples > 0:
-                t_eval = np.linspace(0, step_size, self.trajectory_samples + 1)[1:]
+            if not JAX_AVAILABLE:
+                t_eval = None
+                if self.trajectory_samples > 0:
+                    t_eval = np.linspace(0, step_size, self.trajectory_samples + 1)[1:]
 
-            sol = scipy.integrate.solve_ivp(
-                self.compute_state_dot,
-                (0, step_size),
-                state,
-                args=(control,),
-                t_eval=t_eval,
-            )
+                sol = scipy.integrate.solve_ivp(
+                    self.compute_state_dot,
+                    (0, step_size),
+                    state,
+                    args=(control,),
+                    t_eval=t_eval,
+                )
 
-            self.trajectory = sol.y.T
-            self.trajectory_t = sol.t
+                self.trajectory = sol.y.T
+                self.trajectory_t = sol.t
 
-            next_state = sol.y[:, -1]  # save last timestep of integration solution
-            state_dot = self.compute_state_dot(step_size, next_state, control)
-        elif self.integration_method == "RK45_JAX":
-            if not self.use_jax:
-                raise ValueError("use_jax must be set to True if using RK45_JAX")
+                next_state = sol.y[:, -1]  # save last timestep of integration solution
+                state_dot = self.compute_state_dot(step_size, next_state, control)
+            else:
+                assert (
+                    self.trajectory_samples <= 0
+                ), "trajectory sampling not currently supported with rk45 jax integration"
 
-            assert (
-                self.trajectory_samples <= 0
-            ), "trajectory sampling not currently supported with rk45 jax integration"
-
-            sol = odeint(  # pylint: disable=used-before-assignment
-                self.compute_state_dot_jax,
-                state,
-                jnp.linspace(0.0, step_size, 11),
-                control,
-            )
-            next_state = sol[-1, :]  # save last timestep of integration solution
-            state_dot = self.compute_state_dot(step_size, next_state, control)
+                sol = jode.odeint(  # pylint: disable=used-before-assignment
+                    self.compute_state_dot_jax,
+                    state,
+                    np.linspace(0.0, step_size, 11),
+                    control,
+                )
+                next_state = sol[-1, :]  # save last timestep of integration solution
+                state_dot = self.compute_state_dot(step_size, next_state, control)
         elif self.integration_method == "Euler":
             assert (
                 self.trajectory_samples <= 0
@@ -280,13 +266,10 @@ class ControlAffineODEDynamics(ODEDynamics):
         When an ndarray, each element represents the limit to the corresponding state vector element.
         By default, +inf
     integration_method : string, optional
-        Numerical integration method used by dynamics solver. One of ['RK45', 'RK45_JAX', 'Euler'].
-        'RK45' is slow but very accurate.
-        'RK45_JAX' is very accurate, and fast when JIT compiled but otherwise very slow. 'use_jax' must be set to True.
+        Numerical integration method used by dynamics solver. One of ['RK45', 'Euler'].
+        'RK45' is slow but very accurate. If jax is available, can be JIT compiled for speed.
         'Euler' is fast but very inaccurate.
         By default, 'RK45'.
-    use_jax : bool, optional
-        True if using jax version of numpy/scipy. By default, False
     """
 
     def _compute_state_dot(self, t: float, state: np.ndarray, control: np.ndarray):
@@ -366,13 +349,10 @@ class LinearODEDynamics(ControlAffineODEDynamics):
         When an ndarray, each element represents the limit to the corresponding state vector element.
         By default, +inf
     integration_method : string, optional
-        Numerical integration method used by dynamics solver. One of ['RK45', 'RK45_JAX', 'Euler'].
-        'RK45' is slow but very accurate.
-        'RK45_JAX' is very accurate, and fast when JIT compiled but otherwise very slow. 'use_jax' must be set to True.
+        Numerical integration method used by dynamics solver. One of ['RK45', 'Euler'].
+        'RK45' is slow but very accurate. If jax is available, can be JIT compiled for speed.
         'Euler' is fast but very inaccurate.
         By default, 'RK45'.
-    use_jax : bool, optional
-        True if using jax version of numpy/scipy. By default, False
     """
 
     def __init__(
@@ -385,7 +365,6 @@ class LinearODEDynamics(ControlAffineODEDynamics):
         state_dot_min: typing.Union[float, np.ndarray] = -np.inf,
         state_dot_max: typing.Union[float, np.ndarray] = np.inf,
         integration_method: str = "RK45",
-        use_jax: bool = False,
     ):
         super().__init__(
             trajectory_samples=trajectory_samples,
@@ -394,7 +373,6 @@ class LinearODEDynamics(ControlAffineODEDynamics):
             state_dot_min=state_dot_min,
             state_dot_max=state_dot_max,
             integration_method=integration_method,
-            use_jax=use_jax,
         )
 
         assert len(A.shape) == 2, f"A must be a 2D matrix. Instead got shape {A.shape}"

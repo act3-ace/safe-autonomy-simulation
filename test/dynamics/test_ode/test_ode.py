@@ -11,19 +11,18 @@ def test_init_no_args():
     assert ode.state_dot_max == np.inf
     assert ode.state_min == -np.inf
     assert ode.state_max == np.inf
-    assert not ode.use_jax
     assert ode.trajectory is None
     assert ode.trajectory_t is None
     assert ode.trajectory_samples == 0
 
 
 @pytest.mark.parametrize(
-    "trajectory_samples, state_min, state_max, state_dot_min, state_dot_max, use_jax, integration_method",
+    "trajectory_samples, state_min, state_max, state_dot_min, state_dot_max, integration_method",
     [
-        (100, -10, 10, -5, 5, True, "RK45"),
-        (10, -5, 5, -2, 2, False, "RK45_JAX"),
-        (100, -10, 10, -5, 5, True, "Euler"),
-        (10, np.array([-5, -1, -0.2]), np.array([5, 1, 0.2]), -2, 2, False, "RK45"),
+        (100, -10, 10, -5, 5, "RK45"),
+        (10, -5, 5, -2, 2, "RK45"),
+        (100, -10, 10, -5, 5, "Euler"),
+        (10, np.array([-5, -1, -0.2]), np.array([5, 1, 0.2]), -2, 2, "RK45"),
     ],
 )
 def test_init_args(
@@ -32,7 +31,6 @@ def test_init_args(
     state_max,
     state_dot_min,
     state_dot_max,
-    use_jax,
     integration_method,
 ):
     ode = safe_autonomy_simulation.dynamics.ODEDynamics(
@@ -41,7 +39,6 @@ def test_init_args(
         state_max=state_max,
         state_dot_min=state_dot_min,
         state_dot_max=state_dot_max,
-        use_jax=use_jax,
         integration_method=integration_method,
     )
     assert ode.integration_method == integration_method
@@ -49,7 +46,6 @@ def test_init_args(
     assert np.all(ode.state_dot_max == state_dot_max)
     assert np.all(ode.state_min == state_min)
     assert np.all(ode.state_max == state_max)
-    assert ode.use_jax == use_jax
     assert ode.trajectory is None
     assert ode.trajectory_t is None
     assert ode.trajectory_samples == trajectory_samples
@@ -86,7 +82,7 @@ def test_init_integration_method_error(integration_method):
     with pytest.raises(
         AssertionError,
         match=re.escape(
-            f"invalid integration method {integration_method}, must be one of 'RK45', 'RK45_JAX', 'Euler'"
+            f"invalid integration method {integration_method}, must be one of 'RK45', 'Euler'"
         ),
     ):
         safe_autonomy_simulation.dynamics.ODEDynamics(

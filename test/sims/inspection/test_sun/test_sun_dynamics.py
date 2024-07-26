@@ -5,24 +5,22 @@ import safe_autonomy_simulation
 
 def test_init_default():
     dynamics = safe_autonomy_simulation.sims.inspection.SunDynamics()
-    assert not dynamics.use_jax
     assert dynamics.integration_method == "RK45"
     assert dynamics.n == safe_autonomy_simulation.sims.spacecraft.defaults.N_DEFAULT
 
 
 @pytest.mark.parametrize(
-    "n, integration_method, use_jax",
+    "n, integration_method",
     [
-        (10, "RK45", False),
+        (10, "RK45"),
     ],
 )
-def test_init_args(n, integration_method, use_jax):
+def test_init_args(n, integration_method):
     dynamics = safe_autonomy_simulation.sims.inspection.SunDynamics(
-        n=n, integration_method=integration_method, use_jax=use_jax
+        n=n, integration_method=integration_method
     )
     assert dynamics.n == n
     assert dynamics.integration_method == integration_method
-    assert dynamics.use_jax == use_jax
 
 
 @pytest.mark.parametrize(
