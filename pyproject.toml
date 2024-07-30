@@ -1,15 +1,15 @@
 [tool.poetry]
 name = "safe-autonomy-simulation"
 version = "2.0.12"
-description = "Standalone context-aware simulation environments for Safe Autonomy research."
+description = "A library for building continuous simulation environments, designed to support safe autonomy research."
 authors = [
-    "james.cunningham <james.cunningham@jacobs.com>",
+    "james.cunningham <james.cunningham@parallaxresearch.org>",
 ]
 license = "Distribution C"
 readme = "README.md"
-homepage = "https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation.git"
-repository = "https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation.git"
-documentation = 'https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation'
+homepage = "https://github.com/act3-ace/safe-autonomy-simulation.git"
+repository = "https://github.com/act3-ace/safe-autonomy-simulation.git"
+documentation = 'https://github.com/act3-ace/safe-autonomy-simulation'
 keywords = []
 include = ["docs/*"]
 classifiers = [
@@ -63,10 +63,6 @@ black = "^24.4.2"
 mypy = "^1.10.1"
 ruff = "^0.4.10"
 
-[[tool.poetry.source]]
-name = "act3-rl"
-url = "https://git.act3-ace.com/api/v4/groups/478/-/packages/pypi/simple"
-priority = "explicit"
 
 [build-system]
 requires = ["poetry-core"]

@@ -1416,13 +1416,13 @@ types = ["typing-extensions"]
 
 [[package]]
 name = "pymdown-extensions"
-version = "10.8.1"
+version = "10.9"
 description = "Extension pack for Python Markdown."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pymdown_extensions-10.8.1-py3-none-any.whl", hash = "sha256:f938326115884f48c6059c67377c46cf631c733ef3629b6eed1349989d1b30cb"},
-    {file = "pymdown_extensions-10.8.1.tar.gz", hash = "sha256:3ab1db5c9e21728dabf75192d71471f8e50f216627e9a1fa9535ecb0231b9940"},
+    {file = "pymdown_extensions-10.9-py3-none-any.whl", hash = "sha256:d323f7e90d83c86113ee78f3fe62fc9dee5f56b54d912660703ea1816fed5626"},
+    {file = "pymdown_extensions-10.9.tar.gz", hash = "sha256:6ff740bcd99ec4172a938970d42b96128bdc9d4b9bcad72494f29921dc69b753"},
 ]
 
 [package.dependencies]
@@ -2021,4 +2021,4 @@ jax = ["jax"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "6d3c09118c4265f4c9f9113ea26517b87bda426ac534f6e4e0af152ebcdaed82"
+content-hash = "b94fc3eb52e201926a438b3d2f6f8c5d132cdfa5bc085205ff7bbabf0e83f4c4"

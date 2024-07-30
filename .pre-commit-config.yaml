@@ -52,8 +52,3 @@ repos:
       - id: poetry-check
       - id: poetry-lock
         when: [manual]
-  - repo: https://git.act3-ace.com/devsecops/act3-pt
-    rev: "v1.54.4"
-    hooks:
-      - id: act3-pt-lint
-      - id: act3-pt-updatecheck
