@@ -63,10 +63,6 @@ black = "^24.4.2"
 mypy = "^1.10.1"
 ruff = "^0.4.10"
 
-[[tool.poetry.source]]
-name = "act3-rl"
-url = "https://git.act3-ace.com/api/v4/groups/478/-/packages/pypi/simple"
-priority = "explicit"
 
 [build-system]
 requires = ["poetry-core"]

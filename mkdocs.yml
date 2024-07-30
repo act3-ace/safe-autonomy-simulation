@@ -1,6 +1,6 @@
 site_name: safe-autonomy-simulation
 site_author: ACT3
-repo_url: https://git.act3-ace.com/rta/safe-autonomy-stack/safe-autonomy-simulation
+repo_url: https://github.com/act3-ace/safe-autonomy-simulation
 docs_dir: docs
 
 plugins:
