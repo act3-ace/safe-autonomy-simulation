@@ -1,3 +1,10 @@
+## [2.0.13](https://github.com/act3-ace/safe-autonomy-simulation/compare/v2.0.12...v2.0.13) (2024-08-20)
+
+
+### Bug Fixes
+
+* [#3](https://github.com/act3-ace/safe-autonomy-simulation/issues/3) entity name property ([314bb7e](https://github.com/act3-ace/safe-autonomy-simulation/commit/314bb7eee090c8b41ffab7cca356a192ce5c9b2e))
+
 ## [2.0.12](https://github.com/act3-ace/safe-autonomy-simulation/compare/v2.0.11...v2.0.12) (2024-07-30)
 
 
