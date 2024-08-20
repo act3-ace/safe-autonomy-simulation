@@ -50,7 +50,7 @@ class Entity:
         parent: typing.Union[typing_extensions.Self, None] = None,
         children: list[typing_extensions.Self] = [],
     ):
-        self.name: str = name
+        self._name: str = name
 
         self._state: np.ndarray = self.build_initial_state()
 
@@ -318,3 +318,15 @@ class Entity:
             Time derivative of the entity state vector
         """
         return self._state_dot
+
+    @property
+    def name(self) -> str:
+        """
+        name the name of this object
+
+        Returns
+        -------
+        str
+            The name of this object
+        """
+        return self._name
