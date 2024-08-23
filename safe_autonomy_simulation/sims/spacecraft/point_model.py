@@ -79,6 +79,8 @@ class CWHSpacecraft(e.PhysicalEntity):
         material: mat.Material = defaults.CWH_MATERIAL,
         parent: typing.Union[e.PhysicalEntity, None] = None,
         children: list[e.PhysicalEntity] = [],
+        control_min: typing.Union[float, np.ndarray, None] = -1,
+        control_max: typing.Union[float, np.ndarray, None] = 1,
     ):
         dynamics = CWHDynamics(
             m=m,
@@ -89,8 +91,8 @@ class CWHSpacecraft(e.PhysicalEntity):
 
         control_queue = c.ControlQueue(
             default_control=np.zeros(3),
-            control_min=-1,
-            control_max=1,
+            control_min=control_min,
+            control_max=control_max,
         )
 
         super().__init__(

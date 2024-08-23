@@ -116,6 +116,8 @@ class CWHRotation2dSpacecraft(
         material: mat.Material = defaults.CWH_MATERIAL,
         parent: typing.Union[e.PhysicalEntity, None] = None,
         children: list[e.PhysicalEntity] = [],
+        control_min: typing.Union[float, np.ndarray, None] = None,
+        control_max: typing.Union[float, np.ndarray, None] = None,
     ):
         assert position.shape == (2,), f"Position must be 2D. Instead got {position}"
         assert velocity.shape == (2,), f"Velocity must be 2D. Instead got {velocity}"
@@ -137,10 +139,14 @@ class CWHRotation2dSpacecraft(
             self.ang_vel_limit, self.inertia_wheel * self.vel_limit_wheel / self.inertia
         )
 
+        if not control_min:
+            control_min = np.array([-1, -1, -ang_acc_limit * self.inertia])
+        if not control_max:
+            control_max = np.array([1, 1, ang_acc_limit * self.inertia])
         control_queue = c.ControlQueue(
             default_control=np.zeros(3),
-            control_min=np.array([-1, -1, -ang_acc_limit * self.inertia]),
-            control_max=np.array([1, 1, ang_acc_limit * self.inertia]),
+            control_min=control_min,
+            control_max=control_max,
         )
 
         dynamics = CWHRotation2dDynamics(

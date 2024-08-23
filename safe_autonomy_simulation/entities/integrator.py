@@ -50,6 +50,8 @@ class PointMassIntegrator1d(e.PhysicalEntity):
         damping=DAMPING_DEFAULT,
         trajectory_samples=0,
         integration_method="RK45",
+        control_min: typing.Union[float, np.ndarray, None] = -1,
+        control_max: typing.Union[float, np.ndarray, None] = 1,
     ):
         assert position.shape == (1,), f"Position must be 1D vector, got {position}"
         assert velocity.shape == (1,), f"Velocity must be 1D vector, got {velocity}"
@@ -63,7 +65,7 @@ class PointMassIntegrator1d(e.PhysicalEntity):
         )
 
         control_queue = c.ControlQueue(
-            default_control=np.zeros((1,)), control_min=-1, control_max=1
+            default_control=np.zeros((1,)), control_min=control_min, control_max=control_max
         )
 
         super().__init__(
@@ -149,6 +151,8 @@ class PointMassIntegrator2d(e.PhysicalEntity):
         damping=DAMPING_DEFAULT,
         trajectory_samples=0,
         integration_method="RK45",
+        control_min: typing.Union[float, np.ndarray, None] = -1,
+        control_max: typing.Union[float, np.ndarray, None] = 1,
     ):
         assert position.shape == (2,), f"Position must be 2D vector, got {position}"
         assert velocity.shape == (2,), f"Velocity must be 2D vector, got {velocity}"
@@ -162,7 +166,7 @@ class PointMassIntegrator2d(e.PhysicalEntity):
         )
 
         control_queue = c.ControlQueue(
-            default_control=np.zeros((2,)), control_min=-1, control_max=1
+            default_control=np.zeros((2,)), control_min=control_min, control_max=control_max
         )
 
         super().__init__(
@@ -254,6 +258,8 @@ class PointMassIntegrator3d(e.PhysicalEntity):
         damping=DAMPING_DEFAULT,
         trajectory_samples=0,
         integration_method="RK45",
+        control_min: typing.Union[float, np.ndarray, None] = -1,
+        control_max: typing.Union[float, np.ndarray, None] = 1,
     ):
         assert position.shape == (3,), "Position must be 3D"
         assert velocity.shape == (3,), "Velocity must be 3D"
