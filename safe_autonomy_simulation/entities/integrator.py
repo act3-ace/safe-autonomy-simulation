@@ -39,6 +39,10 @@ class PointMassIntegrator1d(e.PhysicalEntity):
         number of trajectory samples the generate and store on steps, by default 0
     integration_method: str, optional
         Numerical integration method passed to dynamics model. See BaseODESolverDynamics. By default "RK45".
+    control_min: typing.Union[float, np.ndarray, None]
+        specify a minimum value that control can be. numbers lower than this will be clipped. (default = -1)
+    control_max: typing.Union[float, np.ndarray, None] = 1,
+        specify a maximum value that control can be. numbers higher than this will be clipped. (default = 1)
     """
 
     def __init__(
@@ -140,6 +144,10 @@ class PointMassIntegrator2d(e.PhysicalEntity):
         number of trajectory samples the generate and store on steps, by default 0
     integration_method: str, optional
         Numerical integration method passed to dynamics model. See BaseODESolverDynamics. By default "RK45".
+    control_min: typing.Union[float, np.ndarray, None]
+        specify a minimum value that control can be. numbers lower than this will be clipped. (default = -1)
+    control_max: typing.Union[float, np.ndarray, None] = 1,
+        specify a maximum value that control can be. numbers higher than this will be clipped. (default = 1)
     """
 
     def __init__(
@@ -247,6 +255,10 @@ class PointMassIntegrator3d(e.PhysicalEntity):
         number of trajectory samples the generate and store on steps
     integration_method: str
         Numerical integration method passed to dynamics model. See BaseODESolverDynamics.
+    control_min: typing.Union[float, np.ndarray, None]
+        specify a minimum value that control can be. numbers lower than this will be clipped. (default = -1)
+    control_max: typing.Union[float, np.ndarray, None] = 1,
+        specify a maximum value that control can be. numbers higher than this will be clipped. (default = 1)
     """
 
     def __init__(

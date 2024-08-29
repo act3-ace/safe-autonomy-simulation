@@ -94,6 +94,12 @@ class CWHRotation2dSpacecraft(
         Parent entity of spacecraft, by default None
     children: list[PhysicalEntity], optional
         List of children entities of spacecraft, by default []
+    control_min: typing.Union[float, np.ndarray, None]
+        specify a minimum value that control can be. numbers lower than this will be clipped. (default = None).
+        If this value is None, control_min will be [-1, -1, -ang_acc_limit * self.inertia]
+    control_max: typing.Union[float, np.ndarray, None] = 1,
+        specify a maximum value that control can be. numbers higher than this will be clipped. (default = None)
+        If this value is None, control_min will be [1, 1, ang_acc_limit * self.inertia]
     """
 
     def __init__(
