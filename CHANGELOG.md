@@ -1,3 +1,10 @@
+## [2.0.14](https://github.com/act3-ace/safe-autonomy-simulation/compare/v2.0.13...v2.0.14) (2024-08-30)
+
+
+### Bug Fixes
+
+* [#6](https://github.com/act3-ace/safe-autonomy-simulation/issues/6) passing control limits on entity creation ([2cf45c7](https://github.com/act3-ace/safe-autonomy-simulation/commit/2cf45c7b9e08595a1cfccadf827188dbcea61827))
+
 ## [2.0.13](https://github.com/act3-ace/safe-autonomy-simulation/compare/v2.0.12...v2.0.13) (2024-08-20)
 
 
