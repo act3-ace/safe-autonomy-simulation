@@ -2,13 +2,14 @@
 
 import typing
 import scipy
+import safe_autonomy_simulation
 import safe_autonomy_simulation.dynamics.dynamics as d
 
-try:
+if safe_autonomy_simulation.use_jax():
     import jax.numpy as np
     import jax.experimental.ode as jode
     JAX_AVAILABLE = True
-except ImportError:
+else:
     import numpy as np
     JAX_AVAILABLE = False
 
