@@ -3,10 +3,11 @@
 import typing
 import queue
 import warnings
+import safe_autonomy_simulation
 
-try:
+if safe_autonomy_simulation.use_jax():
     import jax.numpy as np
-except ImportError:
+else:
     import numpy as np
 
 

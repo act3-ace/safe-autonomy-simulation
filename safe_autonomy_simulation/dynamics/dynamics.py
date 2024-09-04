@@ -1,10 +1,11 @@
 """Base class for state transition dynamics models of entities in the simulation environment."""
 
 import typing
+import safe_autonomy_simulation
 
-try:
+if safe_autonomy_simulation.use_jax():
     import jax.numpy as np
-except ImportError:
+else:
     import numpy as np
 
 

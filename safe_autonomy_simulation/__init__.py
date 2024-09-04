@@ -3,6 +3,7 @@ The `safe-autonomy-sims` package contains various modules designed to help imple
 continuous simulations in python.
 """
 
+from safe_autonomy_simulation.opts import use_jax
 from safe_autonomy_simulation import (
     dynamics,
     entities,
@@ -32,4 +33,5 @@ __all__ = [
     "controls",
     "sims",
     "utils",
+    "use_jax",
 ]
