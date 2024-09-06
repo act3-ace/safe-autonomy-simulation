@@ -19,15 +19,16 @@ import typing
 import pint
 import scipy.spatial.transform as transform
 
+import safe_autonomy_simulation
 import safe_autonomy_simulation.entities as e
 import safe_autonomy_simulation.dynamics as d
 import safe_autonomy_simulation.materials as mat
 import safe_autonomy_simulation.controls as c
 import safe_autonomy_simulation.sims.spacecraft.defaults as defaults
 
-try:
+if safe_autonomy_simulation.use_jax():
     import jax.numpy as np
-except ImportError:
+else:
     import numpy as np
 
 
