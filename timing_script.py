@@ -1,4 +1,3 @@
-import os
 import tqdm
 import numpy as np
 import safe_autonomy_simulation
