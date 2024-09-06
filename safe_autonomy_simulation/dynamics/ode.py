@@ -1,20 +1,12 @@
 """Ordinary Differential Equation dynamics models"""
 
 import typing
-import scipy
 import safe_autonomy_simulation
-import safe_autonomy_simulation.dynamics.dynamics as d
-
-if safe_autonomy_simulation.use_jax():
-    import jax.numpy as np
-    import jax.experimental.ode as jode
-    JAX_AVAILABLE = True
-else:
-    import numpy as np
-    JAX_AVAILABLE = False
+import safe_autonomy_simulation.dynamics as dynamics
+import numpy as np
 
 
-class ODEDynamics(d.Dynamics):
+class ODEDynamics(dynamics.Dynamics):
     """
     State transition implementation for generic Ordinary Differential Equation dynamics models.
     Computes next state through numerical integration of differential equation.
@@ -64,10 +56,13 @@ class ODEDynamics(d.Dynamics):
             state_max=state_max,
         )
 
-        assert integration_method in [
-            "RK45",
-            "Euler",
-        ], f"invalid integration method {integration_method}, must be one of 'RK45', 'Euler'"
+        assert (
+            integration_method
+            in [
+                "RK45",
+                "Euler",
+            ]
+        ), f"invalid integration method {integration_method}, must be one of 'RK45', 'Euler'"
         self.integration_method = integration_method
         self.state_dot_min = state_dot_min
         self.state_dot_max = state_dot_max
@@ -104,9 +99,30 @@ class ODEDynamics(d.Dynamics):
         np.ndarray
             Instantaneous time derivative of the state vector.
         """
+        # Get clip functions
+        clip_fn = (
+            safe_autonomy_simulation.dynamics.utils.clip_state_dot
+            if not safe_autonomy_simulation.use_jax()
+            else safe_autonomy_simulation.jax.ode.clip_state_dot
+        )
+        clip_at_state_limits_fn = (
+            safe_autonomy_simulation.dynamics.utils.clip_state_dot_at_state_limits
+            if not safe_autonomy_simulation.use_jax()
+            else safe_autonomy_simulation.jax.ode.clip_state_dot_at_state_limits
+        )
+        # Compute state derivative
         state_dot = self._compute_state_dot(t, state, control)
-        state_dot = self._clip_state_dot_direct(state_dot)
-        state_dot = self._clip_state_dot_by_state_limits(state, state_dot)
+        # Clip state derivative values
+        state_dot = clip_fn(
+            state_dot=state_dot, s_min=self.state_dot_min, s_max=self.state_dot_max
+        )
+        # Clip state derivative values to ensure state remains within bounds
+        state_dot = clip_at_state_limits_fn(
+            state=state,
+            state_dot=state_dot,
+            s_min=self.state_min,
+            s_max=self.state_max,
+        )
         return state_dot
 
     def _compute_state_dot(
@@ -114,123 +130,26 @@ class ODEDynamics(d.Dynamics):
     ) -> np.ndarray:
         raise NotImplementedError
 
-    def _clip_state_dot_direct(self, state_dot: np.ndarray):
-        """Clips state derivative values to be within `self.state_dot_min` and `self.state_dot_max`
-
-        Parameters
-        ----------
-        state_dot : np.ndarray
-            State derivative values
-
-        Returns
-        -------
-        np.ndarray
-            State derivative values clipped to be within state_dot_min and state_dot_max
-        """
-        return self.np.clip(state_dot, self.state_dot_min, self.state_dot_max)
-
-    def _clip_state_dot_by_state_limits(self, state: np.ndarray, state_dot: np.ndarray):
-        """Clips state derivative values where the state is at its limits
-
-        State derivative values are clipped such that they do not push the state
-        beyond the limits defined by `self.state_min` and `self.state_max`. This
-        is done by clipping the state derivative values to be non-negative when
-        the state is at its lower limit, and non-positive when the state is at
-        its upper limit.
-
-        Parameters
-        ----------
-        state : np.ndarray
-            Current state vector
-        state_dot : np.ndarray
-            State derivative values
-
-        Returns
-        -------
-        np.ndarray
-            State derivative values clipped where the state is at its limits
-        """
-        lower_bounded_states = state <= self.state_min
-        upper_bounded_states = state >= self.state_max
-
-        lower_bounded_clipped = self.np.clip(state_dot, 0, np.inf)
-        upper_bounded_clipped = self.np.clip(state_dot, -np.inf, 0)
-
-        state_dot = self.np.where(
-            lower_bounded_states, lower_bounded_clipped, state_dot
-        )
-        state_dot = self.np.where(
-            upper_bounded_states, upper_bounded_clipped, state_dot
-        )
-
-        return state_dot
-
     def _step(self, step_size: float, state: np.ndarray, control: np.ndarray):
         if self.integration_method == "RK45":
-            if not JAX_AVAILABLE:
-                t_eval = None
-                if self.trajectory_samples > 0:
-                    t_eval = np.linspace(0, step_size, self.trajectory_samples + 1)[1:]
-
-                sol = scipy.integrate.solve_ivp(
-                    self.compute_state_dot,
-                    (0, step_size),
-                    state,
-                    args=(control,),
-                    t_eval=t_eval,
-                )
-
-                self.trajectory = sol.y.T
-                self.trajectory_t = sol.t
-
-                next_state = sol.y[:, -1]  # save last timestep of integration solution
-                state_dot = self.compute_state_dot(step_size, next_state, control)
-            else:
-                assert (
-                    self.trajectory_samples <= 0
-                ), "trajectory sampling not currently supported with rk45 jax integration"
-
-                sol = jode.odeint(  # pylint: disable=used-before-assignment
-                    self.compute_state_dot_jax,
-                    state,
-                    np.linspace(0.0, step_size, 11),
-                    control,
-                )
-                next_state = sol[-1, :]  # save last timestep of integration solution
-                state_dot = self.compute_state_dot(step_size, next_state, control)
-        elif self.integration_method == "Euler":
-            assert (
-                self.trajectory_samples <= 0
-            ), "trajectory sampling not currently supported with euler integration"
-            state_dot = self.compute_state_dot(0, state, control)
-            next_state = state + step_size * state_dot
+            step_fn = (
+                safe_autonomy_simulation.dynamics.utils.step_rk45
+                if not safe_autonomy_simulation.use_jax()
+                else safe_autonomy_simulation.jax.ode.step_rk45
+            )
         else:
-            raise ValueError(f"invalid integration method '{self.integration_method}'")
-
+            step_fn = (
+                safe_autonomy_simulation.dynamics.utils.step_euler
+                if not safe_autonomy_simulation.use_jax()
+                else safe_autonomy_simulation.jax.ode.step_euler
+            )
+        next_state, state_dot, self.trajectory, self.trajectory_t = step_fn(
+            f=self.compute_state_dot,
+            step_size=step_size,
+            state=state,
+            control=control,
+        )
         return next_state, state_dot
-
-    def compute_state_dot_jax(self, state: np.ndarray, t: float, control: np.ndarray):
-        """Compute state dot for jax odeint
-
-        Jax requires a specific signature for the function passed to odeint. This function
-        is a wrapper around the compute_state_dot function that has the correct signature.
-
-        Parameters
-        ----------
-        state : np.ndarray
-            Current state vector at time t.
-        t : float
-            Time in seconds since the beginning of the simulation step.
-            Note, this is NOT the total simulation time but the time within the individual step.
-        control : np.ndarray
-            Control vector.
-
-        Returns
-        -------
-        np.ndarray
-            Instantaneous time derivative of the state vector.
-        """
-        return self._compute_state_dot(t, state, control)
 
 
 class ControlAffineODEDynamics(ODEDynamics):
@@ -274,9 +193,16 @@ class ControlAffineODEDynamics(ODEDynamics):
     """
 
     def _compute_state_dot(self, t: float, state: np.ndarray, control: np.ndarray):
-        state_dot = (
-            self.state_transition_system(state)
-            + self.state_transition_input(state) @ control
+        transition_fn = (
+            safe_autonomy_simulation.dynamics.utils.affine_transition
+            if not safe_autonomy_simulation.use_jax()
+            else safe_autonomy_simulation.jax.ode.affine_transition
+        )
+        state_dot = transition_fn(
+            state=state,
+            control=control,
+            f=self.state_transition_system,
+            g=self.state_transition_input,
         )
         return state_dot
 

@@ -18,6 +18,9 @@ from safe_autonomy_simulation.materials import Material
 from safe_autonomy_simulation.controls import ControlQueue
 from safe_autonomy_simulation.simulator import Simulator
 
+if use_jax():
+    from safe_autonomy_simulation import jax
+
 
 __all__ = [
     # core classes
@@ -34,4 +37,5 @@ __all__ = [
     "sims",
     "utils",
     "use_jax",
+    "jax",
 ]
