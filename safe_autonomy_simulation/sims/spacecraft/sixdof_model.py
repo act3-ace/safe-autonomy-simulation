@@ -407,13 +407,13 @@ class SixDOFDynamics(d.ControlAffineODEDynamics):
                 pos_vel_derivative[0],
                 pos_vel_derivative[1],
                 pos_vel_derivative[2],
+                pos_vel_derivative[3],
+                pos_vel_derivative[4],
+                pos_vel_derivative[5],
                 q_derivative[0],
                 q_derivative[1],
                 q_derivative[2],
                 q_derivative[3],
-                pos_vel_derivative[3],
-                pos_vel_derivative[4],
-                pos_vel_derivative[5],
                 w_derivative[0],
                 w_derivative[1],
                 w_derivative[2],
@@ -446,8 +446,9 @@ class SixDOFDynamics(d.ControlAffineODEDynamics):
 
         g = self.np.vstack(
             (
-                self.np.zeros((7, 6)),
+                self.np.zeros((3, 6)),
                 self.np.hstack((vel_derivative, self.np.zeros(vel_derivative.shape))),
+                self.np.zeros((4, 6)),
                 self.np.hstack((self.np.zeros(w_derivative.shape), w_derivative)),
             )
         )
