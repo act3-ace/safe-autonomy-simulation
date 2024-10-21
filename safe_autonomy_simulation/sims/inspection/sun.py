@@ -54,8 +54,7 @@ class Sun(e.Point):
         return False
 
     def build_initial_state(self) -> np.ndarray:
-        state = super().build_initial_state()
-        state = np.concatenate([state, np.array([self._initial_theta])])
+        state = np.array([self._initial_theta])
         return state
 
     @property
@@ -69,7 +68,7 @@ class Sun(e.Point):
         np.ndarray
             state vector of form [theta]
         """
-        return np.array([self._state[-1]])
+        return np.array([self._state[0]])
 
     @state.setter
     def state(self, state: np.ndarray):
@@ -119,7 +118,7 @@ class Sun(e.Point):
         return np.array(
             [
                 Sun.SUN_DISTANCE * np.cos(self.theta),
-                Sun.SUN_DISTANCE * np.sin(self.theta),
+                Sun.SUN_DISTANCE * -np.sin(self.theta),
                 0,
             ]
         )
