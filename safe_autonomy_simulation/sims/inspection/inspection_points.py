@@ -1,3 +1,4 @@
+import copy
 import math
 import typing
 
@@ -222,6 +223,8 @@ class InspectionPointSet(e.Entity):
         priority vector for inspection points weighting
     points_algorithm: str, optional
         algorithm to generate points on sphere, either "cmu" or "fibonacci", by default "cmu"
+    half_weighted: bool, optional
+        weight only half of the sphere (other half has zero weight). Default false (weight all points)
     """
 
     def __init__(
@@ -235,7 +238,9 @@ class InspectionPointSet(e.Entity):
         dynamics: d.Dynamics = d.PassThroughDynamics(),
         control_queue: c.ControlQueue = c.NoControl(),
         material: m.Material = m.BLACK,
+        half_weighted: bool = False
     ):
+        self.half_weighted = half_weighted
         self._points: typing.Dict[
             int, InspectionPoint
         ] = {}  # initialize points as empty for correct parent assignment
@@ -248,6 +253,7 @@ class InspectionPointSet(e.Entity):
         )
         self._radius = radius
         self._priority_vector = priority_vector
+        self.init_priority_vector = copy.deepcopy(self.priority_vector)
         self._clusters = None
         self._points = self._generate_points(
             num_points=num_points, points_algorithm=points_algorithm
@@ -266,6 +272,8 @@ class InspectionPointSet(e.Entity):
         super()._post_step(step_size)
         # Updating state in post step to ensure that all points have been updated
         self._state = np.array([p.state for p in self.points.values()])
+        # Update priority vector
+        self._priority_vector = transform.Rotation.from_quat(self.parent.orientation).apply(self.init_priority_vector)
 
     def _generate_points(
         self, num_points, points_algorithm: str = "cmu"
@@ -304,14 +312,23 @@ class InspectionPointSet(e.Entity):
         point_positions = points_alg(
             num_points, self.radius
         )  # TODO: HANDLE POSITION UNITS*
-        point_weights = [
-            np.arccos(
-                np.dot(-self.priority_vector, pos)
-                / (np.linalg.norm(-self.priority_vector) * np.linalg.norm(pos))
-            )
-            / np.pi
-            for pos in point_positions
-        ]
+        if not self.half_weighted:
+            point_weights = [
+                np.arccos(
+                    np.dot(-self.priority_vector, pos)
+                    / (np.linalg.norm(-self.priority_vector) * np.linalg.norm(pos))
+                )
+                / np.pi
+                for pos in point_positions
+            ]
+        else:
+            point_weights = []
+            for pos in point_positions:
+                dot_prod = np.dot(-self.priority_vector, pos) / (np.linalg.norm(-self.priority_vector) * np.linalg.norm(pos))
+                if dot_prod <= 0:
+                    point_weights.append(np.arccos(dot_prod) / np.pi)
+                else:
+                    point_weights.append(0.0)
         total_weight = sum(point_weights)
         point_weights = [w / total_weight for w in point_weights]  # normalize weights
 
@@ -424,7 +441,7 @@ class InspectionPointSet(e.Entity):
         """
         uninspected = []
         for _, point in self.points.items():
-            if not point.inspected:
+            if not point.inspected and point.weight != 0:
                 if sun:
                     if camera.check_point_illumination(
                         point=point,
