@@ -1,3 +1,11 @@
+## [2.0.15](https://github.com/act3-ace/safe-autonomy-simulation/compare/v2.0.14...v2.0.15) (2024-10-23)
+
+
+### Bug Fixes
+
+* update 6 DOF state transition to keep position and velocity adjacent rather than separated by the quaternion derivative components ([b6607a1](https://github.com/act3-ace/safe-autonomy-simulation/commit/b6607a1639771a7a11961fa4483516e9cdf1dc35))
+* update sun entity to just maintain sun angle as the only state variable internally ([c9aa8c9](https://github.com/act3-ace/safe-autonomy-simulation/commit/c9aa8c992146ba435ccdb4d318290a8c11139b35))
+
 ## [2.0.14](https://github.com/act3-ace/safe-autonomy-simulation/compare/v2.0.13...v2.0.14) (2024-08-30)
 
 
