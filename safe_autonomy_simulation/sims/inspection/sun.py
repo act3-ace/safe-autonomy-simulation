@@ -83,7 +83,7 @@ class Sun(e.Point):
         assert (
             state.shape == self.state.shape
         ), f"State shape must be {self.state.shape}, got {state.shape}"
-        self._state[0] = state[0]
+        self._state[-1] = state[0]
 
     @property
     def theta(self) -> float:
@@ -119,7 +119,7 @@ class Sun(e.Point):
         return np.array(
             [
                 Sun.SUN_DISTANCE * np.cos(self.theta),
-                Sun.SUN_DISTANCE * np.sin(self.theta),
+                Sun.SUN_DISTANCE * -np.sin(self.theta),
                 0,
             ]
         )

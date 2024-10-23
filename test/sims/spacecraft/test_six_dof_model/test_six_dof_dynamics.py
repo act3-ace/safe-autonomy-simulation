@@ -228,13 +228,13 @@ def test_state_transition_system(state):
             pos_vel_derivative[0],
             pos_vel_derivative[1],
             pos_vel_derivative[2],
+            pos_vel_derivative[3],
+            pos_vel_derivative[4],
+            pos_vel_derivative[5],
             q_derivative[0],
             q_derivative[1],
             q_derivative[2],
             q_derivative[3],
-            pos_vel_derivative[3],
-            pos_vel_derivative[4],
-            pos_vel_derivative[5],
             w_derivative[0],
             w_derivative[1],
             w_derivative[2],
@@ -272,8 +272,9 @@ def test_state_transition_input(state):
         vel_derivative = dynamics.B[3:6, :]
     expected_st_input = np.vstack(
         (
-            np.zeros((7, 6)),
+            np.zeros((3, 6)),
             np.hstack((vel_derivative, np.zeros(vel_derivative.shape))),
+            np.zeros((4, 6)),
             np.hstack((np.zeros(w_derivative.shape), w_derivative)),
         )
     )
