@@ -14,8 +14,6 @@ def test_not_implemented_error():
     with pytest.raises(NotImplementedError):
         ode._compute_state_dot(0, np.zeros(2), np.zeros(2))
     with pytest.raises(NotImplementedError):
-        ode.compute_state_dot_jax(np.zeros(2), 0, np.zeros(2))
-    with pytest.raises(NotImplementedError):
         ode.state_transition_system(np.zeros(2))
     with pytest.raises(NotImplementedError):
         ode.state_transition_input(np.zeros(2))

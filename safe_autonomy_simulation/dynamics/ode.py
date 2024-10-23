@@ -4,6 +4,7 @@ import typing
 import safe_autonomy_simulation
 import safe_autonomy_simulation.dynamics as dynamics
 import numpy as np
+from safe_autonomy_simulation.utils import cast_jax
 
 
 class ODEDynamics(dynamics.Dynamics):
@@ -40,6 +41,8 @@ class ODEDynamics(dynamics.Dynamics):
         'RK45' is slow but very accurate. If jax is available, can be JIT compiled for speed.
         'Euler' is fast but very inaccurate.
         By default, 'RK45'.
+    use_jax : bool, optional
+        EXPERIMENTAL: Use JAX to accelerate state transition computation, by default False.
     """
 
     def __init__(
@@ -50,10 +53,12 @@ class ODEDynamics(dynamics.Dynamics):
         state_dot_min: typing.Union[float, np.ndarray] = -np.inf,
         state_dot_max: typing.Union[float, np.ndarray] = np.inf,
         integration_method: str = "RK45",
+        use_jax: bool = False,
     ):
         super().__init__(
             state_min=state_min,
             state_max=state_max,
+            use_jax=use_jax,
         )
 
         assert (
@@ -64,8 +69,8 @@ class ODEDynamics(dynamics.Dynamics):
             ]
         ), f"invalid integration method {integration_method}, must be one of 'RK45', 'Euler'"
         self.integration_method = integration_method
-        self.state_dot_min = state_dot_min
-        self.state_dot_max = state_dot_max
+        self.state_dot_min = self.np.copy(state_dot_min)
+        self.state_dot_max = self.np.copy(state_dot_max)
 
         assert isinstance(
             trajectory_samples, int
@@ -79,7 +84,10 @@ class ODEDynamics(dynamics.Dynamics):
         self.trajectory_t = None
 
     def compute_state_dot(
-        self, t: float, state: np.ndarray, control: np.ndarray
+        self,
+        t: float,
+        state: np.ndarray,
+        control: np.ndarray,
     ) -> np.ndarray:
         """
         Computes the instantaneous time derivative of the state vector
@@ -99,48 +107,63 @@ class ODEDynamics(dynamics.Dynamics):
         np.ndarray
             Instantaneous time derivative of the state vector.
         """
+        state = cast_jax(state, use_jax=self.use_jax)
+        control = cast_jax(control, use_jax=self.use_jax)
+
         # Get clip functions
         clip_fn = (
             safe_autonomy_simulation.dynamics.utils.clip_state_dot
-            if not safe_autonomy_simulation.use_jax()
+            if not self.use_jax
             else safe_autonomy_simulation.jax.ode.clip_state_dot
         )
         clip_at_state_limits_fn = (
             safe_autonomy_simulation.dynamics.utils.clip_state_dot_at_state_limits
-            if not safe_autonomy_simulation.use_jax()
+            if not self.use_jax
             else safe_autonomy_simulation.jax.ode.clip_state_dot_at_state_limits
         )
         # Compute state derivative
         state_dot = self._compute_state_dot(t, state, control)
         # Clip state derivative values
         state_dot = clip_fn(
-            state_dot=state_dot, s_min=self.state_dot_min, s_max=self.state_dot_max
+            state_dot=state_dot,
+            s_min=self.state_dot_min,
+            s_max=self.state_dot_max,
         )
         # Clip state derivative values to ensure state remains within bounds
         state_dot = clip_at_state_limits_fn(
             state=state,
             state_dot=state_dot,
-            s_min=self.state_min,
-            s_max=self.state_max,
+            s_min=self.state_dot_min,
+            s_max=self.state_dot_max,
         )
         return state_dot
 
     def _compute_state_dot(
-        self, t: float, state: np.ndarray, control: np.ndarray
+        self,
+        t: float,
+        state: np.ndarray,
+        control: np.ndarray,
     ) -> np.ndarray:
         raise NotImplementedError
 
-    def _step(self, step_size: float, state: np.ndarray, control: np.ndarray):
+    def _step(
+        self,
+        step_size: float,
+        state: np.ndarray,
+        control: np.ndarray,
+    ):
+        state = cast_jax(state, use_jax=self.use_jax)
+        control = cast_jax(control, use_jax=self.use_jax)
         if self.integration_method == "RK45":
             step_fn = (
                 safe_autonomy_simulation.dynamics.utils.step_rk45
-                if not safe_autonomy_simulation.use_jax()
+                if not self.use_jax
                 else safe_autonomy_simulation.jax.ode.step_rk45
             )
         else:
             step_fn = (
                 safe_autonomy_simulation.dynamics.utils.step_euler
-                if not safe_autonomy_simulation.use_jax()
+                if not self.use_jax
                 else safe_autonomy_simulation.jax.ode.step_euler
             )
         next_state, state_dot, self.trajectory, self.trajectory_t = step_fn(
@@ -192,10 +215,17 @@ class ControlAffineODEDynamics(ODEDynamics):
         By default, 'RK45'.
     """
 
-    def _compute_state_dot(self, t: float, state: np.ndarray, control: np.ndarray):
+    def _compute_state_dot(
+        self,
+        t: float,
+        state: np.ndarray,
+        control: np.ndarray,
+    ):
+        state = cast_jax(state, use_jax=self.use_jax)
+        control = cast_jax(control, use_jax=self.use_jax)
         transition_fn = (
             safe_autonomy_simulation.dynamics.utils.affine_transition
-            if not safe_autonomy_simulation.use_jax()
+            if not self.use_jax
             else safe_autonomy_simulation.jax.ode.affine_transition
         )
         state_dot = transition_fn(
@@ -280,6 +310,8 @@ class LinearODEDynamics(ControlAffineODEDynamics):
         'RK45' is slow but very accurate. If jax is available, can be JIT compiled for speed.
         'Euler' is fast but very inaccurate.
         By default, 'RK45'.
+    use_jax : bool, optional
+        EXPERIMENTAL: Use JAX to accelerate state transition computation, by default False.
     """
 
     def __init__(
@@ -292,6 +324,7 @@ class LinearODEDynamics(ControlAffineODEDynamics):
         state_dot_min: typing.Union[float, np.ndarray] = -np.inf,
         state_dot_max: typing.Union[float, np.ndarray] = np.inf,
         integration_method: str = "RK45",
+        use_jax: bool = False
     ):
         super().__init__(
             trajectory_samples=trajectory_samples,
@@ -300,6 +333,7 @@ class LinearODEDynamics(ControlAffineODEDynamics):
             state_dot_min=state_dot_min,
             state_dot_max=state_dot_max,
             integration_method=integration_method,
+            use_jax=use_jax
         )
 
         assert len(A.shape) == 2, f"A must be a 2D matrix. Instead got shape {A.shape}"
@@ -316,7 +350,7 @@ class LinearODEDynamics(ControlAffineODEDynamics):
         self.B = self.np.copy(B)
 
     def state_transition_system(self, state: np.ndarray) -> np.ndarray:
-        return self.A @ state
+        return self.A @ cast_jax(state, use_jax=self.use_jax)
 
     def state_transition_input(self, state: np.ndarray) -> np.ndarray:
         return self.B

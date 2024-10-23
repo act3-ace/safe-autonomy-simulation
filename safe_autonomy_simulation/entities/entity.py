@@ -2,16 +2,11 @@
 
 import typing
 import typing_extensions
-import safe_autonomy_simulation
+import numpy as np
 import safe_autonomy_simulation.dynamics as d
 import safe_autonomy_simulation.materials as materials
 import safe_autonomy_simulation.controls.control_queue as controls
 import safe_autonomy_simulation.utils.sets as sets
-
-if safe_autonomy_simulation.use_jax():
-    import jax.numpy as np
-else:
-    import numpy as np
 
 
 class Entity:

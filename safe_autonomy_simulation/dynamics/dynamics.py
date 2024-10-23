@@ -1,12 +1,12 @@
 """Base class for state transition dynamics models of entities in the simulation environment."""
 
 import typing
+import numpy as np
 import safe_autonomy_simulation
+from safe_autonomy_simulation.utils import cast_jax
 
-if safe_autonomy_simulation.use_jax():
-    import jax.numpy as np
-else:
-    import numpy as np
+if safe_autonomy_simulation.jax_available():
+    import jax.numpy as jnp
 
 
 class Dynamics:
@@ -26,19 +26,26 @@ class Dynamics:
         When a float, represents single limit applied to entire state vector.
         When an ndarray, each element represents the limit to the corresponding state vector element.
         By default, np.inf
+    use_jax : bool, optional
+        EXPERIMENTAL: Use JAX to accelerate state transition computation, by default False.
     """
 
     def __init__(
         self,
         state_min: typing.Union[float, np.ndarray] = -np.inf,
         state_max: typing.Union[float, np.ndarray] = np.inf,
+        use_jax: bool = False,
     ):
-        self.np = np
-        self.state_min = state_min
-        self.state_max = state_max
+        self.use_jax = safe_autonomy_simulation.jax_available and use_jax
+        self.np = jnp if self.use_jax else np
+        self.state_min = self.np.copy(state_min)
+        self.state_max = self.np.copy(state_max)
 
     def step(
-        self, step_size: float, state: np.ndarray, control: np.ndarray
+        self,
+        step_size: float,
+        state: np.ndarray,
+        control: np.ndarray,
     ) -> typing.Tuple[np.ndarray, np.ndarray]:
         """
         Computes the dynamics state transition from the current state and control input.
@@ -57,12 +64,22 @@ class Dynamics:
         Tuple[np.ndarray, np.ndarray]
             Tuple of the system's next state and the state's instantaneous time derivative at the end of the step
         """
+        state = cast_jax(state, use_jax=self.use_jax)
+        control = cast_jax(control, use_jax=self.use_jax)
         next_state, state_dot = self._step(step_size, state, control)
-        next_state = self.np.clip(next_state, self.state_min, self.state_max)
+
+        next_state = self.np.clip(
+            cast_jax(next_state, use_jax=self.use_jax),
+            self.state_min,
+            self.state_max,
+        )
         return next_state, state_dot
 
     def _step(
-        self, step_size: float, state: np.ndarray, control: np.ndarray
+        self,
+        step_size: float,
+        state: np.ndarray,
+        control: np.ndarray,
     ) -> typing.Tuple[np.ndarray, np.ndarray]:
         """Computes the next state and state derivative of the system
 

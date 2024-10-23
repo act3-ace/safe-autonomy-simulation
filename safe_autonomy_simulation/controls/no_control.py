@@ -1,12 +1,7 @@
 """A default control queue with an empty default control vector."""
 
-import safe_autonomy_simulation
+import numpy as np
 import safe_autonomy_simulation.controls.control_queue as c
-
-if safe_autonomy_simulation.use_jax():
-    import jax.numpy as np
-else:
-    import numpy as np
 
 
 class NoControl(c.ControlQueue):

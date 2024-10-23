@@ -3,17 +3,19 @@
 import os
 
 
-def use_jax():
-    """Whether or not to use JAX for numerical computing and JIT compilation
+def jax_available():
+    """Whether or not JAX is available for numerical computing and JIT compilation
 
-    Checks the environment variable `USE_JAX` to see if JAX should be used
-    for numerical computing and JIT compilation. If `USE_JAX = 1` then
-    this function returns True. Otherwise this function returns False.
+    Checks the environment for the JAX package. Also checks the environment
+    variable `USE_JAX` to see if JAX should be used for
+    numerical computing and JIT compilation. If the JAX package is available
+    and `USE_JAX = 1` then this function returns True. Otherwise this
+    function returns False.
 
     Returns
     -------
     bool
-        whether or not to use JAX for numerical computing and JIT compilation
+        whether or not JAX is available for numerical computing and JIT compilation
     """
     if "USE_JAX" in os.environ:
         assert (
@@ -29,4 +31,8 @@ def use_jax():
                 )
         return result
     else:
-        return False
+        try:
+            import jax
+        except ImportError:
+            return False
+        return True

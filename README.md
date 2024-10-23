@@ -32,19 +32,15 @@ pip install jax[cuda12]
 
 For more information on installing JAX see the [official documentation](https://jax.readthedocs.io/en/latest/installation.html).
 
-As JAX is an experimental feature it is not enabled by default. You can tell `safe-autonomy-simulation` to use JAX by setting the following environment variable:
+JAX can be enabled on a per-class basis for classes that support it. As JAX is an experimental feature it is not enabled by default.
 
-```shell
-USE_JAX="1"
-```
-
-Similarly, JAX can be turned off by setting the environment variable:
+You can additionally force `safe-autonomy-simulation` to not use JAX at all by setting the following environment variable:
 
 ```shell
 USE_JAX="0"
 ```
 
-If the `USE_JAX` environment variable is not detected, the default behavior of `safe-autonomy-simulation` is to not use JAX.
+This will turn off JAX globally for `safe-autonomy-simulation` even if a class requests it.
 
 ### Installing from source
 

@@ -3,12 +3,7 @@
 import typing
 import queue
 import warnings
-import safe_autonomy_simulation
-
-if safe_autonomy_simulation.use_jax():
-    import jax.numpy as np
-else:
-    import numpy as np
+import numpy as np
 
 
 class ControlQueue:

@@ -53,7 +53,7 @@ def clip_state_dot_at_state_limits(
     upper_bounded_states = state >= s_max
 
     lower_bounded_clipped = np.clip(state_dot, 0, np.inf)
-    upper_bounded_clipped = np.clip(state_dot, np.inf, 0)
+    upper_bounded_clipped = np.clip(state_dot, -np.inf, 0)
 
     state_dot = np.where(lower_bounded_states, lower_bounded_clipped, state_dot)
     state_dot = np.where(upper_bounded_states, upper_bounded_clipped, state_dot)

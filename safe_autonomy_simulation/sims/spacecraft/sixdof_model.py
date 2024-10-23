@@ -269,6 +269,8 @@ class SixDOFDynamics(d.ControlAffineODEDynamics):
         Minimum state derivative values, by default -np.inf
     integration_method: str, optional
         Numerical integration method passed to dynamics model. See BaseODESolverDynamics. By default "RK45"
+    use_jax : bool, optional
+        EXPERIMENTAL: Use JAX to accelerate state transition computation, by default False.
     """
 
     def __init__(
@@ -285,6 +287,7 @@ class SixDOFDynamics(d.ControlAffineODEDynamics):
         state_dot_max: typing.Union[float, np.ndarray] = np.inf,
         state_dot_min: typing.Union[float, np.ndarray] = -np.inf,
         integration_method="RK45",
+        use_jax: bool = False
     ):
         self.m = m  # kg
         self.inertia_matrix = inertia_matrix  # kg*m^2
@@ -342,6 +345,7 @@ class SixDOFDynamics(d.ControlAffineODEDynamics):
             state_dot_min=state_dot_min,
             state_dot_max=state_dot_max,
             integration_method=integration_method,
+            use_jax=use_jax
         )
 
         self.A = self.np.array(
