@@ -54,7 +54,8 @@ class Sun(e.Point):
         return False
 
     def build_initial_state(self) -> np.ndarray:
-        state = np.array([self._initial_theta])
+        state = super().build_initial_state()
+        state = np.concatenate([state, np.array([self._initial_theta])])
         return state
 
     @property
@@ -68,7 +69,7 @@ class Sun(e.Point):
         np.ndarray
             state vector of form [theta]
         """
-        return np.array([self._state[0]])
+        return np.array([self._state[-1]])
 
     @state.setter
     def state(self, state: np.ndarray):
@@ -82,7 +83,7 @@ class Sun(e.Point):
         assert (
             state.shape == self.state.shape
         ), f"State shape must be {self.state.shape}, got {state.shape}"
-        self._state[0] = state[0]
+        self._state[-1] = state[0]
 
     @property
     def theta(self) -> float:
