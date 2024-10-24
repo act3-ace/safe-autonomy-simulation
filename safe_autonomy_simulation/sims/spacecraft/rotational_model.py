@@ -94,6 +94,8 @@ class CWHRotation2dSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-pub
     control_max: typing.Union[float, np.ndarray, None] = 1,
         specify a maximum value that control can be. numbers higher than this will be clipped. (default = None)
         If this value is None, control_min will be [1, 1, ang_acc_limit * self.inertia]
+    use_jax : bool, optional
+        EXPERIMENTAL: Use JAX to accelerate state transition computation, by default False.
     """
 
     def __init__(
@@ -118,6 +120,7 @@ class CWHRotation2dSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-pub
         children: list[e.PhysicalEntity] = [],
         control_min: typing.Union[float, np.ndarray, None] = None,
         control_max: typing.Union[float, np.ndarray, None] = None,
+        use_jax: bool = False,
     ):
         assert position.shape == (2,), f"Position must be 2D. Instead got {position}"
         assert velocity.shape == (2,), f"Velocity must be 2D. Instead got {velocity}"
@@ -157,6 +160,7 @@ class CWHRotation2dSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-pub
             n=n,
             trajectory_samples=trajectory_samples,
             integration_method=integration_method,
+            use_jax=use_jax,
         )
 
         super().__init__(

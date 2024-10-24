@@ -69,6 +69,8 @@ class CWHSpacecraft(e.PhysicalEntity):
         specify a minimum value that control can be. numbers lower than this will be clipped. (default = -1)
     control_max: typing.Union[float, np.ndarray, None] = 1,
         specify a maximum value that control can be. numbers higher than this will be clipped. (default = 1)
+    use_jax : bool, optional
+        EXPERIMENTAL: Use JAX to accelerate state transition computation, by default False.
     """
 
     def __init__(
@@ -85,12 +87,14 @@ class CWHSpacecraft(e.PhysicalEntity):
         children: list[e.PhysicalEntity] = [],
         control_min: typing.Union[float, np.ndarray, None] = -1,
         control_max: typing.Union[float, np.ndarray, None] = 1,
+        use_jax: bool = False,
     ):
         dynamics = CWHDynamics(
             m=m,
             n=n,
             trajectory_samples=trajectory_samples,
             integration_method=integration_method,
+            use_jax=use_jax,
         )
 
         control_queue = c.ControlQueue(
