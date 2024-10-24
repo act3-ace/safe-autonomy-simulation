@@ -4,7 +4,7 @@ import typing
 import safe_autonomy_simulation
 import safe_autonomy_simulation.dynamics as dynamics
 import numpy as np
-from safe_autonomy_simulation.utils import cast_jax
+import jax.numpy as jnp
 
 
 class ODEDynamics(dynamics.Dynamics):
@@ -86,9 +86,9 @@ class ODEDynamics(dynamics.Dynamics):
     def compute_state_dot(
         self,
         t: float,
-        state: np.ndarray,
-        control: np.ndarray,
-    ) -> np.ndarray:
+        state: np.ndarray | jnp.ndarray,
+        control: np.ndarray | jnp.ndarray,
+    ) -> np.ndarray | jnp.ndarray:
         """
         Computes the instantaneous time derivative of the state vector
 
@@ -97,20 +97,20 @@ class ODEDynamics(dynamics.Dynamics):
         t : float
             Time in seconds since the beginning of the simulation step.
             Note, this is NOT the total simulation time but the time within the individual step.
-        state : np.ndarray
+        state : np.ndarray | jnp.ndarray
             Current state vector at time t.
-        control : np.ndarray
+        control : np.ndarray | jnp.ndarray
             Control vector.
 
         Returns
         -------
-        np.ndarray
+        np.ndarray | jnp.ndarray
             Instantaneous time derivative of the state vector.
         """
-        state = cast_jax(state, use_jax=self.use_jax)
-        control = cast_jax(control, use_jax=self.use_jax)
+        # Compute state derivative
+        state_dot = self._compute_state_dot(t, state, control)
 
-        # Get clip functions
+        # Select clip functions
         clip_fn = (
             safe_autonomy_simulation.dynamics.utils.clip_state_dot
             if not self.use_jax
@@ -121,8 +121,7 @@ class ODEDynamics(dynamics.Dynamics):
             if not self.use_jax
             else safe_autonomy_simulation.jax.ode.clip_state_dot_at_state_limits
         )
-        # Compute state derivative
-        state_dot = self._compute_state_dot(t, state, control)
+
         # Clip state derivative values
         state_dot = clip_fn(
             state_dot=state_dot,
@@ -133,17 +132,18 @@ class ODEDynamics(dynamics.Dynamics):
         state_dot = clip_at_state_limits_fn(
             state=state,
             state_dot=state_dot,
-            s_min=self.state_dot_min,
-            s_max=self.state_dot_max,
+            s_min=self.state_min,
+            s_max=self.state_max,
         )
+
         return state_dot
 
     def _compute_state_dot(
         self,
         t: float,
-        state: np.ndarray,
-        control: np.ndarray,
-    ) -> np.ndarray:
+        state: np.ndarray | jnp.ndarray,
+        control: np.ndarray | jnp.ndarray,
+    ) -> np.ndarray | jnp.ndarray:
         raise NotImplementedError
 
     def _step(
@@ -151,27 +151,33 @@ class ODEDynamics(dynamics.Dynamics):
         step_size: float,
         state: np.ndarray,
         control: np.ndarray,
-    ):
-        state = cast_jax(state, use_jax=self.use_jax)
-        control = cast_jax(control, use_jax=self.use_jax)
-        if self.integration_method == "RK45":
+    ) -> typing.Tuple[np.ndarray, np.ndarray]:
+        if not self.use_jax:  # use numpy arrays and functions
             step_fn = (
                 safe_autonomy_simulation.dynamics.utils.step_rk45
-                if not self.use_jax
-                else safe_autonomy_simulation.jax.ode.step_rk45
+                if self.integration_method == "RK45"
+                else safe_autonomy_simulation.dynamics.utils.step_euler
             )
-        else:
+        else:  # use jax arrays and JIT functions
             step_fn = (
-                safe_autonomy_simulation.dynamics.utils.step_euler
-                if not self.use_jax
+                safe_autonomy_simulation.jax.ode.step_rk45
+                if self.integration_method == "RK45"
                 else safe_autonomy_simulation.jax.ode.step_euler
             )
+            state = jnp.array(state)
+            control = jnp.array(control)
+
         next_state, state_dot, self.trajectory, self.trajectory_t = step_fn(
             f=self.compute_state_dot,
             step_size=step_size,
             state=state,
             control=control,
         )
+
+        if self.use_jax:  # cast back to numpy
+            next_state = np.array(next_state)
+            state_dot = np.array(state_dot)
+
         return next_state, state_dot
 
 
@@ -218,11 +224,9 @@ class ControlAffineODEDynamics(ODEDynamics):
     def _compute_state_dot(
         self,
         t: float,
-        state: np.ndarray,
-        control: np.ndarray,
-    ):
-        state = cast_jax(state, use_jax=self.use_jax)
-        control = cast_jax(control, use_jax=self.use_jax)
+        state: np.ndarray | jnp.ndarray,
+        control: np.ndarray | jnp.ndarray,
+    ) -> np.ndarray | jnp.ndarray:
         transition_fn = (
             safe_autonomy_simulation.dynamics.utils.affine_transition
             if not self.use_jax
@@ -236,36 +240,40 @@ class ControlAffineODEDynamics(ODEDynamics):
         )
         return state_dot
 
-    def state_transition_system(self, state: np.ndarray) -> np.ndarray:
+    def state_transition_system(
+        self, state: np.ndarray | jnp.ndarray
+    ) -> np.ndarray | jnp.ndarray:
         """Computes the system state contribution to the system state's time derivative
 
         i.e. implements f(x) from dx/dt = f(x) + g(x)u
 
         Parameters
         ----------
-        state : np.ndarray
+        state : np.ndarray | jnp.ndarray
             Current state vector of the system.
 
         Returns
         -------
-        np.ndarray
+        np.ndarray | jnp.ndarray
             state time derivative contribution from the current system state
         """
         raise NotImplementedError
 
-    def state_transition_input(self, state: np.ndarray) -> np.ndarray:
+    def state_transition_input(
+        self, state: np.ndarray | jnp.ndarray
+    ) -> np.ndarray | jnp.ndarray:
         """Computes the control input matrix contribution to the system state's time derivative
 
         i.e. implements g(x) from dx/dt = f(x) + g(x)u
 
         Parameters
         ----------
-        state : np.ndarray
+        state : np.ndarray | jnp.ndarray
             Current state vector of the system.
 
         Returns
         -------
-        np.ndarray
+        np.ndarray | jnp.ndarray
             input matrix in state space representation time derivative
         """
         raise NotImplementedError
@@ -324,7 +332,7 @@ class LinearODEDynamics(ControlAffineODEDynamics):
         state_dot_min: typing.Union[float, np.ndarray] = -np.inf,
         state_dot_max: typing.Union[float, np.ndarray] = np.inf,
         integration_method: str = "RK45",
-        use_jax: bool = False
+        use_jax: bool = False,
     ):
         super().__init__(
             trajectory_samples=trajectory_samples,
@@ -333,7 +341,7 @@ class LinearODEDynamics(ControlAffineODEDynamics):
             state_dot_min=state_dot_min,
             state_dot_max=state_dot_max,
             integration_method=integration_method,
-            use_jax=use_jax
+            use_jax=use_jax,
         )
 
         assert len(A.shape) == 2, f"A must be a 2D matrix. Instead got shape {A.shape}"
@@ -349,8 +357,12 @@ class LinearODEDynamics(ControlAffineODEDynamics):
         self.A = self.np.copy(A)
         self.B = self.np.copy(B)
 
-    def state_transition_system(self, state: np.ndarray) -> np.ndarray:
-        return self.A @ cast_jax(state, use_jax=self.use_jax)
+    def state_transition_system(
+        self, state: np.ndarray | jnp.ndarray
+    ) -> np.ndarray | jnp.ndarray:
+        return self.A @ state
 
-    def state_transition_input(self, state: np.ndarray) -> np.ndarray:
+    def state_transition_input(
+        self, state: np.ndarray | jnp.ndarray
+    ) -> np.ndarray | jnp.ndarray:
         return self.B

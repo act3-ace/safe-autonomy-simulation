@@ -2,11 +2,7 @@
 
 import typing
 import numpy as np
-import safe_autonomy_simulation
-from safe_autonomy_simulation.utils import cast_jax
-
-if safe_autonomy_simulation.jax_available():
-    import jax.numpy as jnp
+import jax.numpy as jnp
 
 
 class Dynamics:
@@ -36,7 +32,7 @@ class Dynamics:
         state_max: typing.Union[float, np.ndarray] = np.inf,
         use_jax: bool = False,
     ):
-        self.use_jax = safe_autonomy_simulation.jax_available and use_jax
+        self.use_jax = use_jax
         self.np = jnp if self.use_jax else np
         self.state_min = self.np.copy(state_min)
         self.state_max = self.np.copy(state_max)
@@ -64,15 +60,14 @@ class Dynamics:
         Tuple[np.ndarray, np.ndarray]
             Tuple of the system's next state and the state's instantaneous time derivative at the end of the step
         """
-        state = cast_jax(state, use_jax=self.use_jax)
-        control = cast_jax(control, use_jax=self.use_jax)
         next_state, state_dot = self._step(step_size, state, control)
-
         next_state = self.np.clip(
-            cast_jax(next_state, use_jax=self.use_jax),
+            next_state,
             self.state_min,
             self.state_max,
         )
+        if self.use_jax:  # cast back to numpy
+            next_state = np.array(next_state)
         return next_state, state_dot
 
     def _step(

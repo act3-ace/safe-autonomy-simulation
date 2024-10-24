@@ -1,11 +1,12 @@
 import re
 import pytest
 import numpy as np
+import jax.numpy as jnp
 import safe_autonomy_simulation
 
 
 @pytest.mark.parametrize(
-    "A, B",
+    "A, B, use_jax",
     [
         (
             np.array(
@@ -20,6 +21,7 @@ import safe_autonomy_simulation
                     [0, 0],
                 ]
             ),
+            False,
         ),
         (
             np.array(
@@ -34,6 +36,7 @@ import safe_autonomy_simulation
                     [7, 8],
                 ]
             ),
+            False,
         ),
         (
             np.array(
@@ -50,11 +53,67 @@ import safe_autonomy_simulation
                     [16, 17, 18],
                 ]
             ),
+            False,
+        ),
+        (
+            np.array(
+                [
+                    [0, 0],
+                    [0, 0],
+                ]
+            ),
+            np.array(
+                [
+                    [0, 0],
+                    [0, 0],
+                ]
+            ),
+            True,
+        ),
+        (
+            np.array(
+                [
+                    [1, 2],
+                    [3, 4],
+                ]
+            ),
+            np.array(
+                [
+                    [5, 6],
+                    [7, 8],
+                ]
+            ),
+            True,
+        ),
+        (
+            np.array(
+                [
+                    [1, 2, 3],
+                    [4, 5, 6],
+                    [7, 8, 9],
+                ]
+            ),
+            np.array(
+                [
+                    [10, 11, 12],
+                    [13, 14, 15],
+                    [16, 17, 18],
+                ]
+            ),
+            True,
         ),
     ],
 )
-def test_init(A, B):
-    linear_ode = safe_autonomy_simulation.dynamics.LinearODEDynamics(A, B)
+def test_init(A, B, use_jax):
+    linear_ode = safe_autonomy_simulation.dynamics.LinearODEDynamics(
+        A, B, use_jax=use_jax
+    )
+    if use_jax:
+        assert isinstance(linear_ode.A, jnp.ndarray)
+        assert isinstance(linear_ode.B, jnp.ndarray)
+    else:
+        assert isinstance(linear_ode.A, np.ndarray)
+        assert isinstance(linear_ode.B, np.ndarray)
     assert np.all(linear_ode.A == A)
     assert np.all(linear_ode.B == B)
 
@@ -185,3 +244,239 @@ def test_init_shape_error(A, B):
         ),
     ):
         safe_autonomy_simulation.dynamics.LinearODEDynamics(A, B)
+
+
+@pytest.mark.parametrize(
+    "A, B, state, use_jax",
+    [
+        (
+            np.array(
+                [
+                    [0, 0],
+                    [0, 0],
+                ]
+            ),
+            np.array(
+                [
+                    [0, 0],
+                    [0, 0],
+                ]
+            ),
+            np.array([1, 2]),
+            False,
+        ),
+        (
+            np.array(
+                [
+                    [1, 2],
+                    [3, 4],
+                ]
+            ),
+            np.array(
+                [
+                    [5, 6],
+                    [7, 8],
+                ]
+            ),
+            np.array([1, 2]),
+            False,
+        ),
+        (
+            np.array(
+                [
+                    [1, 2, 3],
+                    [4, 5, 6],
+                    [7, 8, 9],
+                ]
+            ),
+            np.array(
+                [
+                    [10, 11, 12],
+                    [13, 14, 15],
+                    [16, 17, 18],
+                ]
+            ),
+            np.array([1, 2, 3]),
+            False,
+        ),
+        (
+            np.array(
+                [
+                    [0, 0],
+                    [0, 0],
+                ]
+            ),
+            np.array(
+                [
+                    [0, 0],
+                    [0, 0],
+                ]
+            ),
+            np.array([1, 2]),
+            True,
+        ),
+        (
+            np.array(
+                [
+                    [1, 2],
+                    [3, 4],
+                ]
+            ),
+            np.array(
+                [
+                    [5, 6],
+                    [7, 8],
+                ]
+            ),
+            np.array([1, 2]),
+            True,
+        ),
+        (
+            np.array(
+                [
+                    [1, 2, 3],
+                    [4, 5, 6],
+                    [7, 8, 9],
+                ]
+            ),
+            np.array(
+                [
+                    [10, 11, 12],
+                    [13, 14, 15],
+                    [16, 17, 18],
+                ]
+            ),
+            np.array([1, 2, 3]),
+            True,
+        ),
+    ],
+)
+def test_state_transition_system(A, B, state, use_jax):
+    linear_ode = safe_autonomy_simulation.dynamics.LinearODEDynamics(
+        A, B, use_jax=use_jax
+    )
+    state = np.array(state) if not use_jax else jnp.array(state)
+    out = linear_ode.state_transition_system(state=state)
+    if use_jax:
+        assert isinstance(out, jnp.ndarray)
+    else:
+        assert isinstance(out, np.ndarray)
+    assert np.all(out == A @ state)
+
+
+@pytest.mark.parametrize(
+    "A, B, state, use_jax",
+    [
+        (
+            np.array(
+                [
+                    [0, 0],
+                    [0, 0],
+                ]
+            ),
+            np.array(
+                [
+                    [0, 0],
+                    [0, 0],
+                ]
+            ),
+            np.array([1, 2]),
+            False,
+        ),
+        (
+            np.array(
+                [
+                    [1, 2],
+                    [3, 4],
+                ]
+            ),
+            np.array(
+                [
+                    [5, 6],
+                    [7, 8],
+                ]
+            ),
+            np.array([1, 2]),
+            False,
+        ),
+        (
+            np.array(
+                [
+                    [1, 2, 3],
+                    [4, 5, 6],
+                    [7, 8, 9],
+                ]
+            ),
+            np.array(
+                [
+                    [10, 11, 12],
+                    [13, 14, 15],
+                    [16, 17, 18],
+                ]
+            ),
+            np.array([1, 2, 3]),
+            False,
+        ),
+        (
+            np.array(
+                [
+                    [0, 0],
+                    [0, 0],
+                ]
+            ),
+            np.array(
+                [
+                    [0, 0],
+                    [0, 0],
+                ]
+            ),
+            np.array([1, 2]),
+            True,
+        ),
+        (
+            np.array(
+                [
+                    [1, 2],
+                    [3, 4],
+                ]
+            ),
+            np.array(
+                [
+                    [5, 6],
+                    [7, 8],
+                ]
+            ),
+            np.array([1, 2]),
+            True,
+        ),
+        (
+            np.array(
+                [
+                    [1, 2, 3],
+                    [4, 5, 6],
+                    [7, 8, 9],
+                ]
+            ),
+            np.array(
+                [
+                    [10, 11, 12],
+                    [13, 14, 15],
+                    [16, 17, 18],
+                ]
+            ),
+            np.array([1, 2, 3]),
+            True,
+        ),
+    ],
+)
+def test_state_transition_input(A, B, state, use_jax):
+    linear_ode = safe_autonomy_simulation.dynamics.LinearODEDynamics(
+        A, B, use_jax=use_jax
+    )
+    state = np.array(state) if not use_jax else jnp.array(state)
+    out = linear_ode.state_transition_input(state=state)
+    if use_jax:
+        assert isinstance(out, jnp.ndarray)
+    else:
+        assert isinstance(out, np.ndarray)
+    assert np.all(out == B)

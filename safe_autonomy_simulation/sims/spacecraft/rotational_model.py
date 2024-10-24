@@ -20,7 +20,6 @@ import pint
 import scipy.spatial.transform as transform
 import numpy as np
 
-import safe_autonomy_simulation
 import safe_autonomy_simulation.entities as e
 import safe_autonomy_simulation.dynamics as d
 import safe_autonomy_simulation.materials as mat
@@ -347,9 +346,7 @@ class CWHRotation2dDynamics(d.ControlAffineODEDynamics):
         self.B = self.np.copy(B)
 
     def state_transition_system(self, state: np.ndarray) -> np.ndarray:
-        x, y, x_dot, y_dot, theta, wz = safe_autonomy_simulation.utils.cast_jax(
-            state, use_jax=self.use_jax
-        )
+        x, y, x_dot, y_dot, theta, wz = state
         # Form separate state vector for translational state
         pos_vel_state_vec = self.np.array([x, y, x_dot, y_dot], self.np.float32)
         # Compute derivatives

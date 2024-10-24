@@ -25,11 +25,8 @@ pint = "^0.23"
 scipy = "^1.13.0"
 scikit-learn = "^1.5.0"
 typing-extensions = "^4.12.2"
-jax = {extras = ["cpu"], version = "^0.4.30", optional = true}
-diffrax = {version = "^0.6.0", optional = true}
-
-[tool.poetry.extras]
-jax = ["jax", "diffrax"]
+jax = {extras = ["cpu"], version = "^0.4.30"}
+diffrax = {version = "^0.6.0"}
 
 [tool.poetry.group.test]
 optional = true
@@ -38,6 +35,7 @@ optional = true
 pytest = "^8.0.0"
 pytest-cov = "4.1.0"
 pyinstrument = "^4.3.0"
+pytest-mock = "^3.14.0"
 
 [tool.poetry.group.docs]
 optional = true
