@@ -110,12 +110,7 @@ class ODEDynamics(dynamics.Dynamics):
         # Compute state derivative
         state_dot = self._compute_state_dot(t, state, control)
 
-        # Select clip functions
-        clip_fn = (
-            safe_autonomy_simulation.dynamics.utils.clip_state_dot
-            if not self.use_jax
-            else safe_autonomy_simulation.jax.ode.clip_state_dot
-        )
+        # Select clip function
         clip_at_state_limits_fn = (
             safe_autonomy_simulation.dynamics.utils.clip_state_dot_at_state_limits
             if not self.use_jax
@@ -123,11 +118,8 @@ class ODEDynamics(dynamics.Dynamics):
         )
 
         # Clip state derivative values
-        state_dot = clip_fn(
-            state_dot=state_dot,
-            s_min=self.state_dot_min,
-            s_max=self.state_dot_max,
-        )
+        state_dot = np.clip(state_dot, self.state_dot_min, self.state_dot_max)
+        
         # Clip state derivative values to ensure state remains within bounds
         state_dot = clip_at_state_limits_fn(
             state=state,
