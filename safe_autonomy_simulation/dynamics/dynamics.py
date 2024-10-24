@@ -61,13 +61,11 @@ class Dynamics:
             Tuple of the system's next state and the state's instantaneous time derivative at the end of the step
         """
         next_state, state_dot = self._step(step_size, state, control)
-        next_state = self.np.clip(
+        next_state = np.clip(
             next_state,
             self.state_min,
             self.state_max,
         )
-        if self.use_jax:  # cast back to numpy
-            next_state = np.array(next_state)
         return next_state, state_dot
 
     def _step(
