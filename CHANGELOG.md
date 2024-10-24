@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/act3-ace/safe-autonomy-simulation/compare/v2.0.15...v2.1.0) (2024-10-24)
+
+
+### Features
+
+* add ability to weight only half the sphere of inspection points ([07cdbb6](https://github.com/act3-ace/safe-autonomy-simulation/commit/07cdbb6972bae333f629d811066b6adab307a49f))
+
 ## [2.0.15](https://github.com/act3-ace/safe-autonomy-simulation/compare/v2.0.14...v2.0.15) (2024-10-23)
 
 
