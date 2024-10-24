@@ -10,6 +10,7 @@ from safe_autonomy_simulation import (
     controls,
     sims,
     utils,
+    jax,
 )
 from safe_autonomy_simulation.dynamics import Dynamics
 from safe_autonomy_simulation.entities import Entity
@@ -32,4 +33,5 @@ __all__ = [
     "controls",
     "sims",
     "utils",
+    "jax",
 ]

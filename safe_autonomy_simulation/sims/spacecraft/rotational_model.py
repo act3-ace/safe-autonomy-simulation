@@ -18,6 +18,7 @@ import typing
 
 import pint
 import scipy.spatial.transform as transform
+import numpy as np
 
 import safe_autonomy_simulation.entities as e
 import safe_autonomy_simulation.dynamics as d
@@ -25,15 +26,8 @@ import safe_autonomy_simulation.materials as mat
 import safe_autonomy_simulation.controls as c
 import safe_autonomy_simulation.sims.spacecraft.defaults as defaults
 
-try:
-    import jax.numpy as np
-except ImportError:
-    import numpy as np
 
-
-class CWHRotation2dSpacecraft(
-    e.PhysicalEntity
-):  # pylint: disable=too-many-public-methods
+class CWHRotation2dSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-public-methods
     """
     Spacecraft with 2D translational Clohessy-Wiltshire dynamics in Hill's reference frame.
     In-plane motion (x,y) using +/- x thruster rotated to desired direction
@@ -100,6 +94,8 @@ class CWHRotation2dSpacecraft(
     control_max: typing.Union[float, np.ndarray, None] = 1,
         specify a maximum value that control can be. numbers higher than this will be clipped. (default = None)
         If this value is None, control_min will be [1, 1, ang_acc_limit * self.inertia]
+    use_jax : bool, optional
+        EXPERIMENTAL: Use JAX to accelerate state transition computation, by default False.
     """
 
     def __init__(
@@ -124,6 +120,7 @@ class CWHRotation2dSpacecraft(
         children: list[e.PhysicalEntity] = [],
         control_min: typing.Union[float, np.ndarray, None] = None,
         control_max: typing.Union[float, np.ndarray, None] = None,
+        use_jax: bool = False,
     ):
         assert position.shape == (2,), f"Position must be 2D. Instead got {position}"
         assert velocity.shape == (2,), f"Velocity must be 2D. Instead got {velocity}"
@@ -163,6 +160,7 @@ class CWHRotation2dSpacecraft(
             n=n,
             trajectory_samples=trajectory_samples,
             integration_method=integration_method,
+            use_jax=use_jax,
         )
 
         super().__init__(
@@ -210,7 +208,12 @@ class CWHRotation2dSpacecraft(
             state vector of form [x, y, x_dot, y_dot, theta, wz]
         """
         return np.concatenate(
-            [self.position[:2], self.velocity[:2], np.array([self.theta]), np.array([self.wz])]
+            [
+                self.position[:2],
+                self.velocity[:2],
+                np.array([self.theta]),
+                np.array([self.wz]),
+            ]
         )
 
     @state.setter
@@ -263,6 +266,8 @@ class CWHRotation2dDynamics(d.ControlAffineODEDynamics):
         Maximum state derivative values, by default None
     integration_method: str, optional
         Numerical integration method, by default "RK45"
+    use_jax : bool, optional
+        EXPERIMENTAL: Use JAX to accelerate state transition computation, by default False.
     """
 
     def __init__(
@@ -278,6 +283,7 @@ class CWHRotation2dDynamics(d.ControlAffineODEDynamics):
         state_dot_min: typing.Union[float, np.ndarray, None] = None,
         state_dot_max: typing.Union[float, np.ndarray, None] = None,
         integration_method: str = "RK45",
+        use_jax: bool = False,
     ):
         self.m = m  # kg
         self.inertia = inertia  # kg*m^2
@@ -317,27 +323,27 @@ class CWHRotation2dDynamics(d.ControlAffineODEDynamics):
             state_dot_min=state_dot_min,
             state_dot_max=state_dot_max,
             integration_method=integration_method,
+            use_jax=use_jax,
         )
 
-        # Use self.np for numpy operations to allow for jax compatibility
-        A = self.np.array(
+        A = np.array(
             [
                 [0, 0, 1, 0],
                 [0, 0, 0, 1],
                 [3 * n**2, 0, 0, 2 * n],
                 [0, 0, -2 * n, 0],
             ],
-            dtype=self.np.float64,
+            dtype=np.float64,
         )
 
-        B = self.np.array(
+        B = np.array(
             [
                 [0, 0],
                 [0, 0],
                 [1 / m, 0],
                 [0, 1 / m],
             ],
-            dtype=self.np.float64,
+            dtype=np.float64,
         )
 
         self.A = self.np.copy(A)
@@ -346,7 +352,7 @@ class CWHRotation2dDynamics(d.ControlAffineODEDynamics):
     def state_transition_system(self, state: np.ndarray) -> np.ndarray:
         x, y, x_dot, y_dot, theta, wz = state
         # Form separate state vector for translational state
-        pos_vel_state_vec = self.np.array([x, y, x_dot, y_dot], dtype=self.np.float32)
+        pos_vel_state_vec = self.np.array([x, y, x_dot, y_dot], self.np.float32)
         # Compute derivatives
         pos_vel_derivative = self.A @ pos_vel_state_vec
 
@@ -362,7 +368,6 @@ class CWHRotation2dDynamics(d.ControlAffineODEDynamics):
             ],
             dtype=self.np.float32,
         )
-
         return state_derivative
 
     def state_transition_input(self, state: np.ndarray) -> np.ndarray:
@@ -373,8 +378,8 @@ class CWHRotation2dDynamics(d.ControlAffineODEDynamics):
                 [0, 0, 0],
                 [0, 0, 0],
                 [0, 0, 0],
-                [self.np.cos(theta) / self.m, -self.np.sin(theta) / self.m, 0],
-                [self.np.sin(theta) / self.m, self.np.cos(theta) / self.m, 0],
+                [np.cos(theta) / self.m, -np.sin(theta) / self.m, 0],
+                [np.sin(theta) / self.m, np.cos(theta) / self.m, 0],
                 [0, 0, 1 / self.inertia],
             ]
         )

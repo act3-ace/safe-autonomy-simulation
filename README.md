@@ -14,6 +14,20 @@ The following command will install `safe-autonomy-simulation` into your local en
 pip install safe-autonomy-simulation
 ```
 
+### JAX support (experimental)
+
+The `safe-autonomy-simulation` package supports numerical computation acceleration via the [JAX](https://jax.readthedocs.io/en/latest/index.html) library. This is an experimental feature.
+
+The `safe_autonomy_simulation` package comes installed with JAX for CPU acceleration. JAX also provides GPU acceleration for numerical computing. If you'd like this feature the easiest way to install it is using `pip`:
+
+```shell
+pip install jax[cuda12]
+```
+
+For more information on installing JAX see the [official documentation](https://jax.readthedocs.io/en/latest/installation.html).
+
+JAX can be enabled on a per-class basis for classes that support it. As JAX is an experimental feature it is not enabled by default.
+
 ### Installing from source
 
 Alternatively, `safe-autonomy-simulation` can be installed from source using any of the following methods. Again, it is recommended to install this package in an isolated virtual environment. The following sections describe how to install `safe-autonomy-simulation` from source in an isolated virtual environment using `poetry`, `conda`, and `pip + virtualenv`.

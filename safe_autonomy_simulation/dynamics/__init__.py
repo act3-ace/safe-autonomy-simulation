@@ -15,6 +15,7 @@ from safe_autonomy_simulation.dynamics.ode import (
     ControlAffineODEDynamics,
     LinearODEDynamics,
 )
+import safe_autonomy_simulation.dynamics.utils as utils
 
 __all__ = [
     "Dynamics",  # base dynamics model
@@ -22,4 +23,5 @@ __all__ = [
     "ODEDynamics",  # base dynamics model that integrates ordinary differential equations
     "ControlAffineODEDynamics",  # control-affine ODE dynamics model
     "LinearODEDynamics",  # linear ODE dynamics model
+    "utils",  # utility functions for dynamics models
 ]

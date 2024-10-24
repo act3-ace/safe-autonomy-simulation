@@ -37,6 +37,8 @@ class Target(spacecraft.CWHSpacecraft):
         Material properties of the spacecraft, by default CWH_MATERIAL
     parent : Union[PhysicalEntity, None], optional
         Parent entity of spacecraft, by default None
+    use_jax : bool, optional
+        EXPERIMENTAL: Use JAX to accelerate state transition computation, by default False.
     """
 
     def __init__(
@@ -53,6 +55,7 @@ class Target(spacecraft.CWHSpacecraft):
         integration_method: str = "RK45",
         material: mat.Material = defaults.CWH_MATERIAL,
         parent: typing.Union[e.PhysicalEntity, None] = None,
+        use_jax: bool = False,
     ):
         super().__init__(
             name=name,
@@ -64,6 +67,7 @@ class Target(spacecraft.CWHSpacecraft):
             integration_method=integration_method,
             material=material,
             parent=parent,
+            use_jax=use_jax,
         )
         self._inspection_points = p.InspectionPointSet(
             name="inspection_points",
@@ -136,6 +140,8 @@ class SixDOFTarget(spacecraft.SixDOFSpacecraft):
         Parent entity of spacecraft, by default None
     children : list[PhysicalEntity], optional
         List of children entities of spacecraft, by default []
+    use_jax : bool, optional
+        EXPERIMENTAL: Use JAX to accelerate state transition computation, by default False.
     """
 
     def __init__(
@@ -163,6 +169,7 @@ class SixDOFTarget(spacecraft.SixDOFSpacecraft):
         material: mat.Material = defaults.CWH_MATERIAL,
         parent: typing.Union[e.PhysicalEntity, None] = None,
         children: list[e.PhysicalEntity] = [],
+        use_jax: bool = False,
     ):
         super().__init__(
             name=name,
@@ -185,6 +192,7 @@ class SixDOFTarget(spacecraft.SixDOFSpacecraft):
             material=material,
             parent=parent,
             children=children,
+            use_jax=use_jax,
         )
         self._inspection_points = p.InspectionPointSet(
             name="inspection_points",
