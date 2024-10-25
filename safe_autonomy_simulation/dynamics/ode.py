@@ -118,7 +118,7 @@ class ODEDynamics(dynamics.Dynamics):
         )
 
         # Clip state derivative values
-        state_dot = np.clip(state_dot, self.state_dot_min, self.state_dot_max)
+        state_dot = self.np.clip(state_dot, self.state_dot_min, self.state_dot_max)
         
         # Clip state derivative values to ensure state remains within bounds
         state_dot = clip_at_state_limits_fn(
