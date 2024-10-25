@@ -1,3 +1,10 @@
+## [2.1.2](https://github.com/act3-ace/safe-autonomy-simulation/compare/v2.1.1...v2.1.2) (2024-10-25)
+
+
+### Bug Fixes
+
+* use jax clip for jit compliance ([b83c860](https://github.com/act3-ace/safe-autonomy-simulation/commit/b83c860ef6285fc89dde04daacb3e1e8c6990eee)), closes [#18](https://github.com/act3-ace/safe-autonomy-simulation/issues/18)
+
 ## [2.1.1](https://github.com/act3-ace/safe-autonomy-simulation/compare/v2.1.0...v2.1.1) (2024-10-25)
 
 
