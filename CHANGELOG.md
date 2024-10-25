@@ -1,3 +1,10 @@
+## [2.1.1](https://github.com/act3-ace/safe-autonomy-simulation/compare/v2.1.0...v2.1.1) (2024-10-25)
+
+
+### Bug Fixes
+
+* **jax:** move jax support to optional experimental feature ([1b4a52d](https://github.com/act3-ace/safe-autonomy-simulation/commit/1b4a52dd84bb43d547cc1ac15e0d998413758808)), closes [#8](https://github.com/act3-ace/safe-autonomy-simulation/issues/8)
+
 # [2.1.0](https://github.com/act3-ace/safe-autonomy-simulation/compare/v2.0.15...v2.1.0) (2024-10-24)
 
 
