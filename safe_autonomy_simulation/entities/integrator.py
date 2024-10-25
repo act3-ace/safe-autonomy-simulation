@@ -43,6 +43,8 @@ class PointMassIntegrator1d(e.PhysicalEntity):
         specify a minimum value that control can be. numbers lower than this will be clipped. (default = -1)
     control_max: typing.Union[float, np.ndarray, None] = 1,
         specify a maximum value that control can be. numbers higher than this will be clipped. (default = 1)
+    use_jax : bool, optional
+        EXPERIMENTAL: Use JAX to accelerate state transition computation, by default False.
     """
 
     def __init__(
@@ -56,6 +58,7 @@ class PointMassIntegrator1d(e.PhysicalEntity):
         integration_method="RK45",
         control_min: typing.Union[float, np.ndarray, None] = -1,
         control_max: typing.Union[float, np.ndarray, None] = 1,
+        use_jax: bool = False,
     ):
         assert position.shape == (1,), f"Position must be 1D vector, got {position}"
         assert velocity.shape == (1,), f"Velocity must be 1D vector, got {velocity}"
@@ -66,6 +69,7 @@ class PointMassIntegrator1d(e.PhysicalEntity):
             mode="1d",
             trajectory_samples=trajectory_samples,
             integration_method=integration_method,
+            use_jax=use_jax,
         )
 
         control_queue = c.ControlQueue(
@@ -148,6 +152,8 @@ class PointMassIntegrator2d(e.PhysicalEntity):
         specify a minimum value that control can be. numbers lower than this will be clipped. (default = -1)
     control_max: typing.Union[float, np.ndarray, None] = 1,
         specify a maximum value that control can be. numbers higher than this will be clipped. (default = 1)
+    use_jax : bool, optional
+        EXPERIMENTAL: Use JAX to accelerate state transition computation, by default False.
     """
 
     def __init__(
@@ -161,6 +167,7 @@ class PointMassIntegrator2d(e.PhysicalEntity):
         integration_method="RK45",
         control_min: typing.Union[float, np.ndarray, None] = -1,
         control_max: typing.Union[float, np.ndarray, None] = 1,
+        use_jax: bool = False,
     ):
         assert position.shape == (2,), f"Position must be 2D vector, got {position}"
         assert velocity.shape == (2,), f"Velocity must be 2D vector, got {velocity}"
@@ -171,6 +178,7 @@ class PointMassIntegrator2d(e.PhysicalEntity):
             mode="2d",
             trajectory_samples=trajectory_samples,
             integration_method=integration_method,
+            use_jax=use_jax,
         )
 
         control_queue = c.ControlQueue(
@@ -259,6 +267,8 @@ class PointMassIntegrator3d(e.PhysicalEntity):
         specify a minimum value that control can be. numbers lower than this will be clipped. (default = -1)
     control_max: typing.Union[float, np.ndarray, None] = 1,
         specify a maximum value that control can be. numbers higher than this will be clipped. (default = 1)
+    use_jax : bool, optional
+        EXPERIMENTAL: Use JAX to accelerate state transition computation, by default False.
     """
 
     def __init__(
@@ -272,6 +282,7 @@ class PointMassIntegrator3d(e.PhysicalEntity):
         integration_method="RK45",
         control_min: typing.Union[float, np.ndarray, None] = -1,
         control_max: typing.Union[float, np.ndarray, None] = 1,
+        use_jax: bool = False,
     ):
         assert position.shape == (3,), "Position must be 3D"
         assert velocity.shape == (3,), "Velocity must be 3D"
@@ -282,6 +293,7 @@ class PointMassIntegrator3d(e.PhysicalEntity):
             mode="3d",
             trajectory_samples=trajectory_samples,
             integration_method=integration_method,
+            use_jax=use_jax,
         )
 
         control_queue = c.ControlQueue(
@@ -358,6 +370,8 @@ class PointMassIntegratorDynamics(d.LinearODEDynamics):
         maximum state derivative values, by default np.inf
     integration_method : str, optional
         Numerical integration method passed to dynamics model. See BaseODESolverDynamics. By default "RK45"
+    use_jax : bool, optional
+        EXPERIMENTAL: Use JAX to accelerate state transition computation, by default False.
     """
 
     def __init__(
@@ -371,6 +385,7 @@ class PointMassIntegratorDynamics(d.LinearODEDynamics):
         state_dot_min: typing.Union[float, np.ndarray] = -np.inf,
         state_dot_max: typing.Union[float, np.ndarray] = np.inf,
         integration_method: str = "RK45",
+        use_jax: bool = False,
     ):
         self.m = m
         self.damping = damping
@@ -384,6 +399,7 @@ class PointMassIntegratorDynamics(d.LinearODEDynamics):
             state_dot_min=state_dot_min,
             state_dot_max=state_dot_max,
             integration_method=integration_method,
+            use_jax=use_jax
         )
 
     def generate_dynamics_matrices(

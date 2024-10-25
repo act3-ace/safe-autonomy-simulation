@@ -137,6 +137,8 @@ class SixDOFSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-public-met
         Parent entity of spacecraft, by default None
     children: list[PhysicalEntity], optional
         List of children entities of spacecraft, by default []
+    use_jax : bool, optional
+        EXPERIMENTAL: Use JAX to accelerate state transition computation, by default False.
     """
 
     def __init__(
@@ -163,6 +165,7 @@ class SixDOFSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-public-met
         material: mat.Material = defaults.CWH_MATERIAL,
         parent: typing.Union[e.PhysicalEntity, None] = None,
         children: list[e.PhysicalEntity] = [],
+        use_jax: bool = False,
     ):
         # Define limits for angular acceleration, angular velocity, and control inputs
         ang_acc_limit = number_list_to_np(ang_acc_limit, shape=(3,))  # rad/s^2
@@ -196,6 +199,7 @@ class SixDOFSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-public-met
             body_frame_thrust=body_frame_thrust,
             trajectory_samples=trajectory_samples,
             integration_method=integration_method,
+            use_jax=use_jax,
         )
         self._lead = None
 
@@ -269,6 +273,8 @@ class SixDOFDynamics(d.ControlAffineODEDynamics):
         Minimum state derivative values, by default -np.inf
     integration_method: str, optional
         Numerical integration method passed to dynamics model. See BaseODESolverDynamics. By default "RK45"
+    use_jax : bool, optional
+        EXPERIMENTAL: Use JAX to accelerate state transition computation, by default False.
     """
 
     def __init__(
@@ -285,6 +291,7 @@ class SixDOFDynamics(d.ControlAffineODEDynamics):
         state_dot_max: typing.Union[float, np.ndarray] = np.inf,
         state_dot_min: typing.Union[float, np.ndarray] = -np.inf,
         integration_method="RK45",
+        use_jax: bool = False,
     ):
         self.m = m  # kg
         self.inertia_matrix = inertia_matrix  # kg*m^2
@@ -342,6 +349,7 @@ class SixDOFDynamics(d.ControlAffineODEDynamics):
             state_dot_min=state_dot_min,
             state_dot_max=state_dot_max,
             integration_method=integration_method,
+            use_jax=use_jax,
         )
 
         self.A = self.np.array(

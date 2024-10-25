@@ -69,6 +69,8 @@ class CWHSpacecraft(e.PhysicalEntity):
         specify a minimum value that control can be. numbers lower than this will be clipped. (default = -1)
     control_max: typing.Union[float, np.ndarray, None] = 1,
         specify a maximum value that control can be. numbers higher than this will be clipped. (default = 1)
+    use_jax : bool, optional
+        EXPERIMENTAL: Use JAX to accelerate state transition computation, by default False.
     """
 
     def __init__(
@@ -85,12 +87,14 @@ class CWHSpacecraft(e.PhysicalEntity):
         children: list[e.PhysicalEntity] = [],
         control_min: typing.Union[float, np.ndarray, None] = -1,
         control_max: typing.Union[float, np.ndarray, None] = 1,
+        use_jax: bool = False,
     ):
         dynamics = CWHDynamics(
             m=m,
             n=n,
             trajectory_samples=trajectory_samples,
             integration_method=integration_method,
+            use_jax=use_jax,
         )
 
         control_queue = c.ControlQueue(
@@ -177,6 +181,8 @@ class CWHDynamics(d.LinearODEDynamics):
         'RK45' is slow but very accurate. If jax is available, can be JIT compiled for speed.
         'Euler' is fast but very inaccurate.
         By default, 'RK45'.
+    use_jax : bool, optional
+        EXPERIMENTAL: Use JAX to accelerate state transition computation, by default False.
     """
 
     def __init__(
@@ -189,6 +195,7 @@ class CWHDynamics(d.LinearODEDynamics):
         state_dot_min: typing.Union[float, np.ndarray] = -np.inf,
         state_dot_max: typing.Union[float, np.ndarray] = np.inf,
         integration_method: str = "RK45",
+        use_jax: bool = False
     ):
         self.m = m  # kg
         self.n = n  # rads/s
@@ -226,4 +233,5 @@ class CWHDynamics(d.LinearODEDynamics):
             state_dot_min=state_dot_min,
             state_dot_max=state_dot_max,
             integration_method=integration_method,
+            use_jax=use_jax
         )

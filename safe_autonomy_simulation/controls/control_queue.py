@@ -3,11 +3,7 @@
 import typing
 import queue
 import warnings
-
-try:
-    import jax.numpy as np
-except ImportError:
-    import numpy as np
+import numpy as np
 
 
 class ControlQueue:

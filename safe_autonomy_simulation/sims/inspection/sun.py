@@ -4,6 +4,7 @@ This module implements a sun model in non-inertial orbital Hill's reference fram
 
 import typing
 import numpy as np
+import jax.numpy as jnp
 import pint
 
 import safe_autonomy_simulation.entities as e
@@ -29,6 +30,8 @@ class Sun(e.Point):
         integration method for dynamics, by default "RK45"
     material: Material, optional
         material properties of the sun, by default LIGHT
+    use_jax : bool, optional
+        EXPERIMENTAL: Use JAX to accelerate state transition computation, by default False.
     """
 
     SUN_DISTANCE = 1.496e11  # meters
@@ -40,10 +43,13 @@ class Sun(e.Point):
         n: float = defaults.N_DEFAULT,
         integration_method: str = "RK45",
         material: mat.Material = mat.LIGHT,
+        use_jax: bool = False,
     ):
         self._initial_theta = theta
         self._n = n  # rads/s
-        dynamics = SunDynamics(n=n, integration_method=integration_method)
+        dynamics = SunDynamics(
+            n=n, integration_method=integration_method, use_jax=use_jax
+        )
         super().__init__(
             name=name, dynamics=dynamics, position=np.zeros(3), material=material
         )
@@ -134,13 +140,20 @@ class SunDynamics(d.ODEDynamics):
         mean motion of the sun in rad/s, by default 0.001027
     integration_method: str, optional
         integration method for dynamics, by default "RK45"
+    use_jax : bool, optional
+        EXPERIMENTAL: Use JAX to accelerate state transition computation, by default False.
     """
 
-    def __init__(self, n=defaults.N_DEFAULT, integration_method="RK45"):
+    def __init__(
+        self, n=defaults.N_DEFAULT, integration_method="RK45", use_jax: bool = False
+    ):
         self.n = n  # rads/s
-        super().__init__(integration_method=integration_method)
+        super().__init__(integration_method=integration_method, use_jax=use_jax)
 
     def _compute_state_dot(
-        self, t: float, state: np.ndarray, control: np.ndarray
-    ) -> np.ndarray:
+        self,
+        t: float,
+        state: np.ndarray | jnp.ndarray,
+        control: np.ndarray | jnp.ndarray,
+    ) -> np.ndarray | jnp.ndarray:
         return self.np.array([self.n])

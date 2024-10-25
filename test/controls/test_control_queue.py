@@ -1,10 +1,6 @@
 import pytest
+import numpy as np
 import safe_autonomy_simulation
-
-try:
-    import jax.numpy as np
-except ImportError:
-    import numpy as np
 
 
 TEST_CONTROLS = [

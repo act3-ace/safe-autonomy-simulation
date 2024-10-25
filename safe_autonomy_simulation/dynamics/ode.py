@@ -1,19 +1,13 @@
 """Ordinary Differential Equation dynamics models"""
 
 import typing
-import scipy
-import safe_autonomy_simulation.dynamics.dynamics as d
-
-try:
-    import jax.numpy as np
-    import jax.experimental.ode as jode
-    JAX_AVAILABLE = True
-except ImportError:
-    import numpy as np
-    JAX_AVAILABLE = False
+import safe_autonomy_simulation
+import safe_autonomy_simulation.dynamics as dynamics
+import numpy as np
+import jax.numpy as jnp
 
 
-class ODEDynamics(d.Dynamics):
+class ODEDynamics(dynamics.Dynamics):
     """
     State transition implementation for generic Ordinary Differential Equation dynamics models.
     Computes next state through numerical integration of differential equation.
@@ -47,6 +41,8 @@ class ODEDynamics(d.Dynamics):
         'RK45' is slow but very accurate. If jax is available, can be JIT compiled for speed.
         'Euler' is fast but very inaccurate.
         By default, 'RK45'.
+    use_jax : bool, optional
+        EXPERIMENTAL: Use JAX to accelerate state transition computation, by default False.
     """
 
     def __init__(
@@ -57,19 +53,24 @@ class ODEDynamics(d.Dynamics):
         state_dot_min: typing.Union[float, np.ndarray] = -np.inf,
         state_dot_max: typing.Union[float, np.ndarray] = np.inf,
         integration_method: str = "RK45",
+        use_jax: bool = False,
     ):
         super().__init__(
             state_min=state_min,
             state_max=state_max,
+            use_jax=use_jax,
         )
 
-        assert integration_method in [
-            "RK45",
-            "Euler",
-        ], f"invalid integration method {integration_method}, must be one of 'RK45', 'Euler'"
+        assert (
+            integration_method
+            in [
+                "RK45",
+                "Euler",
+            ]
+        ), f"invalid integration method {integration_method}, must be one of 'RK45', 'Euler'"
         self.integration_method = integration_method
-        self.state_dot_min = state_dot_min
-        self.state_dot_max = state_dot_max
+        self.state_dot_min = self.np.copy(state_dot_min)
+        self.state_dot_max = self.np.copy(state_dot_max)
 
         assert isinstance(
             trajectory_samples, int
@@ -83,8 +84,11 @@ class ODEDynamics(d.Dynamics):
         self.trajectory_t = None
 
     def compute_state_dot(
-        self, t: float, state: np.ndarray, control: np.ndarray
-    ) -> np.ndarray:
+        self,
+        t: float,
+        state: np.ndarray | jnp.ndarray,
+        control: np.ndarray | jnp.ndarray,
+    ) -> np.ndarray | jnp.ndarray:
         """
         Computes the instantaneous time derivative of the state vector
 
@@ -93,143 +97,80 @@ class ODEDynamics(d.Dynamics):
         t : float
             Time in seconds since the beginning of the simulation step.
             Note, this is NOT the total simulation time but the time within the individual step.
-        state : np.ndarray
+        state : np.ndarray | jnp.ndarray
             Current state vector at time t.
-        control : np.ndarray
+        control : np.ndarray | jnp.ndarray
             Control vector.
 
         Returns
         -------
-        np.ndarray
+        np.ndarray | jnp.ndarray
             Instantaneous time derivative of the state vector.
         """
+        # Compute state derivative
         state_dot = self._compute_state_dot(t, state, control)
-        state_dot = self._clip_state_dot_direct(state_dot)
-        state_dot = self._clip_state_dot_by_state_limits(state, state_dot)
+
+        # Select clip function
+        clip_at_state_limits_fn = (
+            safe_autonomy_simulation.dynamics.utils.clip_state_dot_at_state_limits
+            if not self.use_jax
+            else safe_autonomy_simulation.jax.ode.clip_state_dot_at_state_limits
+        )
+
+        # Clip state derivative values
+        state_dot = np.clip(state_dot, self.state_dot_min, self.state_dot_max)
+        
+        # Clip state derivative values to ensure state remains within bounds
+        state_dot = clip_at_state_limits_fn(
+            state=state,
+            state_dot=state_dot,
+            s_min=self.state_min,
+            s_max=self.state_max,
+        )
+
         return state_dot
 
     def _compute_state_dot(
-        self, t: float, state: np.ndarray, control: np.ndarray
-    ) -> np.ndarray:
+        self,
+        t: float,
+        state: np.ndarray | jnp.ndarray,
+        control: np.ndarray | jnp.ndarray,
+    ) -> np.ndarray | jnp.ndarray:
         raise NotImplementedError
 
-    def _clip_state_dot_direct(self, state_dot: np.ndarray):
-        """Clips state derivative values to be within `self.state_dot_min` and `self.state_dot_max`
+    def _step(
+        self,
+        step_size: float,
+        state: np.ndarray,
+        control: np.ndarray,
+    ) -> typing.Tuple[np.ndarray, np.ndarray]:
+        if not self.use_jax:  # use numpy arrays and functions
+            step_fn = (
+                safe_autonomy_simulation.dynamics.utils.step_rk45
+                if self.integration_method == "RK45"
+                else safe_autonomy_simulation.dynamics.utils.step_euler
+            )
+        else:  # use jax arrays and JIT functions
+            step_fn = (
+                safe_autonomy_simulation.jax.ode.step_rk45
+                if self.integration_method == "RK45"
+                else safe_autonomy_simulation.jax.ode.step_euler
+            )
+            state = jnp.array(state)
+            control = jnp.array(control)
 
-        Parameters
-        ----------
-        state_dot : np.ndarray
-            State derivative values
-
-        Returns
-        -------
-        np.ndarray
-            State derivative values clipped to be within state_dot_min and state_dot_max
-        """
-        return self.np.clip(state_dot, self.state_dot_min, self.state_dot_max)
-
-    def _clip_state_dot_by_state_limits(self, state: np.ndarray, state_dot: np.ndarray):
-        """Clips state derivative values where the state is at its limits
-
-        State derivative values are clipped such that they do not push the state
-        beyond the limits defined by `self.state_min` and `self.state_max`. This
-        is done by clipping the state derivative values to be non-negative when
-        the state is at its lower limit, and non-positive when the state is at
-        its upper limit.
-
-        Parameters
-        ----------
-        state : np.ndarray
-            Current state vector
-        state_dot : np.ndarray
-            State derivative values
-
-        Returns
-        -------
-        np.ndarray
-            State derivative values clipped where the state is at its limits
-        """
-        lower_bounded_states = state <= self.state_min
-        upper_bounded_states = state >= self.state_max
-
-        lower_bounded_clipped = self.np.clip(state_dot, 0, np.inf)
-        upper_bounded_clipped = self.np.clip(state_dot, -np.inf, 0)
-
-        state_dot = self.np.where(
-            lower_bounded_states, lower_bounded_clipped, state_dot
-        )
-        state_dot = self.np.where(
-            upper_bounded_states, upper_bounded_clipped, state_dot
+        next_state, state_dot, self.trajectory, self.trajectory_t = step_fn(
+            f=self.compute_state_dot,
+            step_size=step_size,
+            state=state,
+            control=control,
         )
 
-        return state_dot
-
-    def _step(self, step_size: float, state: np.ndarray, control: np.ndarray):
-        if self.integration_method == "RK45":
-            if not JAX_AVAILABLE:
-                t_eval = None
-                if self.trajectory_samples > 0:
-                    t_eval = np.linspace(0, step_size, self.trajectory_samples + 1)[1:]
-
-                sol = scipy.integrate.solve_ivp(
-                    self.compute_state_dot,
-                    (0, step_size),
-                    state,
-                    args=(control,),
-                    t_eval=t_eval,
-                )
-
-                self.trajectory = sol.y.T
-                self.trajectory_t = sol.t
-
-                next_state = sol.y[:, -1]  # save last timestep of integration solution
-                state_dot = self.compute_state_dot(step_size, next_state, control)
-            else:
-                assert (
-                    self.trajectory_samples <= 0
-                ), "trajectory sampling not currently supported with rk45 jax integration"
-
-                sol = jode.odeint(  # pylint: disable=used-before-assignment
-                    self.compute_state_dot_jax,
-                    state,
-                    np.linspace(0.0, step_size, 11),
-                    control,
-                )
-                next_state = sol[-1, :]  # save last timestep of integration solution
-                state_dot = self.compute_state_dot(step_size, next_state, control)
-        elif self.integration_method == "Euler":
-            assert (
-                self.trajectory_samples <= 0
-            ), "trajectory sampling not currently supported with euler integration"
-            state_dot = self.compute_state_dot(0, state, control)
-            next_state = state + step_size * state_dot
-        else:
-            raise ValueError(f"invalid integration method '{self.integration_method}'")
+        if self.use_jax:  # cast back to numpy
+            next_state = np.array(next_state)
+            state_dot = np.array(state_dot)
 
         return next_state, state_dot
-
-    def compute_state_dot_jax(self, state: np.ndarray, t: float, control: np.ndarray):
-        """Compute state dot for jax odeint
-
-        Jax requires a specific signature for the function passed to odeint. This function
-        is a wrapper around the compute_state_dot function that has the correct signature.
-
-        Parameters
-        ----------
-        state : np.ndarray
-            Current state vector at time t.
-        t : float
-            Time in seconds since the beginning of the simulation step.
-            Note, this is NOT the total simulation time but the time within the individual step.
-        control : np.ndarray
-            Control vector.
-
-        Returns
-        -------
-        np.ndarray
-            Instantaneous time derivative of the state vector.
-        """
-        return self._compute_state_dot(t, state, control)
 
 
 class ControlAffineODEDynamics(ODEDynamics):
@@ -272,43 +213,59 @@ class ControlAffineODEDynamics(ODEDynamics):
         By default, 'RK45'.
     """
 
-    def _compute_state_dot(self, t: float, state: np.ndarray, control: np.ndarray):
-        state_dot = (
-            self.state_transition_system(state)
-            + self.state_transition_input(state) @ control
+    def _compute_state_dot(
+        self,
+        t: float,
+        state: np.ndarray | jnp.ndarray,
+        control: np.ndarray | jnp.ndarray,
+    ) -> np.ndarray | jnp.ndarray:
+        transition_fn = (
+            safe_autonomy_simulation.dynamics.utils.affine_transition
+            if not self.use_jax
+            else safe_autonomy_simulation.jax.ode.affine_transition
+        )
+        state_dot = transition_fn(
+            state=state,
+            control=control,
+            f=self.state_transition_system,
+            g=self.state_transition_input,
         )
         return state_dot
 
-    def state_transition_system(self, state: np.ndarray) -> np.ndarray:
+    def state_transition_system(
+        self, state: np.ndarray | jnp.ndarray
+    ) -> np.ndarray | jnp.ndarray:
         """Computes the system state contribution to the system state's time derivative
 
         i.e. implements f(x) from dx/dt = f(x) + g(x)u
 
         Parameters
         ----------
-        state : np.ndarray
+        state : np.ndarray | jnp.ndarray
             Current state vector of the system.
 
         Returns
         -------
-        np.ndarray
+        np.ndarray | jnp.ndarray
             state time derivative contribution from the current system state
         """
         raise NotImplementedError
 
-    def state_transition_input(self, state: np.ndarray) -> np.ndarray:
+    def state_transition_input(
+        self, state: np.ndarray | jnp.ndarray
+    ) -> np.ndarray | jnp.ndarray:
         """Computes the control input matrix contribution to the system state's time derivative
 
         i.e. implements g(x) from dx/dt = f(x) + g(x)u
 
         Parameters
         ----------
-        state : np.ndarray
+        state : np.ndarray | jnp.ndarray
             Current state vector of the system.
 
         Returns
         -------
-        np.ndarray
+        np.ndarray | jnp.ndarray
             input matrix in state space representation time derivative
         """
         raise NotImplementedError
@@ -353,6 +310,8 @@ class LinearODEDynamics(ControlAffineODEDynamics):
         'RK45' is slow but very accurate. If jax is available, can be JIT compiled for speed.
         'Euler' is fast but very inaccurate.
         By default, 'RK45'.
+    use_jax : bool, optional
+        EXPERIMENTAL: Use JAX to accelerate state transition computation, by default False.
     """
 
     def __init__(
@@ -365,6 +324,7 @@ class LinearODEDynamics(ControlAffineODEDynamics):
         state_dot_min: typing.Union[float, np.ndarray] = -np.inf,
         state_dot_max: typing.Union[float, np.ndarray] = np.inf,
         integration_method: str = "RK45",
+        use_jax: bool = False,
     ):
         super().__init__(
             trajectory_samples=trajectory_samples,
@@ -373,6 +333,7 @@ class LinearODEDynamics(ControlAffineODEDynamics):
             state_dot_min=state_dot_min,
             state_dot_max=state_dot_max,
             integration_method=integration_method,
+            use_jax=use_jax,
         )
 
         assert len(A.shape) == 2, f"A must be a 2D matrix. Instead got shape {A.shape}"
@@ -388,8 +349,12 @@ class LinearODEDynamics(ControlAffineODEDynamics):
         self.A = self.np.copy(A)
         self.B = self.np.copy(B)
 
-    def state_transition_system(self, state: np.ndarray) -> np.ndarray:
+    def state_transition_system(
+        self, state: np.ndarray | jnp.ndarray
+    ) -> np.ndarray | jnp.ndarray:
         return self.A @ state
 
-    def state_transition_input(self, state: np.ndarray) -> np.ndarray:
+    def state_transition_input(
+        self, state: np.ndarray | jnp.ndarray
+    ) -> np.ndarray | jnp.ndarray:
         return self.B
