@@ -39,6 +39,8 @@ class Target(spacecraft.CWHSpacecraft):
         Parent entity of spacecraft, by default None
     use_jax : bool, optional
         EXPERIMENTAL: Use JAX to accelerate state transition computation, by default False.
+    half_weighted : bool, optional
+        weight only half of the target (other half has zero weight). Default false (weight all points)
     """
 
     def __init__(
@@ -56,6 +58,7 @@ class Target(spacecraft.CWHSpacecraft):
         material: mat.Material = defaults.CWH_MATERIAL,
         parent: typing.Union[e.PhysicalEntity, None] = None,
         use_jax: bool = False,
+        half_weighted: bool = False
     ):
         super().__init__(
             name=name,
@@ -75,6 +78,7 @@ class Target(spacecraft.CWHSpacecraft):
             num_points=num_points,
             radius=radius,
             priority_vector=priority_vector,
+            half_weighted=half_weighted
         )
 
     @property
@@ -142,6 +146,8 @@ class SixDOFTarget(spacecraft.SixDOFSpacecraft):
         List of children entities of spacecraft, by default []
     use_jax : bool, optional
         EXPERIMENTAL: Use JAX to accelerate state transition computation, by default False.
+    half_weighted : bool, optional
+        weight only half of the target (other half has zero weight). Default false (weight all points)
     """
 
     def __init__(
@@ -170,6 +176,7 @@ class SixDOFTarget(spacecraft.SixDOFSpacecraft):
         parent: typing.Union[e.PhysicalEntity, None] = None,
         children: list[e.PhysicalEntity] = [],
         use_jax: bool = False,
+        half_weighted: bool = False
     ):
         super().__init__(
             name=name,
@@ -200,6 +207,7 @@ class SixDOFTarget(spacecraft.SixDOFSpacecraft):
             num_points=num_points,
             radius=radius,
             priority_vector=priority_vector,
+            half_weighted=half_weighted
         )
 
     @property

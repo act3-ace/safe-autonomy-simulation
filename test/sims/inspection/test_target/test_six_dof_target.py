@@ -1,3 +1,4 @@
+import math
 import pytest
 import numpy as np
 import safe_autonomy_simulation
@@ -42,7 +43,7 @@ def test_init_default(name, num_points, radius):
 
 
 @pytest.mark.parametrize(
-    "name, num_points, radius, priority_vector, position, velocity, orientation, angular_velocity, m, n, inertia_matrix, ang_acc_limit, ang_vel_limit, inertia_wheel, acc_limit_wheel, vel_limit_wheel, thrust_control_limit, body_frame_thrust, trajectory_samples, integration_method, material, parent",
+    "name, num_points, radius, priority_vector, position, velocity, orientation, angular_velocity, m, n, inertia_matrix, ang_acc_limit, ang_vel_limit, inertia_wheel, acc_limit_wheel, vel_limit_wheel, thrust_control_limit, body_frame_thrust, trajectory_samples, integration_method, material, parent, half_weighted",
     [
         (
             "target",
@@ -67,6 +68,32 @@ def test_init_default(name, num_points, radius):
             "RK45",
             safe_autonomy_simulation.sims.spacecraft.defaults.CWH_MATERIAL,
             None,
+            False,
+        ),
+        (
+            "target",
+            10,
+            1,
+            np.array([1, 0, 0]),
+            np.array([1, 0, 0]),
+            np.array([0, 0, 0]),
+            np.array([0, 0, 0, 1]),
+            np.array([0, 0, 0]),
+            1,
+            1,
+            np.identity(3),
+            0.01,
+            0.03,
+            1e-5,
+            180,
+            576,
+            1.0,
+            True,
+            10,
+            "RK45",
+            safe_autonomy_simulation.sims.spacecraft.defaults.CWH_MATERIAL,
+            None,
+            True,
         ),
     ],
 )
@@ -93,6 +120,7 @@ def test_init_args(
     integration_method,
     material,
     parent,
+    half_weighted,
 ):
     target = safe_autonomy_simulation.sims.inspection.SixDOFTarget(
         name=name,
@@ -117,6 +145,7 @@ def test_init_args(
         integration_method=integration_method,
         material=material,
         parent=parent,
+        half_weighted=half_weighted
     )
     assert target.name == name
     assert target.inspection_points.radius == radius
@@ -136,3 +165,15 @@ def test_init_args(
     assert target.dynamics.integration_method == integration_method
     assert target.material == material
     assert target.parent == parent
+
+    weighted_point_count = 0
+
+    for point in target.inspection_points.points.values():
+        if point.weight > 0.0:
+            weighted_point_count += 1
+
+    max_weighted_count = math.ceil(target.inspection_points.num_points / 2) + 2 if half_weighted else target.inspection_points.num_points
+    min_weighted_count = math.ceil(target.inspection_points.num_points / 2) - 2 if half_weighted else target.inspection_points.num_points
+
+    # There is some wiggle room in number of points and weighting, so exact numbers cannot be used
+    assert min_weighted_count <= weighted_point_count <= max_weighted_count
