@@ -1,3 +1,10 @@
+## [2.1.3](https://github.com/act3-ace/safe-autonomy-simulation/compare/v2.1.2...v2.1.3) (2024-10-30)
+
+
+### Bug Fixes
+
+* allow targets to specify how inspection points should be weighted ([#20](https://github.com/act3-ace/safe-autonomy-simulation/issues/20)) ([1379717](https://github.com/act3-ace/safe-autonomy-simulation/commit/1379717cf74e4bbaf32e20c3e0c56616a05f0842))
+
 ## [2.1.2](https://github.com/act3-ace/safe-autonomy-simulation/compare/v2.1.1...v2.1.2) (2024-10-25)
 
 
