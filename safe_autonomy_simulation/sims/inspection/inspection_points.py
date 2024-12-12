@@ -238,7 +238,7 @@ class InspectionPointSet(e.Entity):
         dynamics: d.Dynamics = d.PassThroughDynamics(),
         control_queue: c.ControlQueue = c.NoControl(),
         material: m.Material = m.BLACK,
-        half_weighted: bool = False
+        half_weighted: bool = False,
     ):
         self.half_weighted = half_weighted
         self._points: typing.Dict[
@@ -273,7 +273,9 @@ class InspectionPointSet(e.Entity):
         # Updating state in post step to ensure that all points have been updated
         self._state = np.array([p.state for p in self.points.values()])
         # Update priority vector
-        self._priority_vector = transform.Rotation.from_quat(self.parent.orientation).apply(self.init_priority_vector)
+        self._priority_vector = transform.Rotation.from_quat(
+            self.parent.orientation
+        ).apply(self.init_priority_vector)
 
     def _generate_points(
         self, num_points, points_algorithm: str = "cmu"
@@ -319,18 +321,25 @@ class InspectionPointSet(e.Entity):
                     / (np.linalg.norm(-self.priority_vector) * np.linalg.norm(pos))
                 )
                 / np.pi
+                if np.linalg.norm(-self.priority_vector) != 0
+                and np.linalg.norm(pos) != 0
+                else np.dot(-self.priority_vector, pos)
                 for pos in point_positions
             ]
         else:
             point_weights = []
             for pos in point_positions:
-                dot_prod = np.dot(-self.priority_vector, pos) / (np.linalg.norm(-self.priority_vector) * np.linalg.norm(pos))
+                dot_prod = np.dot(-self.priority_vector, pos) / (
+                    np.linalg.norm(-self.priority_vector) * np.linalg.norm(pos)
+                )
                 if dot_prod <= 0:
                     point_weights.append(np.arccos(dot_prod) / np.pi)
                 else:
                     point_weights.append(0.0)
         total_weight = sum(point_weights)
-        point_weights = [w / total_weight for w in point_weights]  # normalize weights
+        point_weights = [
+            w / total_weight if total_weight != 0 else w for w in point_weights
+        ]  # normalize weights
 
         points = {}
         for i, (pos, weight) in enumerate(zip(point_positions, point_weights)):
@@ -376,15 +385,19 @@ class InspectionPointSet(e.Entity):
             # For translational motion only, camera always points towards chief (origin)
             # TODO: don't assume chief is at origin
             r_c = -cam_position
-        r_c = r_c / np.linalg.norm(r_c)  # inspector sensor unit vector
+        if np.linalg.norm(r_c) != 0:
+            r_c = r_c / np.linalg.norm(r_c)  # inspector sensor unit vector
 
         r = self.radius
         rt = np.linalg.norm(cam_position)
-        h = 2 * r * ((rt - r) / (2 * rt))
-
-        p_hat = cam_position / np.linalg.norm(
-            cam_position
-        )  # position unit vector (inspection zone cone axis)
+        if rt != 0:
+            h = 2 * r * ((rt - r) / (2 * rt))
+            p_hat = (
+                cam_position / rt
+            )  # position unit vector (inspection zone cone axis)
+        else:
+            h = 0
+            p_hat = cam_position
 
         for (
             _,

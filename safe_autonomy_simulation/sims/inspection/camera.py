@@ -227,9 +227,14 @@ class Camera(e.PhysicalEntity):
         x = -1
         y = 1
         z = (
-            -(image_plane_position[0] * x + image_plane_position[1] * y)
-            / image_plane_position[2]
+            (
+                -(image_plane_position[0] * x + image_plane_position[1] * y)
+                / image_plane_position[2]
+            )
+            if image_plane_position[2] != 0
+            else -(image_plane_position[0] * x + image_plane_position[1] * y)
         )
+
         norm1 = vector.normalize([x, y, z])
 
         # np.cross bug work-around https://github.com/microsoft/pylance-release/issues/3277

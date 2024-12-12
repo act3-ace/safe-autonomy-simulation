@@ -285,7 +285,7 @@ def test_step(frame_rate, inspectors, targets):
                     priority_vector=np.array([1, 0, 0]),
                 )
             ],
-        )
+        ),
     ],
 )
 def test_run_sim(frame_rate, inspectors, targets):
@@ -303,7 +303,11 @@ def test_run_sim(frame_rate, inspectors, targets):
     prev_inspected = {target.name: 0 for target in inspection_sim.targets}
     for i in range(100):
         for inspector in inspection_sim.inspectors:
-            control = rng.uniform(-1, 1, size=inspector.control_queue.default_control.shape)
+            control = rng.uniform(
+                inspector.control_queue.control_min,
+                inspector.control_queue.control_max,
+                size=inspector.control_queue.default_control.shape,
+            )
             inspector.add_control(control)
         inspection_sim.step()
         for target in inspection_sim.targets:
