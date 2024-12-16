@@ -2,16 +2,16 @@ import numpy as np
 import safe_autonomy_simulation
 
 
-class TestDynamics(safe_autonomy_simulation.dynamics.Dynamics):
+class SimpleDynamics(safe_autonomy_simulation.dynamics.Dynamics):
     def _step(self, step_size, state, control):
         return state + control * step_size, control
 
 
-class TestEntity(safe_autonomy_simulation.Entity):
+class SimpleEntity(safe_autonomy_simulation.Entity):
     def __init__(
         self,
         name,
-        dynamics=TestDynamics(),
+        dynamics=SimpleDynamics(),
         control_queue=safe_autonomy_simulation.ControlQueue(
             default_control=np.array([1])
         ),
@@ -34,10 +34,10 @@ class TestEntity(safe_autonomy_simulation.Entity):
 
 
 def test_init():
-    entity = TestEntity(name="test_entity")
+    entity = SimpleEntity(name="test_entity")
     assert entity.name == "test_entity"
     assert np.all(entity.state == np.array([0]))
-    assert entity.dynamics.__class__.__name__ == "TestDynamics"
+    assert entity.dynamics.__class__.__name__ == "SimpleDynamics"
     assert entity.control_queue.__class__.__name__ == "ControlQueue"
     assert entity.last_control is None
     assert np.all(entity.state_dot == np.zeros_like(entity.state))
@@ -47,16 +47,16 @@ def test_init():
 
 
 def test_init_parent():
-    parent = TestEntity(name="parent")
-    entity = TestEntity(name="test_entity", parent=parent)
+    parent = SimpleEntity(name="parent")
+    entity = SimpleEntity(name="test_entity", parent=parent)
     assert entity.parent == parent
     assert entity in parent.children
 
 
 def test_init_children():
-    child1 = TestEntity(name="child1")
-    child2 = TestEntity(name="child2")
-    entity = TestEntity(name="test_entity", children={child1, child2})
+    child1 = SimpleEntity(name="child1")
+    child2 = SimpleEntity(name="child2")
+    entity = SimpleEntity(name="test_entity", children={child1, child2})
     assert child1 in entity.children
     assert child2 in entity.children
     assert child1.parent == entity
@@ -64,9 +64,9 @@ def test_init_children():
 
 
 def test_reset():
-    child1 = TestEntity(name="child1")
-    child2 = TestEntity(name="child2")
-    entity = TestEntity(name="test_entity", children={child1, child2})
+    child1 = SimpleEntity(name="child1")
+    child2 = SimpleEntity(name="child2")
+    entity = SimpleEntity(name="test_entity", children={child1, child2})
     entity.step(step_size=1)
     entity.add_control(np.array([1]))
     entity.reset()
@@ -82,9 +82,9 @@ def test_reset():
 
 
 def test__pre_step():
-    child1 = TestEntity(name="child1")
-    child2 = TestEntity(name="child2")
-    entity = TestEntity(name="test_entity", children={child1, child2})
+    child1 = SimpleEntity(name="child1")
+    child2 = SimpleEntity(name="child2")
+    entity = SimpleEntity(name="test_entity", children={child1, child2})
     entity._pre_step(step_size=1)
     assert np.all(entity.state == np.array([0]))
     assert entity.last_control is None
@@ -98,9 +98,9 @@ def test__pre_step():
 
 
 def test__post_step():
-    child1 = TestEntity(name="child1")
-    child2 = TestEntity(name="child2")
-    entity = TestEntity(name="test_entity", children={child1, child2})
+    child1 = SimpleEntity(name="child1")
+    child2 = SimpleEntity(name="child2")
+    entity = SimpleEntity(name="test_entity", children={child1, child2})
     entity._post_step(step_size=1)
     assert np.all(entity.state == np.array([0]))
     assert entity.last_control is None
@@ -114,9 +114,9 @@ def test__post_step():
 
 
 def test_step():
-    child1 = TestEntity(name="child1")
-    child2 = TestEntity(name="child2")
-    entity = TestEntity(name="test_entity", children={child1, child2})
+    child1 = SimpleEntity(name="child1")
+    child2 = SimpleEntity(name="child2")
+    entity = SimpleEntity(name="test_entity", children={child1, child2})
     entity.step(step_size=2)
     assert np.all(entity.state == np.array([2]))
     assert np.all(entity.last_control == np.array([1]))
@@ -128,15 +128,15 @@ def test_step():
 
 
 def test_add_control():
-    entity = TestEntity(name="test_entity")
+    entity = SimpleEntity(name="test_entity")
     entity.add_control(np.array([2]))
     assert np.all(entity.control_queue.next_control() == np.array([2]))
 
 
 def test__is_descendant():
-    parent = TestEntity(name="parent")
-    child = TestEntity(name="child", parent=parent)
-    grandchild = TestEntity(name="grandchild", parent=child)
+    parent = SimpleEntity(name="parent")
+    child = SimpleEntity(name="child", parent=parent)
+    grandchild = SimpleEntity(name="grandchild", parent=child)
     assert parent._is_descendant(parent)
     assert not parent._is_descendant(child)
     assert not parent._is_descendant(grandchild)
@@ -149,16 +149,16 @@ def test__is_descendant():
 
 
 def test_add_child():
-    parent = TestEntity(name="parent")
-    child = TestEntity(name="child")
+    parent = SimpleEntity(name="parent")
+    child = SimpleEntity(name="child")
     parent.add_child(child)
     assert child in parent.children
     assert child.parent == parent
 
 
 def test_remove_child():
-    parent = TestEntity(name="parent")
-    child = TestEntity(name="child")
+    parent = SimpleEntity(name="parent")
+    child = SimpleEntity(name="child")
     parent.add_child(child)
     parent.remove_child(child)
     assert child not in parent.children
