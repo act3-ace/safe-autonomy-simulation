@@ -329,9 +329,15 @@ class InspectionPointSet(e.Entity):
         else:
             point_weights = []
             for pos in point_positions:
-                dot_prod = np.dot(-self.priority_vector, pos) / (
-                    np.linalg.norm(-self.priority_vector) * np.linalg.norm(pos)
-                )
+                if (
+                    np.linalg.norm(-self.priority_vector) != 0
+                    and np.linalg.norm(pos) != 0
+                ):
+                    dot_prod = np.dot(-self.priority_vector, pos) / (
+                        np.linalg.norm(-self.priority_vector) * np.linalg.norm(pos)
+                    )
+                else:
+                    dot_prod = np.dot(-self.priority_vector, pos)
                 if dot_prod <= 0:
                     point_weights.append(np.arccos(dot_prod) / np.pi)
                 else:
