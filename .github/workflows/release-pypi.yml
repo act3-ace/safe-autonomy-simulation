@@ -26,6 +26,7 @@ jobs:
           name: package-distributions
           github-token: ${{ secrets.RELEASE_TOKEN }}
           path: dist/
+          persist-credentials: false
       - name: Sign the dists
         uses: sigstore/gh-action-sigstore-python@v2.1.1
         with:
