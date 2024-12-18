@@ -8,7 +8,7 @@ def test_defaults():
     assert safe_autonomy_simulation.sims.spacecraft.defaults.INERTIA_DEFAULT == 0.0573
     assert np.all(
         safe_autonomy_simulation.sims.spacecraft.defaults.INERTIA_MATRIX_DEFAULT
-        == np.matrix(
+        == np.array(
             [
                 [
                     safe_autonomy_simulation.sims.spacecraft.defaults.INERTIA_DEFAULT,

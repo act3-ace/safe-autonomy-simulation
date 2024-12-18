@@ -19,4 +19,8 @@ def normalize(vector: np.ndarray) -> np.ndarray:
     np.ndarray
         normalized vector
     """
-    return vector / np.linalg.norm(vector)
+    norm = np.linalg.norm(vector)
+    norm_v = vector
+    if norm != 0:
+        norm_v = vector / norm
+    return norm_v

@@ -5,7 +5,7 @@ import safe_autonomy_simulation
 import numpy as np
 
 
-class TestDynamics(safe_autonomy_simulation.Dynamics):
+class SimpleDynamics(safe_autonomy_simulation.Dynamics):
     def _step(
         self, step_size: float, state: ndarray, control: ndarray
     ) -> Tuple[ndarray, ndarray]:
@@ -26,11 +26,11 @@ TEST_MATERIAL = safe_autonomy_simulation.Material(
 )
 
 
-class TestEntity(safe_autonomy_simulation.Entity):
+class SimpleEntity(safe_autonomy_simulation.Entity):
     def __init__(self, name):
         super().__init__(
             name,
-            dynamics=TestDynamics(),
+            dynamics=SimpleDynamics(),
             control_queue=TEST_CONTROL_QUEUE,
             material=TEST_MATERIAL,
         )
@@ -50,7 +50,7 @@ class TestEntity(safe_autonomy_simulation.Entity):
 
 @pytest.fixture
 def entities():
-    return [TestEntity(name=i) for i in range(3)]
+    return [SimpleEntity(name=i) for i in range(3)]
 
 
 @pytest.fixture

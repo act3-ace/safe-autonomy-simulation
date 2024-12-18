@@ -294,14 +294,20 @@ def test_update_points_inspection_status(camera, sun, binary_ray):
         radius=1,
         priority_vector=np.array([1, 0, 0]),
     )
-    h = (
-        2
-        * point_set.radius
-        * (np.linalg.norm(camera.position) / (2 * np.linalg.norm(camera.position)))
-    )
-    p_hat = camera.position / np.linalg.norm(camera.position)
+    norm_pos = np.linalg.norm(camera.position)
+    if norm_pos == 0:
+        h = 0
+        p_hat = camera.position
+    else:
+        h = (
+            2
+            * point_set.radius
+            * (norm_pos / (2 * norm_pos))
+        )
+        p_hat = camera.position / norm_pos
     r_c = transform.Rotation.from_quat(camera.orientation).as_euler("xyz")
-    r_c = r_c / np.linalg.norm(r_c)
+    if np.linalg.norm(r_c) != 0:
+        r_c = r_c / np.linalg.norm(r_c)
     point_set.update_points_inspection_status(camera, sun, binary_ray)
     for _, point in point_set.points.items():
         expected_inspected = False

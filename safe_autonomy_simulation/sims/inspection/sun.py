@@ -100,7 +100,7 @@ class Sun(e.Point):
         float
             Sun rotation angle in radians
         """
-        return float(self.state)
+        return float(self.state[0])
 
     @property
     def n(self) -> float:
