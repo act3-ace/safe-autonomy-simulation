@@ -519,9 +519,17 @@ class InspectionPointSet(e.Entity):
             number of points inspected
         """
         num_points = 0
-        for _, point in self.points.items():
-            if point.inspected:
-                num_points += 1
+        if inspector_entity:
+            # count number of points inspected by the provided entity
+            for _, point in self.points.items():
+                if point.inspected and inspector_entity.name in point.inspector:
+                    num_points += 1
+        else:
+            # count the total number of points inspected
+            for _, point in self.points.items():
+                if point.inspected:
+                    num_points += 1
+        
         return num_points
 
     def get_percentage_of_points_inspected(
@@ -566,7 +574,7 @@ class InspectionPointSet(e.Entity):
         for _, point in self.points.items():
             if inspector_entity:
                 weight += (
-                    point.weight if point.inspector == inspector_entity.name else 0.0
+                    point.weight if point.inspected and inspector_entity.name in point.inspector else 0.0
                 )
             else:
                 weight += point.weight if point.inspected else 0.0
