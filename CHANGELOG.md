@@ -1,3 +1,10 @@
+## [2.1.4](https://github.com/act3-ace/safe-autonomy-simulation/compare/v2.1.3...v2.1.4) (2025-01-09)
+
+
+### Bug Fixes
+
+* **inspection:** enable entity-specific inspection point attributionfixed agent inspection weight attribution bug and added single agent inspection points attribution ([#28](https://github.com/act3-ace/safe-autonomy-simulation/issues/28)) ([c3aa3a5](https://github.com/act3-ace/safe-autonomy-simulation/commit/c3aa3a5c7ba8cfcfc03de814c2fd8f3e35462c56))
+
 ## [2.1.3](https://github.com/act3-ace/safe-autonomy-simulation/compare/v2.1.2...v2.1.3) (2024-10-30)
 
 
