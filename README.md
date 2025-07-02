@@ -30,16 +30,15 @@ JAX can be enabled on a per-class basis for classes that support it. As JAX is a
 
 ### Installing from source
 
-Alternatively, `safe-autonomy-simulation` can be installed from source using any of the following methods. Again, it is recommended to install this package in an isolated virtual environment. The following sections describe how to install `safe-autonomy-simulation` from source in an isolated virtual environment using `poetry`, `conda`, and `pip + virtualenv`.
+Alternatively, `safe-autonomy-simulation` can be installed from source using any of the following methods. Again, it is recommended to install this package in an isolated virtual environment. The following sections describe how to install `safe-autonomy-simulation` from source in an isolated virtual environment using `uv`, `conda`, and `pip + virtualenv`.
 
-#### Poetry (Recommended)
+#### uv (Recommended)
 
-[Poetry](https://python-poetry.org/docs/) is a tool for dependency management and packaging in Python. It allows you to declare the libraries your project depends on and it will manage (install/update) them for you. Poetry will automatically create an isolated virtual environment in your project location
-for development.
+[uv](https://docs.astral.sh/uv/) is an extremely fast Python package and project manager. It allows you to declare the libraries your project depends on and it will manage (install/update) them for you. uv will automatically create an isolated virtual environment in your project location for development.
 
 ```shell
 cd safe-autonomy-simulation
-poetry install
+uv sync
 ```
 
 #### Conda
@@ -69,26 +68,26 @@ This repository is setup to use [MkDocs](https://www.mkdocs.org/) which is a sta
 
 **NOTE**: In order to properly build the documentation locally, you must first have `safe-autonomy-simulation` and its dependencies installed in your container/environment!
 
-### Build Docs with Poetry (recommended)
+### Build Docs with uv (recommended)
 
-Install the MkDocs modules in a container/virtual environment via Poetry:
+Install the MkDocs modules in a container/virtual environment via uv:
 
 ```shell
-poetry install --with docs
+uv sync --group docs
 ```
 
 To build the documentation locally without serving it, use
 the following command from within your container/virtual environment:
 
 ```shell
-poetry run mkdocs build
+uv run mkdocs build
 ```
 
 To serve the documentation on a local port, use the following
 command from within your container/virtual environment:
 
 ```shell
-poetry run mkdocs serve 
+uv run mkdocs serve
 ```
 
 ## Usage

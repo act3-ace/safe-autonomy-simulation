@@ -9,7 +9,6 @@ on:
 env:
   SRC_DIR: safe_autonomy_simulation
   PY_VER: "3.10"
-  POETRY_VERSION: "1.8.3"
 
 jobs:
   lint:
@@ -21,31 +20,27 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PY_VER }}
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
         with:
-          version: ${{ env.POETRY_VERSION }}
-          virtualenvs-create: false
+          enable-cache: true
       - name: Install Dependencies
-        run: poetry install --no-interaction
+        run: uv sync --group pipeline
       - name: Markdown Lint
         continue-on-error: true
         uses: articulate/actions-markdownlint@v1
-      - name: ISort
+      - name: Ruff Format Check
         continue-on-error: true
-        run: isort --check --diff ${{ env.SRC_DIR }}
-      - name: Yapf
+        run: uv run ruff format --check ${{ env.SRC_DIR }}
+      - name: Ruff Lint
         continue-on-error: true
-        run: yapf --diff --recursive --parallel ${{ env.SRC_DIR }}
+        run: uv run ruff check ${{ env.SRC_DIR }}
+      - name: Black Format Check
+        continue-on-error: true
+        run: uv run black --check --diff ${{ env.SRC_DIR }}
       - name: Mypy
         continue-on-error: true
-        run: mypy ${{ env.SRC_DIR }}
-      - name: Flake8
-        continue-on-error: true
-        run: flake8 ${{ env.SRC_DIR }}
-      - name: Pylint
-        continue-on-error: true
-        run: pylint ${{ env.SRC_DIR }}
+        run: uv run mypy ${{ env.SRC_DIR }}
 
   test:
     runs-on: ubuntu-latest
@@ -56,20 +51,17 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PY_VER }}
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
         with:
-          version: ${{ env.POETRY_VERSION }}
-          virtualenvs-create: false
+          enable-cache: true
       - name: Install Dependencies
-        run: poetry install --no-interaction --no-root --with=test
-      - name: Install Project
-        run: poetry install --no-interaction --only-root
+        run: uv sync --group test
       - name: Run tests
         run: |
-          pytest test --cov=${{ env.SRC_DIR }}
+          uv run pytest test --cov=${{ env.SRC_DIR }}
       - name: Package
-        run: poetry build
+        run: uv build
       - name: Store Package
         uses: actions/upload-artifact@v4
         with:
@@ -90,11 +82,10 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PY_VER }}
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
         with:
-          version: ${{ env.POETRY_VERSION }}
-          virtualenvs-create: false
+          enable-cache: true
       - name: Semantic Release
         uses: cycjimmy/semantic-release-action@v4
         env:
@@ -123,11 +114,10 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PY_VER }}
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
         with:
-          version: ${{ env.POETRY_VERSION }}
-          virtualenvs-create: false
+          enable-cache: true
       - name: Semantic Release
         uses: cycjimmy/semantic-release-action@v4
         env:
