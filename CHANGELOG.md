@@ -1,3 +1,10 @@
+## [2.1.5](https://github.com/act3-ace/safe-autonomy-simulation/compare/v2.1.4...v2.1.5) (2025-07-07)
+
+
+### Bug Fixes
+
+* Fix Angular Velocity Reference Frame ([#34](https://github.com/act3-ace/safe-autonomy-simulation/issues/34)) ([f33afda](https://github.com/act3-ace/safe-autonomy-simulation/commit/f33afdac54ded4e6832936d154f380e196e9bad1))
+
 ## [2.1.4](https://github.com/act3-ace/safe-autonomy-simulation/compare/v2.1.3...v2.1.4) (2025-01-09)
 
 
