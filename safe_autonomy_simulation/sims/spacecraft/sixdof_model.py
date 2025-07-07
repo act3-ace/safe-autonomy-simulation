@@ -75,10 +75,10 @@ class SixDOFSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-public-met
     Spacecraft with 3D Clohessy-Wiltshire translational dynamics, in Hill's frame and 3D rotational dynamics
 
     States
-        x, y, z
-        q1, q2, q3, q4
-        x_dot, y_dot, z_dot
-        wx, wy, wz
+        x, y, z (relative to Hill's frame)
+        q1, q2, q3, q4 (relative to Hill's frame)
+        x_dot, y_dot, z_dot (relative to Hill's frame)
+        wx, wy, wz (relative to ECI frame)
 
     Controls
         thrust_x
@@ -406,7 +406,6 @@ class SixDOFDynamics(d.ControlAffineODEDynamics):
             ]
         )
         # Here, w is the angular velocity of the body frame with respect to the ECI frame, expressed in body frame coordinates
-        w_derivative = self.np.zeros((3,))
         w_derivative = self.np.array(
             [
                 1
