@@ -200,12 +200,20 @@ def test_state_transition_system(state):
     x, y, z, x_dot, y_dot, z_dot, q1, q2, q3, q4, wx, wy, wz = state
     pos_vel_state_vec = np.array([x, y, z, x_dot, y_dot, z_dot], dtype=np.float64)
     pos_vel_derivative = dynamics.A @ pos_vel_state_vec
+    w_hills_eci = np.array([0, 0, dynamics.n])
+    w_body_eci = np.array([wx, wy, wz])
+    rot_hills2body = np.array([
+        [1 - 2 * (q2 ** 2 + q3 ** 2), 2 * (q1 * q2 - q3 * q4), 2 * (q1 * q3 + q2 * q4)],
+        [2 * (q1 * q2 + q3 * q4), 1 - 2 * (q1 ** 2 + q3 ** 2), 2 * (q2 * q3 - q1 * q4)],
+        [2 * (q1 * q3 - q2 * q4), 2 * (q2 * q3 + q1 * q4), 1 - 2 * (q1 ** 2 + q2 ** 2)],
+    ])
+    wx_h, wy_h, wz_h = w_body_eci - rot_hills2body @ w_hills_eci  # angular velocity of the body frame with respect to Hill's frame
     q_derivative = np.zeros((4,))
     w_derivative = np.zeros((3,))
-    q_derivative[0] = 0.5 * (q4 * wx - q3 * wy + q2 * wz)
-    q_derivative[1] = 0.5 * (q3 * wx + q4 * wy - q1 * wz)
-    q_derivative[2] = 0.5 * (-q2 * wx + q1 * wy + q4 * wz)
-    q_derivative[3] = 0.5 * (-q1 * wx - q2 * wy - q3 * wz)
+    q_derivative[0] = 0.5 * (q4 * wx_h - q3 * wy_h + q2 * wz_h)
+    q_derivative[1] = 0.5 * (q3 * wx_h + q4 * wy_h - q1 * wz_h)
+    q_derivative[2] = 0.5 * (-q2 * wx_h + q1 * wy_h + q4 * wz_h)
+    q_derivative[3] = 0.5 * (-q1 * wx_h - q2 * wy_h - q3 * wz_h)
     w_derivative[0] = (
         1
         / dynamics.inertia_matrix[0, 0]
@@ -242,6 +250,23 @@ def test_state_transition_system(state):
         dtype=np.float32,
     )
     assert np.allclose(state_derivative, expected_state_derivative)
+
+
+def test_rotation_static_in_hills_frame():
+    """Given a state where the entity rotates to counter rotation in the ECI frame, the entity should
+    have no rotation (is static) in Hill's frame
+    """
+    dynamics = safe_autonomy_simulation.sims.spacecraft.sixdof_model.SixDOFDynamics()
+    state = np.array([1, 2, 3, 4, 5, 6, 0, 0, 0, 1, 0, 0, dynamics.n], dtype=np.float64)
+    state_derivative = dynamics.state_transition_system(state)
+    w_hills_eci = np.array([0, 0, dynamics.n])
+    rot_hills2body = np.array([
+            [1 - 2 * (state[7] ** 2 + state[8] ** 2), 2 * (state[6] * state[7] - state[8] * state[9]), 2 * (state[6] * state[8] + state[7] * state[9])],
+            [2 * (state[6] * state[7] + state[8] * state[9]), 1 - 2 * (state[6] ** 2 + state[8] ** 2), 2 * (state[7] * state[8] - state[6] * state[9])],
+            [2 * (state[6] * state[8] - state[7] * state[9]), 2 * (state[7] * state[8] + state[6] * state[9]), 1 - 2 * (state[6] ** 2 + state[7] ** 2)],
+        ])
+    w_body_hills = state[10:] - rot_hills2body @ w_hills_eci
+    assert np.allclose(np.zeros(3), w_body_hills)
 
 
 @pytest.mark.parametrize(
