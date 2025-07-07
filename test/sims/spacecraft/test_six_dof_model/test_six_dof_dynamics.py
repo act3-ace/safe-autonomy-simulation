@@ -202,12 +202,12 @@ def test_state_transition_system(state):
     pos_vel_derivative = dynamics.A @ pos_vel_state_vec
     w_hills_eci = np.array([0, 0, dynamics.n])
     w_body_eci = np.array([wx, wy, wz])
-    rot_hills2body = np.array([
+    rot_body2hills = np.array([
         [1 - 2 * (q2 ** 2 + q3 ** 2), 2 * (q1 * q2 - q3 * q4), 2 * (q1 * q3 + q2 * q4)],
         [2 * (q1 * q2 + q3 * q4), 1 - 2 * (q1 ** 2 + q3 ** 2), 2 * (q2 * q3 - q1 * q4)],
         [2 * (q1 * q3 - q2 * q4), 2 * (q2 * q3 + q1 * q4), 1 - 2 * (q1 ** 2 + q2 ** 2)],
     ])
-    wx_h, wy_h, wz_h = w_body_eci - rot_hills2body @ w_hills_eci  # angular velocity of the body frame with respect to Hill's frame
+    wx_h, wy_h, wz_h = w_body_eci - rot_body2hills.T @ w_hills_eci  # angular velocity of the body frame with respect to Hill's frame
     q_derivative = np.zeros((4,))
     w_derivative = np.zeros((3,))
     q_derivative[0] = 0.5 * (q4 * wx_h - q3 * wy_h + q2 * wz_h)
@@ -260,12 +260,12 @@ def test_rotation_static_in_hills_frame():
     state = np.array([1, 2, 3, 4, 5, 6, 0, 0, 0, 1, 0, 0, dynamics.n], dtype=np.float64)
     state_derivative = dynamics.state_transition_system(state)
     w_hills_eci = np.array([0, 0, dynamics.n])
-    rot_hills2body = np.array([
+    rot_body2hills = np.array([
             [1 - 2 * (state[7] ** 2 + state[8] ** 2), 2 * (state[6] * state[7] - state[8] * state[9]), 2 * (state[6] * state[8] + state[7] * state[9])],
             [2 * (state[6] * state[7] + state[8] * state[9]), 1 - 2 * (state[6] ** 2 + state[8] ** 2), 2 * (state[7] * state[8] - state[6] * state[9])],
             [2 * (state[6] * state[8] - state[7] * state[9]), 2 * (state[7] * state[8] + state[6] * state[9]), 1 - 2 * (state[6] ** 2 + state[7] ** 2)],
         ])
-    w_body_hills = state[10:] - rot_hills2body @ w_hills_eci
+    w_body_hills = state[10:] - rot_body2hills.T @ w_hills_eci
     assert np.allclose(np.zeros(3), w_body_hills)
 
 

@@ -76,9 +76,9 @@ class SixDOFSpacecraft(e.PhysicalEntity):  # pylint: disable=too-many-public-met
 
     States
         x, y, z (relative to Hill's frame)
-        q1, q2, q3, q4 (relative to Hill's frame)
+        q1, q2, q3, q4 (rotation from body frame to Hill's frame)
         x_dot, y_dot, z_dot (relative to Hill's frame)
-        wx, wy, wz (relative to ECI frame)
+        wx, wy, wz (angular velocity of the body frame with respect to the ECI frame, expressed in body frame coordinates)
 
     Controls
         thrust_x
@@ -390,12 +390,12 @@ class SixDOFDynamics(d.ControlAffineODEDynamics):
         # q is rotation from the body frame to Hill's frame
         w_hills_eci = self.np.array([0, 0, self.n])  # angular velocity of Hill's frame with respect to the ECI frame, expressed in Hill's frame
         w_body_eci = self.np.array([wx, wy, wz])  # angular velocity of the body frame with respect to the ECI frame, expressed in body frame coordinates
-        rot_hills2body = self.np.array([
+        rot_body2hills = self.np.array([
             [1 - 2 * (q2 ** 2 + q3 ** 2), 2 * (q1 * q2 - q3 * q4), 2 * (q1 * q3 + q2 * q4)],
             [2 * (q1 * q2 + q3 * q4), 1 - 2 * (q1 ** 2 + q3 ** 2), 2 * (q2 * q3 - q1 * q4)],
             [2 * (q1 * q3 - q2 * q4), 2 * (q2 * q3 + q1 * q4), 1 - 2 * (q1 ** 2 + q2 ** 2)],
-        ])  # rotation matrix from Hill's frame to body frame
-        w_body_hills = w_body_eci - rot_hills2body @ w_hills_eci  # angular velocity of the body frame with respect to Hill's frame
+        ])  # rotation matrix from body frame to Hill's frame
+        w_body_hills = w_body_eci - rot_body2hills.T @ w_hills_eci  # angular velocity of the body frame with respect to Hill's frame
         wx_h, wy_h, wz_h = w_body_hills
         q_derivative = self.np.array(
             [
