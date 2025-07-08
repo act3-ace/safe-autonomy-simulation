@@ -1,3 +1,10 @@
+## [2.1.6](https://github.com/act3-ace/safe-autonomy-simulation/compare/v2.1.5...v2.1.6) (2025-07-08)
+
+
+### Bug Fixes
+
+* Fix inverse rotation ([#35](https://github.com/act3-ace/safe-autonomy-simulation/issues/35)) ([641132f](https://github.com/act3-ace/safe-autonomy-simulation/commit/641132f1ef28bfcf177aa2c1ba6bf5b603e1a92b))
+
 ## [2.1.5](https://github.com/act3-ace/safe-autonomy-simulation/compare/v2.1.4...v2.1.5) (2025-07-07)
 
 
