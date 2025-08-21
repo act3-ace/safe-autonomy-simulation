@@ -21,9 +21,10 @@ jobs:
         with:
           python-version: ${{ env.PY_VER }}
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
+          ignore-nothing-to-cache: true
       - name: Install Dependencies
         run: uv sync --group pipeline
       - name: Markdown Lint
@@ -52,9 +53,10 @@ jobs:
         with:
           python-version: ${{ env.PY_VER }}
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
+          ignore-nothing-to-cache: true
       - name: Install Dependencies
         run: uv sync --group test
       - name: Run tests
@@ -83,9 +85,10 @@ jobs:
         with:
           python-version: ${{ env.PY_VER }}
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
+          ignore-nothing-to-cache: true
       - name: Semantic Release
         uses: cycjimmy/semantic-release-action@v4
         env:
@@ -115,9 +118,10 @@ jobs:
         with:
           python-version: ${{ env.PY_VER }}
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
+          ignore-nothing-to-cache: true
       - name: Semantic Release
         uses: cycjimmy/semantic-release-action@v4
         env:
