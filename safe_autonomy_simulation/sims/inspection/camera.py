@@ -103,9 +103,9 @@ class Camera(e.PhysicalEntity):
     def inspect_point(
         self,
         point: e.Point,
-        light: e.PhysicalEntity,
         viewed_object: e.Entity,
         radius: float,
+        light: e.PhysicalEntity = None,
         binary_ray: bool = False,
     ) -> bool:
         """Inspect a point on an object in the environment
