@@ -23,7 +23,7 @@
           "CHANGELOG.md",
           "VERSION",
           "pyproject.toml",
-          "poetry.lock",
+          "uv.lock",
           "requirements.dep.txt"
         ],
         "message": "chore(release): ${nextRelease.version}  \n\n${nextRelease.notes}"
