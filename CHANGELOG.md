@@ -1,3 +1,10 @@
+# [2.2.0](https://github.com/act3-ace/safe-autonomy-simulation/compare/v2.1.6...v2.2.0) (2025-08-21)
+
+
+### Features
+
+* **camera:** move inspection logic to camera and allow camera off state ([#37](https://github.com/act3-ace/safe-autonomy-simulation/issues/37)) ([751465d](https://github.com/act3-ace/safe-autonomy-simulation/commit/751465d2e1ff845c2ac7c8f3ed105bb13c93a6a0))
+
 ## [2.1.6](https://github.com/act3-ace/safe-autonomy-simulation/compare/v2.1.5...v2.1.6) (2025-07-08)
 
 

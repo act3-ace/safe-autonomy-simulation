@@ -1,6 +1,6 @@
 [project]
 name = "safe-autonomy-simulation"
-version = "2.1.6"
+version = "2.2.0"
 description = "A library for building continuous simulation environments, designed to support safe autonomy research."
 authors = [
     { name = "Jamie Cunningham", email = "james.cunningham@udri.udayton.edu" },

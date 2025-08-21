@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.10"
 resolution-markers = [
     "python_full_version >= '3.13'",
@@ -1130,7 +1130,7 @@ wheels = [
 
 [[package]]
 name = "safe-autonomy-simulation"
-version = "2.1.6"
+version = "2.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "diffrax" },
