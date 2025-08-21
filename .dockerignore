@@ -13,6 +13,6 @@
 !/setup.cfg
 !/README.md
 !/pyproject.toml
-!/poetry.lock
+!/uv.lock
 
 

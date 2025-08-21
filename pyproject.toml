@@ -1,11 +1,10 @@
-[tool.poetry]
+[project]
 name = "safe-autonomy-simulation"
 version = "2.1.6"
 description = "A library for building continuous simulation environments, designed to support safe autonomy research."
 authors = [
-    "james.cunningham <james.cunningham@parallaxresearch.org>",
+    { name = "Jamie Cunningham", email = "james.cunningham@udri.udayton.edu" },
 ]
-license = "Distribution C"
 readme = "README.md"
 homepage = "https://github.com/act3-ace/safe-autonomy-simulation.git"
 repository = "https://github.com/act3-ace/safe-autonomy-simulation.git"
@@ -16,57 +15,41 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
-packages = [{ include = "safe_autonomy_simulation" }]
+requires-python = ">=3.10"
+dependencies = [
+    "diffrax>=0.6.1",
+    "jax[cpu]>=0.4.30",
+    "numpy>=2.0.2",
+    "pint>=0.24.4",
+    "scikit-learn>=1.6.1",
+    "scipy>=1.13.1",
+    "typing-extensions>=4.14.0",
+]
 
-[tool.poetry.dependencies]
-python = "^3.9"
-numpy = "^1.23.5"
-pint = "^0.23"
-scipy = "^1.13.0"
-scikit-learn = "^1.5.0"
-typing-extensions = "^4.12.2"
-jax = {extras = ["cpu"], version = "^0.4.30"}
-diffrax = {version = "^0.6.0"}
-
-[tool.poetry.group.test]
-optional = true
-
-[tool.poetry.group.test.dependencies]
-pytest = "^8.0.0"
-pytest-cov = "4.1.0"
-pyinstrument = "^4.3.0"
-pytest-mock = "^3.14.0"
-
-[tool.poetry.group.docs]
-optional = true
-
-[tool.poetry.group.docs.dependencies]
-mkdocs = "^1.6.0"
-mkdocstrings = {extras = ["python"], version = "^0.25.1"}
-mkdocs-material = "^9.5.27"
-mkdocs-gen-files = "^0.5.0"
-mkdocs-autorefs = "^1.0.1"
-mkdocs-section-index = "^0.3.9"
-
-
-[tool.poetry.group.pipeline]
-optional = true
-
-[tool.poetry.group.pipeline.dependencies]
-twine = "^5.0.0"
-coverage-badge = "^1.1.0"
-
-
-[tool.poetry.group.lint.dependencies]
-black = "^24.4.2"
-mypy = "^1.10.1"
-ruff = "^0.4.10"
-
+[dependency-groups]
+docs = [
+    "mkdocs>=1.6.1",
+    "mkdocs-autorefs>=1.4.2",
+    "mkdocs-gen-files>=0.5.0",
+    "mkdocs-material>=9.6.15",
+    "mkdocs-section-index>=0.3.10",
+    "mkdocstrings>=0.29.1",
+]
+pipeline = [
+    "black>=25.1.0",
+    "mypy>=1.16.1",
+    "ruff>=0.12.1",
+]
+test = [
+    "pyinstrument>=5.0.3",
+    "pytest>=8.4.1",
+    "pytest-cov>=6.2.1",
+    "pytest-mock>=3.14.1",
+]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [[tool.mypy.overrides]]
 module = "scipy"
