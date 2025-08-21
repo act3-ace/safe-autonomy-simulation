@@ -136,6 +136,74 @@ def test_init(
 #         camera.orientation == transform.Rotation.from_euler("xyz", direction).as_quat()
 #     )
 
+@pytest.mark.parametrize(
+    "camera, point, light, viewed_object, radius, binary_ray, expected",
+    [
+        (
+            safe_autonomy_simulation.sims.inspection.Camera(
+                name="camera",
+                fov=np.pi / 2,
+                resolution=[1920, 1080],
+                focal_length=1,
+                pixel_pitch=1e-3,
+                position=np.array([0, 0, 0]),
+                velocity=np.array([0, 0, 0]),
+                orientation=np.array([0, 0, 0, 1]),
+                angular_velocity=np.array([0, 0, 0]),
+                parent=None,
+                children=[],
+            ),
+            safe_autonomy_simulation.entities.Point(
+                name="point", position=np.array([1, 0, 0])
+            ),
+            safe_autonomy_simulation.entities.Point(
+                name="light",
+                position=np.array([0, 0, 1]),
+                material=safe_autonomy_simulation.materials.LIGHT,
+            ),
+            safe_autonomy_simulation.entities.Point(
+                name="viewed_object", position=np.array([1, 0, 0])
+            ),
+            1,
+            False,
+            False,
+        ),
+        (
+            safe_autonomy_simulation.sims.inspection.Camera(
+                name="camera",
+                fov=np.pi / 2,
+                resolution=[1920, 1080],
+                focal_length=1,
+                pixel_pitch=1e-3,
+                position=np.array([0, 0, 0]),
+                velocity=np.array([0, 0, 0]),
+                orientation=np.array([0, 0, 0, 1]),
+                angular_velocity=np.array([0, 0, 0]),
+                parent=None,
+                children=[],
+            ),
+            safe_autonomy_simulation.entities.Point(
+                name="point", position=np.array([1, 0, 0])
+            ),
+            safe_autonomy_simulation.entities.Point(
+                name="light",
+                position=np.array([0, 0, 1]),
+                material=safe_autonomy_simulation.materials.LIGHT,
+            ),
+            safe_autonomy_simulation.entities.Point(
+                name="viewed_object", position=np.array([1, 0, 0])
+            ),
+            1,
+            True,
+            False,
+        ),
+    ],
+)
+def test_inspect_point(camera, point, light, viewed_object, radius, binary_ray, expected):
+    result = camera.inspect_point(point=point, light=light, viewed_object=viewed_object, radius=radius, binary_ray=binary_ray)
+    assert isinstance(result, bool)
+    assert result == expected
+
 
 @pytest.mark.parametrize(
     "camera, point, light, viewed_object, radius, binary_ray, expected",

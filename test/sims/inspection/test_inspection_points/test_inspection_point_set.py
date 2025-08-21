@@ -259,9 +259,18 @@ def test__generate_points(num_points, points_algorithm, radius, priority_vector)
 
 
 @pytest.mark.parametrize(
-    "camera, sun, binary_ray",
+    "point_set, camera, sun, binary_ray",
     [
         (
+            safe_autonomy_simulation.sims.inspection.InspectionPointSet(
+                name="set",
+                parent=safe_autonomy_simulation.entities.Point(
+                    "parent", position=np.array([0, 0, 0])
+                ),
+                num_points=10,
+                radius=1,
+                priority_vector=np.array([1, 0, 0]),
+            ),
             safe_autonomy_simulation.sims.inspection.Camera(
                 name="camera",
                 fov=np.pi / 2,
@@ -284,56 +293,16 @@ def test__generate_points(num_points, points_algorithm, radius, priority_vector)
         ),
     ],
 )
-def test_update_points_inspection_status(camera, sun, binary_ray):
-    point_set = safe_autonomy_simulation.sims.inspection.InspectionPointSet(
-        name="set",
-        parent=safe_autonomy_simulation.entities.Point(
-            "parent", position=np.array([0, 0, 0])
-        ),
-        num_points=10,
-        radius=1,
-        priority_vector=np.array([1, 0, 0]),
-    )
-    norm_pos = np.linalg.norm(camera.position)
-    if norm_pos == 0:
-        h = 0
-        p_hat = camera.position
-    else:
-        h = (
-            2
-            * point_set.radius
-            * (norm_pos / (2 * norm_pos))
-        )
-        p_hat = camera.position / norm_pos
-    r_c = transform.Rotation.from_quat(camera.orientation).as_euler("xyz")
-    if np.linalg.norm(r_c) != 0:
-        r_c = r_c / np.linalg.norm(r_c)
+def test_update_points_inspection_status(point_set, camera, sun, binary_ray):
     point_set.update_points_inspection_status(camera, sun, binary_ray)
     for _, point in point_set.points.items():
-        expected_inspected = False
-        p = point.position - camera.position
-        p_rc = np.dot(p, r_c) * r_c
-        d = np.linalg.norm(p - p_rc)
-        c_r = np.linalg.norm(p_rc) * np.tan(camera.fov / 2)
-        if c_r >= d:
-            # if no point light (sun), assume no illumination
-            if not sun:
-                # project point onto inspection zone axis and check if in inspection zone
-                expected_inspected = (
-                    np.dot(point.position, p_hat) >= point_set.radius - h
-                )
-            else:
-                mag = np.dot(point.position, p_hat)
-                expected_inspected = (
-                    mag >= point_set.radius - h
-                    and camera.check_point_illumination(
-                        point=point,
-                        light=sun,
-                        viewed_object=point_set.parent,
-                        radius=point_set.radius,
-                        binary_ray=binary_ray,
-                    )
-                )
+        expected_inspected = camera.inspect_point(
+            point=point,
+            light=sun,
+            viewed_object=point_set.parent,
+            radius=point_set.radius,
+            binary_ray=binary_ray,
+        )
         if expected_inspected:
             assert point.inspected
             assert point.inspector == camera

@@ -9,6 +9,7 @@ import safe_autonomy_simulation.materials as m
 import safe_autonomy_simulation.sims.inspection.utils.illumination as illum
 import safe_autonomy_simulation.sims.inspection.utils.vector as vector
 import safe_autonomy_simulation.sims.inspection.utils.sphere as sphere
+import safe_autonomy_simulation.sims.spacecraft as spacecraft
 
 
 class Camera(e.PhysicalEntity):
@@ -77,6 +78,7 @@ class Camera(e.PhysicalEntity):
         self._resolution = resolution
         self._focal_length = focal_length
         self._pixel_pitch = pixel_pitch
+        self._off = False  # camera is on by default
 
     # def point_at(self, target: e.PhysicalEntity):
     #     """Point the camera at a target
@@ -97,6 +99,82 @@ class Camera(e.PhysicalEntity):
     #     self.state = np.concatenate(
     #         (self.position, self.velocity, new_orientation, self.angular_velocity)
     #     )
+
+    def inspect_point(
+        self,
+        point: e.Point,
+        viewed_object: e.Entity,
+        radius: float,
+        light: e.PhysicalEntity = None,
+        binary_ray: bool = False,
+    ) -> bool:
+        """Inspect a point on an object in the environment
+
+        Parameters
+        ----------
+        point: Point
+            point to inspect
+        light: PhysicalEntity
+            light source entity
+        viewed_object: Entity
+            object on which the point is located
+        radius: float
+            radius of the viewed object in meters
+        binary_ray: bool, optional
+            whether to use binary ray tracing for illumination, by default False
+
+        Returns
+        -------
+        bool
+            True if the point is successfully inspected, False otherwise
+        """
+        inspected = False
+
+        if not self.off:
+            cam_position = self.position
+            if isinstance(self.parent, spacecraft.SixDOFSpacecraft):
+                # TODO: orientation axis vector should be defined externally
+                r_c = transform.Rotation.from_quat(self.orientation).apply(
+                    np.array([1, 0, 0])
+                )
+            else:
+                # For translational motion only, camera always points towards chief (origin)
+                # TODO: don't assume chief is at origin
+                r_c = -cam_position
+            if np.linalg.norm(r_c) != 0:
+                r_c = r_c / np.linalg.norm(r_c)  # inspector sensor unit vector
+
+            r = radius
+            rt = np.linalg.norm(cam_position)
+            if rt != 0:
+                h = 2 * r * ((rt - r) / (2 * rt))
+                p_hat = (
+                    cam_position / rt
+                )  # position unit vector (inspection zone cone axis)
+            else:
+                h = 0
+                p_hat = cam_position
+            
+            p = point.position - cam_position
+            cos_theta = np.dot(p / np.linalg.norm(p), r_c)
+            angle_to_point = np.arccos(cos_theta)
+            # If the point can be inspected (within FOV)
+            if angle_to_point <= (self.fov / 2):
+                # if no point light (sun), assume no illumination
+                if not light:
+                    # project point onto inspection zone axis and check if in inspection zone
+                    inspected = np.dot(point.position, p_hat) >= r - h
+                else:
+                    mag = np.dot(point.position, p_hat)
+                    inspected = mag >= r - h and self.check_point_illumination(
+                        point=point,
+                        light=light,
+                        viewed_object=viewed_object,
+                        radius=radius,
+                        binary_ray=binary_ray,
+                    )
+
+        return inspected
 
     def check_point_illumination(
         self,
@@ -311,6 +389,25 @@ class Camera(e.PhysicalEntity):
                         continue
                 image[i, j] = np.clip(illumination, 0, 1)
         return image
+    
+    def turn_off(self):
+        """Turn off the camera"""
+        self._off = True
+
+    def turn_on(self):
+        """Turn on the camera"""
+        self._off = False
+
+    @property
+    def off(self) -> bool:
+        """Whether the camera is off
+
+        Returns
+        -------
+        bool
+            True if the camera is off, False otherwise
+        """
+        return self._off
 
     @property
     def fov(self) -> float:
