@@ -380,59 +380,22 @@ class InspectionPointSet(e.Entity):
         binary_ray: bool, optional
             whether to use binary ray tracing for illumination, by default True
         """
-        # calculate h of the spherical cap (inspection zone)
-        cam_position = camera.position
-        if isinstance(camera.parent, spacecraft.SixDOFSpacecraft):
-            # TODO: orientation axis vector should be defined externally
-            r_c = transform.Rotation.from_quat(camera.orientation).apply(
-                np.array([1, 0, 0])
-            )
-        else:
-            # For translational motion only, camera always points towards chief (origin)
-            # TODO: don't assume chief is at origin
-            r_c = -cam_position
-        if np.linalg.norm(r_c) != 0:
-            r_c = r_c / np.linalg.norm(r_c)  # inspector sensor unit vector
-
-        r = self.radius
-        rt = np.linalg.norm(cam_position)
-        if rt != 0:
-            h = 2 * r * ((rt - r) / (2 * rt))
-            p_hat = (
-                cam_position / rt
-            )  # position unit vector (inspection zone cone axis)
-        else:
-            h = 0
-            p_hat = cam_position
-
         for (
             _,
             point,
         ) in self.points.items():  # pylint: disable=too-many-nested-blocks
             # check that point hasn't already been inspected
             if not point.inspected:
-                p = point.position - cam_position
-                cos_theta = np.dot(p / np.linalg.norm(p), r_c)
-                angle_to_point = np.arccos(cos_theta)
-                # If the point can be inspected (within FOV)
-                if angle_to_point <= (camera.fov / 2):
-                    # if no point light (sun), assume no illumination
-                    if not sun:
-                        # project point onto inspection zone axis and check if in inspection zone
-                        if np.dot(point.position, p_hat) >= r - h:
-                            point.inspected = True
-                            point.inspector = camera.name
-                    else:
-                        mag = np.dot(point.position, p_hat)
-                        if mag >= r - h and camera.check_point_illumination(
-                            point=point,
-                            light=sun,
-                            viewed_object=self.parent,
-                            radius=self.radius,
-                            binary_ray=binary_ray,
-                        ):
-                            point.inspected = True
-                            point.inspector = camera.name
+                point.inspected = camera.inspect_point(
+                    point=point,
+                    light=sun,
+                    viewed_object=self.parent,
+                    radius=self.radius,
+                    binary_ray=binary_ray,
+                )
+                if point.inspected:
+                    point.inspector = camera.name
+
 
     def kmeans_find_nearest_cluster(
         self,
