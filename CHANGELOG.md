@@ -1,3 +1,10 @@
+## [2.2.1](https://github.com/act3-ace/safe-autonomy-simulation/compare/v2.2.0...v2.2.1) (2026-01-09)
+
+
+### Bug Fixes
+
+* **deps:** downgrade numpy dependency to 1.x to allow for use with rllib ([#46](https://github.com/act3-ace/safe-autonomy-simulation/issues/46)) ([72d0b5d](https://github.com/act3-ace/safe-autonomy-simulation/commit/72d0b5d7615ccf8ad5d975b898f5c1efc066d69f))
+
 # [2.2.0](https://github.com/act3-ace/safe-autonomy-simulation/compare/v2.1.6...v2.2.0) (2025-08-21)
 
 
